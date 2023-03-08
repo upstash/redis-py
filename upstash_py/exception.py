@@ -1,0 +1,2 @@
+class UpstashException(Exception):
+    pass
