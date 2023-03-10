@@ -6,21 +6,22 @@ from upstash_py.schema import UpstashResponse
 from upstash_py.utils.base import base64_to_string
 
 
-def decode(result):
+# TODO determine if "raw" needs to be typed and how
+def decode(raw) -> str | list:
     # Convert the result to string as matching class types is trickier
-    match str(type(result)):
+    match str(type(raw)):
         case "<class 'str'>":
-            return result
+            return raw
         case "<class 'int'>" | "<class 'NoneType'>":
-            return result
+            return raw
             #return "OK" if result == "OK" else base64_to_string(result)
         case "<class 'list'>":
-            return list
+            return raw
         case _:
-            raise UpstashException(f'Error decoding data for result type {type(result)}')
+            raise UpstashException(f'Error decoding data for result type {type(raw)}')
 
 
-def execute(url: str, token: str, command: str):
+def execute(url: str, token: str, command: str) -> str | list:
     # TODO: allow custom values
     retries = int(config["HTTP_RETRIES"])
     retry_interval = int(config["HTTP_RETRY_INTERVAL"])
@@ -47,7 +48,7 @@ def execute(url: str, token: str, command: str):
     if body.get("error"):
         raise UpstashException(body.get("error"))
 
-    return decode(body.get("result"))
+    return decode(raw=body.get("result"))
 
 
 
