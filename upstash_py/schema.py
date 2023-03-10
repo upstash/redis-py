@@ -2,5 +2,5 @@ from typing import TypedDict
 
 
 class UpstashResponse(TypedDict):
-    result: str
+    result: str | int | dict | None
     error: str
