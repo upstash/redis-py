@@ -1,5 +1,4 @@
 from upstash_py.exception import UpstashException
-from upstash_py.config import config
 from requests import get, Response
 from time import sleep
 from upstash_py.schema import RESTResult, RESTResponse
@@ -28,13 +27,17 @@ def decode(raw: RESTResult) -> RESTResult:
             raise UpstashException(f'Error decoding data for result type {type(raw)}')
 
 
-def execute(url: str, token: str, command: str) -> RESTResult:
+def execute(
+    url: str,
+    token: str,
+    encoding: str,
+    retries: int,
+    retry_interval: int,
+    command: str
+) -> RESTResult:
     """
     Execute the given command over the REST API
     """
-
-    retries = int(config["HTTP_RETRIES"])
-    retry_interval = int(config["HTTP_RETRY_INTERVAL"])
 
     exception: Exception | None = None
     response: Response | None = None
@@ -44,7 +47,8 @@ def execute(url: str, token: str, command: str) -> RESTResult:
 
     for i in range(retries):
         try:
-            response = get(f'{url}/{command}?_token={token}', headers={"Upstash-Encoding": "base64"})
+            headers: dict[str, str] = {"Upstash-Encoding": encoding} if encoding else {}
+            response = get(f'{url}/{command}?_token={token}', headers=headers)
             break
         except Exception as _exception:
             exception = _exception
