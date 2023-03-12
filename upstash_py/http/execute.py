@@ -2,26 +2,37 @@ from upstash_py.exception import UpstashException
 from upstash_py.config import config
 from requests import get, Response
 from time import sleep
-from upstash_py.schema import UpstashResponse, RESTResponse
+from upstash_py.schema import RESTResult, RESTResponse
 from upstash_py.utils.base import base64_to_string
 
 
-def decode(raw: RESTResponse) -> RESTResponse:
-    # Convert the result to string as matching class types is trickier
+def decode(raw: RESTResult) -> RESTResult:
+    """
+    Decode the response received from the REST API
+    """
     match str(type(raw)):
         case "<class 'str'>":
-            # return "OK" if result == "OK" else base64_to_string(result)
-            return raw
+            return "OK" if raw == "OK" else base64_to_string(raw)
         case "<class 'int'>" | "<class 'NoneType'>":
             return raw
         case "<class 'list'>":
-            return raw
+            # TODO add pipeline support
+            return list(
+                map(
+                    # "element" could also be None
+                    lambda element: base64_to_string(element) if str(type(element)) == "<class 'str'>" else element,
+                    raw
+                )
+            )
         case _:
             raise UpstashException(f'Error decoding data for result type {type(raw)}')
 
 
-def execute(url: str, token: str, command: str) -> RESTResponse:
-    # TODO: allow custom values
+def execute(url: str, token: str, command: str) -> RESTResult:
+    """
+    Execute the given command over the REST API
+    """
+
     retries = int(config["HTTP_RETRIES"])
     retry_interval = int(config["HTTP_RETRY_INTERVAL"])
 
@@ -33,7 +44,7 @@ def execute(url: str, token: str, command: str) -> RESTResponse:
 
     for i in range(retries):
         try:
-            response = get(f'{url}/{command}?_token={token}')
+            response = get(f'{url}/{command}?_token={token}', headers={"Upstash-Encoding": "base64"})
             break
         except Exception as _exception:
             exception = _exception
@@ -42,7 +53,7 @@ def execute(url: str, token: str, command: str) -> RESTResponse:
     if response is None:
         raise UpstashException(str(exception))
 
-    body: UpstashResponse = response.json()
+    body: RESTResponse = response.json()
     # Avoid the [] syntax to prevent KeyError from being raised
     if body.get("error"):
         raise UpstashException(body.get("error"))
