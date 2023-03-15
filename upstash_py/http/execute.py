@@ -1,5 +1,5 @@
 from upstash_py.exception import UpstashException
-from time import sleep
+from asyncio import sleep
 from upstash_py.schema import RESTResult, RESTResponse, RESTEncoding
 from upstash_py.utils.base import base64_to_string
 from aiohttp import ClientSession
@@ -62,6 +62,6 @@ async def execute(
             break
         except Exception as _exception:
             exception = _exception
-            sleep(retry_interval)
+            await sleep(retry_interval)
 
     raise UpstashException(str(exception))
