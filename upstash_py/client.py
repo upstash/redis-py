@@ -1,6 +1,8 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema import RESTResult
 from upstash_py.config import config
+from aiohttp import ClientSession
+from typing import Type, Any
 
 
 class Redis:
@@ -21,12 +23,29 @@ class Redis:
         self.http_retries = http_retries
         self.http_retry_interval = http_retry_interval
 
-    def run(self, command: str) -> RESTResult:
+        self._session: ClientSession | None = None
+
+    async def __aenter__(self) -> ClientSession:
         """
-        Specify the http options and execute the command
+        Enter the async context.
+        """
+        self._session = ClientSession()
+        # We need to return the session object because it will be used in "async with" statements
+        return self._session
+
+    async def __aexit__(self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> None:
+        """
+        Exit the async context.
+        """
+        await self._session.close()
+
+    async def run(self, command: str) -> RESTResult:
+        """
+        Specify the http options and execute the command.
         """
 
-        return execute(
+        return await execute(
+            session=self._session,
             url=self.url,
             token=self.token,
             encoding=self.http_encoding,
@@ -35,25 +54,25 @@ class Redis:
             command=command,
         )
 
-    def get(self, key: str) -> str:
+    async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
         """
 
         command: str = f'get {key}'
 
-        return self.run(command=command)
+        return await self.run(command=command)
 
-    def set(self, key: str, value: str) -> str:
+    async def set(self, key: str, value: str) -> str:
         """
         See https://redis.io/commands/set
         """
 
         command: str = f'set {key} {value}'
 
-        return self.run(command=command)
+        return await self.run(command=command)
 
-    def lpush(self, key: str, *elements: str) -> int:
+    async def lpush(self, key: str, *elements: str) -> int:
         """
         See https://redis.io/commands/lpush
         """
@@ -63,13 +82,13 @@ class Redis:
         for element in elements:
             command += " " + element
 
-        return self.run(command=command)
+        return await self.run(command=command)
 
-    def lrange(self, key: str, start: int, stop: int) -> list:
+    async def lrange(self, key: str, start: int, stop: int) -> list:
         """
         See https://redis.io/commands/lpush
         """
 
         command: str = f'lrange {key} {start} {stop}'
 
-        return self.run(command=command)
+        return await self.run(command=command)

@@ -1,33 +1,37 @@
 from upstash_py.exception import UpstashException
-from requests import get, Response
 from time import sleep
 from upstash_py.schema import RESTResult, RESTResponse
 from upstash_py.utils.base import base64_to_string
+from aiohttp import ClientSession
 
 
 def decode(raw: RESTResult) -> RESTResult:
     """
     Decode the response received from the REST API
     """
-    match str(type(raw)):
-        case "<class 'str'>":
-            return "OK" if raw == "OK" else base64_to_string(raw)
-        case "<class 'int'>" | "<class 'NoneType'>":
-            return raw
-        case "<class 'list'>":
-            # TODO add pipeline support
-            return list(
-                map(
-                    # "element" could also be None
-                    lambda element: base64_to_string(element) if str(type(element)) == "<class 'str'>" else element,
-                    raw
-                )
+
+    if isinstance(raw, str):
+        return "OK" if raw == "OK" else base64_to_string(raw)
+
+    # We need to use "type(None)" instead of simply "None" to evaluate properly
+    elif isinstance(raw, (int, type(None))):
+        return raw
+
+    elif isinstance(raw, list):
+        # TODO add pipeline support
+        return list(
+            map(
+                # "element" could also be None
+                lambda element: base64_to_string(element) if isinstance(element, str) else element,
+                raw
             )
-        case _:
-            raise UpstashException(f'Error decoding data for result type {type(raw)}')
+        )
+    else:
+        raise UpstashException(f'Error decoding data for result type {str(type(raw))}')
 
 
-def execute(
+async def execute(
+    session: ClientSession,
     url: str,
     token: str,
     encoding: str,
@@ -40,7 +44,6 @@ def execute(
     """
 
     exception: Exception | None = None
-    response: Response | None = None
 
     # Encode the command to be attached to the URL
     command = command.replace(" ", "/")
@@ -48,21 +51,21 @@ def execute(
     for i in range(retries):
         try:
             headers: dict[str, str] = {"Upstash-Encoding": encoding} if encoding else {}
-            response = get(f'{url}/{command}?_token={token}', headers=headers)
+            async with session.get(f'{url}/{command}?_token={token}', headers=headers) as response:
+                body: RESTResponse = await response.json()
+                # Avoid the [] syntax to prevent KeyError from being raised
+                if body.get("error"):
+                    raise UpstashException(body.get("error"))
+
+                return decode(raw=body.get("result"))
             break
         except Exception as _exception:
             exception = _exception
             sleep(retry_interval)
 
-    if response is None:
-        raise UpstashException(str(exception))
+    raise UpstashException(str(exception))
 
-    body: RESTResponse = response.json()
-    # Avoid the [] syntax to prevent KeyError from being raised
-    if body.get("error"):
-        raise UpstashException(body.get("error"))
 
-    return decode(raw=body.get("result"))
 
 
 
