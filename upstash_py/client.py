@@ -1,5 +1,5 @@
 from upstash_py.http.execute import execute
-from upstash_py.schema import RESTResult
+from upstash_py.schema import RESTResult, RESTEncoding
 from upstash_py.config import config
 from aiohttp import ClientSession
 from typing import Type, Any
@@ -11,7 +11,7 @@ class Redis:
         url: str,
         token: str,
         enable_telemetry: bool = False,
-        http_encoding: str | bool = config["HTTP_ENCODING"],
+        http_encoding: RESTEncoding = config["HTTP_ENCODING"],
         http_retries: int = int(config["HTTP_RETRIES"]),
         http_retry_interval: int = int(config["HTTP_RETRY_INTERVAL"])
     ):

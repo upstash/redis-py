@@ -4,6 +4,8 @@ from typing import TypedDict
 # The type of the "result" field returned by the REST API
 RESTResult = str | int | list | None
 
+RESTEncoding = str | bool
+
 
 class RESTResponse(TypedDict):
     """
