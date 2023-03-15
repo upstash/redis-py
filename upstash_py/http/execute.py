@@ -37,7 +37,7 @@ async def execute(
     encoding: RESTEncoding,
     retries: int,
     retry_interval: int,
-    command: str
+    command: list
 ) -> RESTResult:
     """
     Execute the given command over the REST API
@@ -45,14 +45,14 @@ async def execute(
 
     exception: Exception | None = None
 
-    # Encode the command to be attached to the URL
-    command = command.replace(" ", "/")
-
     for i in range(retries):
         try:
-            headers: dict[str, str] = {"Upstash-Encoding": encoding} if encoding else {}
+            headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
 
-            async with session.get(f'{url}/{command}?_token={token}', headers=headers) as response:
+            if encoding:
+                headers["Upstash-Encoding"] = encoding
+
+            async with session.post(url, headers=headers, json=command) as response:
                 body: RESTResponse = await response.json()
                 # Avoid the [] syntax to prevent KeyError from being raised
                 if body.get("error"):

@@ -39,7 +39,7 @@ class Redis:
         """
         await self._session.close()
 
-    async def run(self, command: str) -> RESTResult:
+    async def run(self, command: list) -> RESTResult:
         """
         Specify the http options and execute the command.
         """
@@ -59,7 +59,7 @@ class Redis:
         See https://redis.io/commands/get
         """
 
-        command: str = f'get {key}'
+        command: list = ["GET", key]
 
         return await self.run(command=command)
 
@@ -68,7 +68,7 @@ class Redis:
         See https://redis.io/commands/set
         """
 
-        command: str = f'set {key} {value}'
+        command: list = ["SET", key, value]
 
         return await self.run(command=command)
 
@@ -77,10 +77,10 @@ class Redis:
         See https://redis.io/commands/lpush
         """
 
-        command: str = f'lpush {key}'
+        command: list = ["LPUSH", key]
 
         for element in elements:
-            command += " " + element
+            command.append(element)
 
         return await self.run(command=command)
 
@@ -89,6 +89,6 @@ class Redis:
         See https://redis.io/commands/lpush
         """
 
-        command: str = f'lrange {key} {start} {stop}'
+        command: list = ["LRANGE", key, start, stop]
 
         return await self.run(command=command)
