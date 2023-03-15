@@ -7,13 +7,13 @@ from aiohttp import ClientSession
 
 def decode(raw: RESTResult, encoding: str) -> RESTResult:
     """
-    Decode the response received from the REST API
+    Decode the response received from the REST API.
     """
     if encoding == "base64":
         if isinstance(raw, str):
             return "OK" if raw == "OK" else base64_to_string(raw)
 
-        # We need to use "type(None)" instead of simply "None" to evaluate properly
+        # We need to use "type(None)" instead of simply "None" to evaluate properly.
         elif isinstance(raw, (int, type(None))):
             return raw
 
@@ -21,7 +21,7 @@ def decode(raw: RESTResult, encoding: str) -> RESTResult:
             # TODO add pipeline support
             return list(
                 map(
-                    # "element" could also be None
+                    # "element" could also be None.
                     lambda element: base64_to_string(element) if isinstance(element, str) else element,
                     raw
                 )
@@ -40,7 +40,7 @@ async def execute(
     command: list
 ) -> RESTResult:
     """
-    Execute the given command over the REST API
+    Execute the given command over the REST API.
     """
 
     exception: Exception | None = None
@@ -54,7 +54,7 @@ async def execute(
 
             async with session.post(url, headers=headers, json=command) as response:
                 body: RESTResponse = await response.json()
-                # Avoid the [] syntax to prevent KeyError from being raised
+                # Avoid the [] syntax to prevent KeyError from being raised.
                 if body.get("error"):
                     raise UpstashException(body.get("error"))
 

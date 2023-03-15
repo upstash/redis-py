@@ -11,17 +11,17 @@ class Redis:
         url: str,
         token: str,
         enable_telemetry: bool = False,
-        http_encoding: RESTEncoding = config["HTTP_ENCODING"],
-        http_retries: int = int(config["HTTP_RETRIES"]),
-        http_retry_interval: int = int(config["HTTP_RETRY_INTERVAL"])
+        rest_encoding: RESTEncoding = config["REST_ENCODING"],
+        rest_retries: int = config["REST_RETRIES"],
+        rest_retry_interval: int = config["REST_RETRY_INTERVAL"]
     ):
         self.url = url
         self.token = token
         self.enable_telemetry = enable_telemetry
         # If the encoding is set as "True", we default to config.
-        self.http_encoding = config["HTTP_ENCODING"] if http_encoding is True else http_encoding
-        self.http_retries = http_retries
-        self.http_retry_interval = http_retry_interval
+        self.rest_encoding = config["REST_ENCODING"] if rest_encoding is True else rest_encoding
+        self.rest_retries = rest_retries
+        self.rest_retry_interval = rest_retry_interval
 
         self._session: ClientSession | None = None
 
@@ -30,7 +30,7 @@ class Redis:
         Enter the async context.
         """
         self._session = ClientSession()
-        # We need to return the session object because it will be used in "async with" statements
+        # We need to return the session object because it will be used in "async with" statements.
         return self._session
 
     async def __aexit__(self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> None:
@@ -48,9 +48,9 @@ class Redis:
             session=self._session,
             url=self.url,
             token=self.token,
-            encoding=self.http_encoding,
-            retries=self.http_retries,
-            retry_interval=self.http_retry_interval,
+            encoding=self.rest_encoding,
+            retries=self.rest_retries,
+            retry_interval=self.rest_retry_interval,
             command=command,
         )
 
