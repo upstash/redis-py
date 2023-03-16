@@ -43,9 +43,7 @@ async def execute(
     Execute the given command over the REST API.
     """
 
-    exception: Exception | None = None
-
-    for i in range(retries):
+    for i in range(retries + 1):
         try:
             headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
 
@@ -61,7 +59,8 @@ async def execute(
                 return decode(raw=body.get("result"), encoding=encoding) if encoding else body.get("result")
             break
         except Exception as _exception:
-            exception = _exception
-            await sleep(retry_interval)
-
-    raise UpstashException(str(exception))
+            if i == retries:
+                # If we exhausted all the retries, raise the exception.
+                raise _exception
+            else:
+                await sleep(retry_interval)

@@ -54,6 +54,14 @@ class Redis:
             command=command,
         )
 
+    async def bitcount(self, key: str, start: int = 0, end: int = -1) -> int:
+        """
+        See https://redis.io/commands/bitcount
+        """
+        command: list = ["BITCOUNT", key, start, end]
+
+        return await self.run(command=command)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -79,8 +87,7 @@ class Redis:
 
         command: list = ["LPUSH", key]
 
-        for element in elements:
-            command.append(element)
+        command.extend(elements)
 
         return await self.run(command=command)
 
