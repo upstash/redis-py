@@ -1,8 +1,8 @@
 from upstash_py.http.execute import execute
-from upstash_py.schema import RESTResult, RESTEncoding
+from upstash_py.http.schema import RESTResult, RESTEncoding
 from upstash_py.config import config
 from aiohttp import ClientSession
-from typing import Type, Any
+from typing import Type, Any, Self
 
 
 class Redis:
@@ -99,3 +99,48 @@ class Redis:
         command: list = ["LRANGE", key, start, stop]
 
         return await self.run(command=command)
+
+    # Use a string as the type because the class is declared later
+    def bitfield(self, key: str) -> "BitFieldCommands":
+        """
+        See https://redis.io/commands/bitfield
+        """
+        return BitFieldCommands(key=key, client=self)
+
+
+# We don't inherit from "Redis" mainly because of the methods signatures
+class BitFieldCommands:
+    # str allows for "#" syntax.
+    BitFieldOffset = str | int
+
+    def __init__(self, client: Redis, key: str):
+        self.client = client
+        self.command: list = ["BITFIELD", key]
+
+    def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+        _command = ["GET", encoding, offset]
+        self.command.extend(_command)
+
+        return self
+
+    def set(self, encoding: str, offset: BitFieldOffset, value: int) -> Self:
+        _command = ["SET", encoding, offset, value]
+        self.command.extend(_command)
+
+        return self
+
+    def incrby(self, encoding: str, offset: BitFieldOffset, increment: int) -> Self:
+        _command = ["INCRBY", encoding, offset, increment]
+        self.command.extend(_command)
+
+        return self
+
+    def overflow(self, overflow: str) -> Self:
+        # wrap | Wrap => WRAP
+        _command = ["OVERFLOW", overflow.upper()]
+        self.command.extend(_command)
+
+        return self
+
+    async def execute(self) -> RESTResult:
+        return await self.client.run(command=self.command)
