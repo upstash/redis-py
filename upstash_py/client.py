@@ -2,7 +2,7 @@ from upstash_py.http.execute import execute
 from upstash_py.http.schema import RESTResult, RESTEncoding
 from upstash_py.config import config
 from aiohttp import ClientSession
-from typing import Type, Any, Self
+from typing import Type, Any, Self, Literal
 
 
 class Redis:
@@ -29,6 +29,7 @@ class Redis:
         """
         Enter the async context.
         """
+
         self._session = ClientSession()
         # We need to return the session object because it will be used in "async with" statements.
         return self._session
@@ -37,6 +38,7 @@ class Redis:
         """
         Exit the async context.
         """
+
         await self._session.close()
 
     async def run(self, command: list) -> RESTResult:
@@ -54,11 +56,103 @@ class Redis:
             command=command,
         )
 
-    async def bitcount(self, key: str, start: int = 0, end: int = -1) -> int:
+    async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:
         """
         See https://redis.io/commands/bitcount
         """
-        command: list = ["BITCOUNT", key, start, end]
+
+        if (start is None and end is not None) or (start is not None and end is None):
+            raise Exception("Both start and end must be specified")
+
+        command: list = ["BITCOUNT", key]
+
+        if start is not None and end is not None:
+            command.extend([start, end])
+
+        return await self.run(command=command)
+
+    def bitfield(self, key: str) -> "BitFieldCommands":
+        """
+        See https://redis.io/commands/bitfield
+        """
+
+        return BitFieldCommands(key=key, client=self)
+
+    def bitfield_ro(self, key: str) -> "BitFieldRO":
+        """
+        See https://redis.io/commands/bitfield_ro
+        """
+
+        return BitFieldRO(key=key, client=self)
+
+    async def bitop(self, operation: Literal["AND", "OR", "XOR", "NOT"], dest_key: str, *src_keys: str) -> int:
+        """
+        See https://redis.io/commands/bitop
+        """
+
+        if operation == "NOT" and len(src_keys) > 1:
+            raise Exception("NOT takes only one source key as argument.")
+
+        command: list = ["BITOP", operation, dest_key]
+
+        command.extend(src_keys)
+
+        return await self.run(command=command)
+
+    async def bitpos(self, key: str, bit: Literal[0, 1], start: int | None = None, end: int | None = None):
+        """
+        See https://redis.io/commands/bitpos
+        """
+
+        if start is None and end is not None:
+            raise Exception("End is specified, but start is missing.")
+
+        command: list = ["BITPOS", key, bit]
+
+        if start:
+            command.append(start)
+
+        if end:
+            command.append(end)
+
+        return await self.run(command=command)
+
+    async def getbit(self, key: str, offset: int) -> int:
+        """
+        See https://redis.io/commands/getbit
+        """
+
+        command: list = ["GETBIT", key, offset]
+
+        return await self.run(command=command)
+
+    async def setbit(self, key: str, offset: int, value: int) -> int:
+        """
+        See https://redis.io/commands/setbit
+        """
+
+        command: list = ["SETBIT", key, offset, value]
+
+        return await self.run(command=command)
+
+    async def ping(self, message: str) -> str:
+        """
+        See https://redis.io/commands/ping
+        """
+
+        command: list = ["PING"]
+
+        if message is not None:
+            command.append(message)
+
+        return await self.run(command=command)
+
+    async def echo(self, message: str) -> str:
+        """
+        See https://redis.io/commands/echo
+        """
+
+        command: list = ["ECHO", message]
 
         return await self.run(command=command)
 
@@ -100,19 +194,13 @@ class Redis:
 
         return await self.run(command=command)
 
-    # Use a string as the type because the class is declared later
-    def bitfield(self, key: str) -> "BitFieldCommands":
-        """
-        See https://redis.io/commands/bitfield
-        """
-        return BitFieldCommands(key=key, client=self)
+
+# str allows for "#" syntax.
+BitFieldOffset = str | int
 
 
 # We don't inherit from "Redis" mainly because of the methods signatures
 class BitFieldCommands:
-    # str allows for "#" syntax.
-    BitFieldOffset = str | int
-
     def __init__(self, client: Redis, key: str):
         self.client = client
         self.command: list = ["BITFIELD", key]
@@ -135,9 +223,23 @@ class BitFieldCommands:
 
         return self
 
-    def overflow(self, overflow: str) -> Self:
-        # wrap | Wrap => WRAP
-        _command = ["OVERFLOW", overflow.upper()]
+    def overflow(self, overflow: Literal["WRAP", "SAT", "FAIL"]) -> Self:
+        _command = ["OVERFLOW", overflow]
+        self.command.extend(_command)
+
+        return self
+
+    async def execute(self) -> RESTResult:
+        return await self.client.run(command=self.command)
+
+
+class BitFieldRO:
+    def __init__(self, client: Redis, key: str):
+        self.client = client
+        self.command: list = ["BITFIELD_RO", key]
+
+    def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+        _command = ["GET", encoding, offset]
         self.command.extend(_command)
 
         return self

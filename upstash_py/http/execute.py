@@ -58,9 +58,9 @@ async def execute(
 
                 return decode(raw=body.get("result"), encoding=encoding) if encoding else body.get("result")
             break
-        except Exception as _exception:
+        except Exception as exception:
             if i == retries:
                 # If we exhausted all the retries, raise the exception.
-                raise _exception
+                raise exception
             else:
                 await sleep(retry_interval)
