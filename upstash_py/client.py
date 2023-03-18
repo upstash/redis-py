@@ -156,6 +156,177 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def copy(self, source: str, destination: str, replace: bool) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/copy
+        """
+
+        command: list = ["COPY", source, destination]
+
+        if replace:
+            command.append("REPLACE")
+
+        return await self.run(command=command)
+
+    async def delete(self, key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/delete
+        """
+
+        command: list = ["DEL", key]
+
+        if keys is not None:
+            command.append(keys)
+
+        return await self.run(command=command)
+
+    async def exists(self, key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/exists
+        """
+
+        command: list = ["EXISTS", key]
+
+        if keys is not None:
+            command.append(keys)
+
+        return await self.run(command=command)
+
+    async def expire(self, key: str, seconds: int) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/expire
+        """
+
+        command: list = ["EXPIRE", key, seconds]
+
+        return await self.run(command=command)
+
+    async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/expireat
+        """
+
+        command: list = ["EXPIREAT", key, unix_time_seconds]
+
+        return await self.run(command=command)
+
+    async def keys(self, pattern: str) -> list[str]:
+        """
+        See https://redis.io/commands/keys
+        """
+
+        command: list = ["KEYS", pattern]
+
+        return await self.run(command=command)
+
+    async def persist(self, key: str) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/persist
+        """
+
+        command: list = ["PERSIST", key]
+
+        return await self.run(command=command)
+
+    async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/pexpire
+        """
+
+        command: list = ["PEXPIRE", key, milliseconds]
+
+        return await self.run(command=command)
+
+    async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/pexpireat
+        """
+
+        command: list = ["EXPIREAT", key, unix_time_milliseconds]
+
+        return await self.run(command=command)
+
+    async def pttl(self, key: str) -> int:
+        """
+        See https://redis.io/commands/pttl
+        """
+
+        command: list = ["PTTL", key]
+
+        return await self.run(command=command)
+
+    async def randomkey(self) -> str | None:
+        """
+        See https://redis.io/commands/randomkey
+        """
+
+        command: list = ["RANDOMKEY"]
+
+        return await self.run(command=command)
+
+    async def rename(self, key: str, newkey: str) -> str:
+        """
+        See https://redis.io/commands/rename
+        """
+
+        command: list = ["RENAME", key, newkey]
+
+        return await self.run(command=command)
+
+    async def renamenx(self, key: str, newkey: str) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/renamenx
+        """
+
+        command: list = ["RENAMENX", key, newkey]
+
+        return await self.run(command=command)
+
+    async def scan(self):
+        """
+        See https://redis.io/commands/scan
+        """
+
+        command: list = []
+
+        return await self.run(command=command)
+
+    async def touch(self):
+        """
+        See https://redis.io/commands/touch
+        """
+
+        command: list = []
+
+        return await self.run(command=command)
+
+    async def ttl(self):
+        """
+        See https://redis.io/commands/ttl
+        """
+
+        command: list = []
+
+        return await self.run(command=command)
+
+    async def type(self):
+        """
+        See https://redis.io/commands/type
+        """
+
+        command: list = []
+
+        return await self.run(command=command)
+
+    async def unlink(self):
+        """
+        See https://redis.io/commands/unlink
+        """
+
+        command: list = []
+
+        return await self.run(command=command)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -206,24 +377,45 @@ class BitFieldCommands:
         self.command: list = ["BITFIELD", key]
 
     def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+        """
+        Returns the specified bit field.
+        """
+
         _command = ["GET", encoding, offset]
         self.command.extend(_command)
 
         return self
 
     def set(self, encoding: str, offset: BitFieldOffset, value: int) -> Self:
+        """
+        Set the specified bit field and returns its old value.
+        """
+
         _command = ["SET", encoding, offset, value]
         self.command.extend(_command)
 
         return self
 
     def incrby(self, encoding: str, offset: BitFieldOffset, increment: int) -> Self:
+        """
+        Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
+        """
+
         _command = ["INCRBY", encoding, offset, increment]
         self.command.extend(_command)
 
         return self
 
     def overflow(self, overflow: Literal["WRAP", "SAT", "FAIL"]) -> Self:
+        """
+        Where an integer encoding is expected, it can be composed by prefixing with i
+        for signed integers and u for unsigned integers with the number of bits of our integer encoding.
+        So for example u8 is an unsigned integer of 8 bits and i16 is a signed integer of 16 bits.
+        The supported encodings are up to 64 bits for signed integers, and up to 63 bits for unsigned integers.
+        This limitation with unsigned integers is due to the fact that currently the Redis protocol is unable to
+        return 64-bit unsigned integers as replies.
+        """
+
         _command = ["OVERFLOW", overflow]
         self.command.extend(_command)
 
@@ -239,6 +431,10 @@ class BitFieldRO:
         self.command: list = ["BITFIELD_RO", key]
 
     def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+        """
+        Returns the specified bit field.
+        """
+
         _command = ["GET", encoding, offset]
         self.command.extend(_command)
 
