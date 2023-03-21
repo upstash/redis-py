@@ -15,5 +15,6 @@ class RESTResponse(TypedDict):
     """
     The types of the fields that can be returned by the REST API.
     """
+
     result: str | int | dict | None
     error: str

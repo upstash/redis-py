@@ -1,6 +1,6 @@
 from upstash_py.exception import UpstashException
 from asyncio import sleep
-from upstash_py.http.schema import RESTResult, RESTResponse, RESTEncoding
+from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
 from upstash_py.utils.base import base64_to_string
 from aiohttp import ClientSession
 
