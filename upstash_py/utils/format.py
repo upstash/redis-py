@@ -1,4 +1,20 @@
-def format_geo(
+def format_geo_positions(raw: list[str | None]) -> list[dict[str, float | int] | None]:
+    """
+    Format the raw output returned by GEOPOS.
+    """
+
+    return [
+        {
+            "longitude": float(member[0]),
+            "latitude": float(member[1])
+            # If the member doesn't exist, GEOPOS will return nil.
+        } if isinstance(member, list) else None
+
+        for member in raws
+    ]
+
+
+def format_geo_members(
     raw: list[str],
     with_distance: bool | None = None,
     with_hash: bool | None = None,
@@ -16,6 +32,7 @@ def format_geo(
 
     All represented as strings
     """
+
     result: list[dict[str, float | int]] = []
 
     for member in raw:
@@ -51,3 +68,14 @@ def format_geo(
         result.append(formatted_member)
 
     return result
+
+
+def format_hash(raw: list[str]) -> dict[str, str]:
+    """
+    Format the raw output returned by HGETALL.
+    """
+
+    return {
+        raw[iterator]: raw[iterator + 1]
+        for iterator in range(0, len(raw), 2)
+    }

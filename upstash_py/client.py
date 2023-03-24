@@ -1,7 +1,7 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
-from upstash_py.utils.format import format_geo
+from upstash_py.utils.format import format_geo_positions, format_geo_members, format_hash
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
 from schema.commands.parameters import BitFieldOffset, GeoMember
@@ -113,13 +113,11 @@ class Redis:
                 """
             )
 
-        command: list = ["BITOP", operation, destination_key]
-
-        command.extend(source_keys)
+        command: list = ["BITOP", operation, destination_key, *source_keys]
 
         return await self.run(command=command)
 
-    async def bitpos(self, key: str, bit: Literal[0, 1], start: int | None = None, end: int | None = None):
+    async def bitpos(self, key: str, bit: Literal[0, 1], start: int | None = None, end: int | None = None) -> int:
         """
         See https://redis.io/commands/bitpos
         """
@@ -197,9 +195,7 @@ class Redis:
         See https://redis.io/commands/del
         """
 
-        command: list = ["DEL"]
-
-        command.extend(keys)
+        command: list = ["DEL", *keys]
 
         return await self.run(command=command)
 
@@ -208,9 +204,7 @@ class Redis:
         See https://redis.io/commands/exists
         """
 
-        command: list = ["EXISTS"]
-
-        command.extend(keys)
+        command: list = ["EXISTS", *keys]
 
         return await self.run(command=command)
 
@@ -307,13 +301,15 @@ class Redis:
     async def scan(
         self,
         cursor: int,
-        match: str,
-        count: int,
-        scan_type: str,
+        pattern: str | None = None,
+        count: int | None = None,
+        scan_type: str | None = None,
         return_cursor: bool = True
-    ) -> list[int, list] | list:
+    ) -> list[int | list] | list:
         """
         See https://redis.io/commands/scan
+
+        "MATCH" was replaced with "pattern".
 
         "TYPE" was replaced with "scan_type".
 
@@ -322,8 +318,8 @@ class Redis:
 
         command: list = ["SCAN", cursor]
 
-        if match is not None:
-            command.extend(["MATCH", match])
+        if pattern is not None:
+            command.extend(["MATCH", pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -331,7 +327,7 @@ class Redis:
         if scan_type is not None:
             command.extend(["TYPE", scan_type])
 
-        raw = await self.run(command=command)
+        raw: list[int, list] = await self.run(command=command)
 
         # The raw result is composed of the new cursor and the array of elements.
         return raw if return_cursor else raw[1]
@@ -341,9 +337,7 @@ class Redis:
         See https://redis.io/commands/touch
         """
 
-        command: list = ["TOUCH"]
-
-        command.extend(keys)
+        command: list = ["TOUCH", *keys]
 
         return await self.run(command=command)
 
@@ -370,9 +364,7 @@ class Redis:
         See https://redis.io/commands/unlink
         """
 
-        command: list = ["UNLINK"]
-
-        command.extend(keys)
+        command: list = ["UNLINK", *keys]
 
         return await self.run(command=command)
 
@@ -428,21 +420,18 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def geohash(self, key: str, *members: str) -> list[str]:
+    async def geohash(self, key: str, *members: str) -> list[str | None]:
         """
         See https://redis.io/commands/geohash
         """
 
-        command: list = ["GEOHASH", key]
-
-        command.extend(members)
+        command: list = ["GEOHASH", key, *members]
 
         return await self.run(command=command)
 
     async def geopos(
         self,
         key: str,
-        member: str,
         *members: str,
     ) -> list[str | None] | list[dict[str, float] | None]:
         """
@@ -451,22 +440,11 @@ class Redis:
         If "format_return" is True, it will return the result as a dict.
         """
 
-        command: list = ["GEOPOS", key, member]
+        command: list = ["GEOPOS", key, *members]
 
-        if members is not None:
-            command.extend(members)
+        raw: list[str | None] = await self.run(command=command)
 
-        raw = await self.run(command=command)
-
-        return [
-            {
-                "longitude": float(member[0]),
-                "latitude": float(member[1])
-                # If the member doesn't exist, GEOPOS will return nil.
-            } if isinstance(member, list) else None
-
-            for member in raw
-        ] if self.format_return else raw
+        return format_geo_positions(raw=raw) if self.format_return else raw
 
     async def georadius(
         self,
@@ -537,9 +515,9 @@ class Redis:
         if store_distance_as:
             command.extend(["STOREDIST", store_distance_as])
 
-        raw = await self.run(command=command)
+        raw: list[str] = await self.run(command=command)
 
-        return format_geo(raw=raw) if self.format_return else raw
+        return format_geo_members(raw=raw) if self.format_return else raw
 
     async def georadius_ro(
         self,
@@ -553,7 +531,7 @@ class Redis:
         count: int | None = None,
         count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
-    ):
+    ) -> list[str] | list[dict[str, float | int]]:
         """
         See https://redis.io/commands/georadius_ro
 
@@ -600,9 +578,9 @@ class Redis:
         if sort:
             command.append(sort)
 
-        raw = await self.run(command=command)
+        raw: list[str] = await self.run(command=command)
 
-        return format_geo(raw=raw) if self.format_return else raw
+        return format_geo_members(raw=raw) if self.format_return else raw
 
     async def georadiusbymember(
         self,
@@ -672,9 +650,9 @@ class Redis:
         if store_distance_as:
             command.extend(["STOREDIST", store_distance_as])
 
-        raw = await self.run(command=command)
+        raw: list[str] = await self.run(command=command)
 
-        return format_geo(raw=raw) if self.format_return else raw
+        return format_geo_members(raw=raw) if self.format_return else raw
 
     async def georadiusbymember_ro(
         self,
@@ -734,9 +712,9 @@ class Redis:
         if sort:
             command.append(sort)
 
-        raw = await self.run(command=command)
+        raw: list[str] = await self.run(command=command)
 
-        return format_geo(raw=raw) if self.format_return else raw
+        return format_geo_members(raw=raw) if self.format_return else raw
 
     async def geosearch(
         self,
@@ -845,9 +823,9 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        raw = await self.run(command=command)
+        raw: list[str] = await self.run(command=command)
 
-        return format_geo(raw=raw) if self.format_return else raw
+        return format_geo_members(raw=raw) if self.format_return else raw
 
     async def geosearchstore(
         self,
@@ -951,6 +929,171 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def hdel(self, key: str, *fields: str) -> int:
+        """
+        See https://redis.io/commands/hdel
+        """
+
+        command: list = ["HDEL", key, *fields]
+
+        return await self.run(command=command)
+
+    async def hexists(self, key: str, field: str) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/hexists
+        """
+
+        command: list = ["HEXISTS", key, field]
+
+        return await self.run(command=command)
+
+    async def hget(self, key: str, field: str) -> str | None:
+        """
+        See https://redis.io/commands/hget
+        """
+
+        command: list = ["HGET", key, field]
+
+        return await self.run(command=command)
+
+    async def hgetall(self, key: str) -> list[str] | dict[str, str]:
+        """
+        See https://redis.io/commands/hgetall
+        """
+
+        command: list = ["HGETALL", key]
+
+        raw: list[str] = await self.run(command=command)
+
+        return format_hash(raw=raw) if self.format_return else raw
+
+    async def hincrby(self, key: str, field: str, increment: int) -> int:
+        """
+        See https://redis.io/commands/hincrby
+        """
+
+        command: list = ["HINCRBY", key, field, increment]
+
+        return await self.run(command=command)
+
+    async def hincrbyfloat(self, key: str, field: str, increment: float) -> str | float:
+        """
+        See https://redis.io/commands/hincrbyfloat
+        """
+
+        command: list = ["HINCRBYFLOAT", key, field, increment]
+
+        raw: str = await self.run(command=command)
+
+        return float(raw) if self.format_return else raw
+
+    async def hkeys(self, key: str) -> list[str]:
+        """
+        See https://redis.io/commands/hkeys
+        """
+
+        command: list = ["HKEYS", key]
+
+        return await self.run(command=command)
+
+    async def hlen(self, key: str) -> int:
+        """
+        See https://redis.io/commands/hlen
+        """
+
+        command: list = ["HLEN", key]
+
+        return await self.run(command=command)
+
+    async def hmget(self, key: str, *fields: str) -> list[str | None]:
+        """
+        See https://redis.io/commands/hmget
+        """
+
+        command: list = ["HMGET", key, *fields]
+
+        return await self.run(command=command)
+
+    async def hmset(self, key: str, fields_and_values: dict) -> str:
+        """
+        See https://redis.io/commands/hmset
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 4.0.0, this command is regarded as deprecated.
+                It can be replaced by "HSET".
+                """
+            )
+
+        command: list = ["HMSET", key]
+
+        for field, value in fields_and_values.items():
+            command.extend([field, value])
+
+        return await self.run(command=command)
+
+    async def hrandfield(
+        self,
+        key: str,
+        count: int = None,
+        with_values: bool = False
+    ) -> (str | None) | (list[str] | dict[str, str]):
+        """
+        See https://redis.io/commands/hrandfield
+        """
+
+        if count is None and with_values:
+            raise Exception(
+                """
+                "with_values" can only be used together with "count".
+                """
+            )
+
+        command: list = ["HRANDFIELD", key]
+
+        if count:
+            command.extend(["COUNT", count])
+
+        if with_values:
+            command.append("WITHVALUES")
+
+        raw: (str | None) | (list[str] | dict[str, str]) = await self.run(command=command)
+
+        # It makes sense to format the output only when the values are also provided.
+        if not with_values or not self.format_return:
+            return raw
+
+        return format_hash(raw=raw)
+
+    async def hscan(
+        self,
+        key: str,
+        cursor: int,
+        pattern: str = None,
+        count: int = None,
+        return_cursor: bool = True
+    ) -> list[int | list[str]] | list[int | dict[str, str]] | list[str] | dict[str, str]:
+        """
+        See https://redis.io/commands/hscan
+
+        "MATCH" was replaced with "pattern".
+        """
+
+        command: list = ["HSCAN", key, cursor]
+
+        if pattern:
+            command.extend(["MATCH", pattern])
+
+        if count:
+            command.extend(["COUNT", count])
+
+        raw = self.run(command=command)
+
+        # TODO - Format the output.
+        return raw
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -974,9 +1117,7 @@ class Redis:
         See https://redis.io/commands/lpush
         """
 
-        command: list = ["LPUSH", key]
-
-        command.extend(elements)
+        command: list = ["LPUSH", key, *elements]
 
         return await self.run(command=command)
 
