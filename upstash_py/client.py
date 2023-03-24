@@ -1,6 +1,7 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
+from upstash_py.utils.format import format_geo
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
 from schema.commands.parameters import BitFieldOffset, GeoMember
@@ -70,7 +71,7 @@ class Redis:
         if (start is None and end is not None) or (start is not None and end is None):
             raise Exception(
                 """
-                Both "START" and "END" must be specified.
+                Both the start and end must be specified.
                 """
             )
 
@@ -108,7 +109,7 @@ class Redis:
         if operation == "NOT" and len(source_keys) > 1:
             raise Exception(
                 """
-                "NOT" takes only one source key as argument.
+                The "NOT" operation takes only one source key as argument.
                 """
             )
 
@@ -126,7 +127,7 @@ class Redis:
         if start is None and end is not None:
             raise Exception(
                 """
-                "END" is specified, but "START" is missing.
+                The end is specified, but the start is missing.
                 """
             )
 
@@ -179,7 +180,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def copy(self, source: str, destination: str, replace: bool | None = None) -> Literal[1, 0]:
+    async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0]:
         """
         See https://redis.io/commands/copy
         """
@@ -330,10 +331,10 @@ class Redis:
         if scan_type is not None:
             command.extend(["TYPE", scan_type])
 
-        result = await self.run(command=command)
+        raw = await self.run(command=command)
 
-        # The result is composed of the new cursor and the array of elements.
-        return result if return_cursor else result[1]
+        # The raw result is composed of the new cursor and the array of elements.
+        return raw if return_cursor else raw[1]
 
     async def touch(self, *keys: str) -> int:
         """
@@ -378,9 +379,9 @@ class Redis:
     async def geoadd(
         self,
         key: str,
-        nx: bool | None = None,
-        xx: bool | None = None,
-        ch: bool | None = None,
+        nx: bool = False,
+        xx: bool = False,
+        ch: bool = False,
         *members: GeoMember
     ) -> int:
         """
@@ -415,7 +416,7 @@ class Redis:
         key: str,
         first_member: str,
         second_member: str,
-        unit: Literal["M", "KM", "FT", "MI"] | None = None
+        unit: Literal["M", "KM", "FT", "MI"] = "M"
     ) -> str | None:  # Can be a double represented as string.
         """
         See https://redis.io/commands/geodist
@@ -423,10 +424,7 @@ class Redis:
         The measuring unit can be passed with "unit".
         """
 
-        command: list = ["GEODIST", key, first_member, second_member]
-
-        if unit:
-            command.append(unit)
+        command: list = ["GEODIST", key, first_member, second_member, unit]
 
         return await self.run(command=command)
 
@@ -458,29 +456,29 @@ class Redis:
         if members is not None:
             command.extend(members)
 
-        result = await self.run(command=command)
+        raw = await self.run(command=command)
 
         return [
             {
                 "longitude": float(member[0]),
                 "latitude": float(member[1])
                 # If the member doesn't exist, GEOPOS will return nil.
-            } if isinstance(result, list) else None
+            } if isinstance(member, list) else None
 
-            for member in result
-        ] if self.format_return else result
+            for member in raw
+        ] if self.format_return else raw
 
     async def georadius(
         self,
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["M", "KM", "FT", "MI"] | None = None,
-        with_coordinates: bool | None = None,
-        with_distance: bool | None = None,
-        with_hash: bool | None = None,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        with_distance: bool = False,
+        with_hash: bool = False,
+        with_coordinates: bool = False,
         count: int | None = None,
-        count_any: bool | None = None,
+        count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
         store_as: str | None = None,
         store_distance_as: str | None = None
@@ -501,7 +499,7 @@ class Redis:
             raise Exception(
                 """
                 As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "GEOSEARCH" and "GEOSEARCHSTORE" with the "BYRADIUS" argument.
+                It can be replaced by "GEOSEARCH" and "GEOSEARCHSTORE" with the "radius" argument.
                 
                 Source: https://redis.io/commands/georadius
                 """
@@ -510,23 +508,20 @@ class Redis:
         if count_any is not None and count is None:
             raise Exception(
                 """
-                "ANY" can only be used together with "COUNT".
+                "count_any" can only be used together with "count".
                 """
             )
 
-        command: list = ["GEORADIUS", longitude, latitude, radius]
-
-        if unit:
-            command.append(unit)
-
-        if with_coordinates:
-            command.append("WITHCOORD")
+        command: list = ["GEORADIUS", longitude, latitude, radius, unit]
 
         if with_distance:
             command.append("WITHDIST")
 
         if with_hash:
             command.append("WITHHASH")
+
+        if with_coordinates:
+            command.append("WITHCOORD")
 
         if count:
             command.extend(["COUNT", count])
@@ -542,58 +537,417 @@ class Redis:
         if store_distance_as:
             command.extend(["STOREDIST", store_distance_as])
 
-        result = await self.run(command=command)
+        raw = await self.run(command=command)
 
-        if self.format_return:
-            formatted_result: list[dict[str, float | int]] = []
+        return format_geo(raw=raw) if self.format_return else raw
 
-            for member in result:
-                formatted_member: dict[str, float | int] = {
-                    "member": member[0],
-                }
-
-    async def georadius_ro(self):
+    async def georadius_ro(
+        self,
+        longitude: float,
+        latitude: float,
+        radius: float,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        with_distance: bool = False,
+        with_hash: bool = False,
+        with_coordinates: bool = False,
+        count: int | None = None,
+        count_any: bool = False,
+        sort: Literal["ASC", "DESC"] | None = None,
+    ):
         """
         See https://redis.io/commands/georadius_ro
+
+        The measuring unit can be passed with "unit".
+
+        "ANY" was replaced with "count_any".
+
+        "ASC" and "DESC" are written as sort.
         """
 
-        command: list = []
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "GEOSEARCH" with the "radius" argument.
 
-        return await self.run(command=command)
+                Source: https://redis.io/commands/georadius_ro
+                """
+            )
 
-    async def georadiusbymember(self):
+        if count_any is not None and count is None:
+            raise Exception(
+                """
+                "count_any" can only be used together with "count".
+                """
+            )
+
+        command: list = ["GEORADIUS_RO", longitude, latitude, radius, unit]
+
+        if with_distance:
+            command.append("WITHDIST")
+
+        if with_hash:
+            command.append("WITHHASH")
+
+        if with_coordinates:
+            command.append("WITHCOORD")
+
+        if count:
+            command.extend(["COUNT", count])
+            if count_any:
+                command.append("ANY")
+
+        if sort:
+            command.append(sort)
+
+        raw = await self.run(command=command)
+
+        return format_geo(raw=raw) if self.format_return else raw
+
+    async def georadiusbymember(
+        self,
+        member: str,
+        radius: float,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        with_distance: bool = False,
+        with_hash: bool = False,
+        with_coordinates: bool = False,
+        count: int | None = None,
+        count_any: bool = False,
+        sort: Literal["ASC", "DESC"] | None = None,
+        store_as: str | None = None,
+        store_distance_as: str | None = None
+    ) -> list[str] | list[dict[str, float | int]]:
         """
         See https://redis.io/commands/georadiusbymember
+
+        The measuring unit can be passed with "unit".
+
+        "ANY" was replaced with "count_any".
+
+        "ASC" and "DESC" are written as sort.
+
+        "[STORE and STORE_DIST] key" are written as "store_as" and "store_distance_as".
         """
 
-        command: list = []
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "GEOSEARCH" and "GEOSEARCHSTORE" with the "radius" and "member" arguments.
 
-        return await self.run(command=command)
+                Source: https://redis.io/commands/georadius
+                """
+            )
 
-    async def georadiusbymember_ro(self):
+        if count_any is not None and count is None:
+            raise Exception(
+                """
+                "count_any" can only be used together with "count".
+                """
+            )
+
+        command: list = ["GEORADIUSBYMEMBER", member, radius, unit]
+
+        if with_distance:
+            command.append("WITHDIST")
+
+        if with_hash:
+            command.append("WITHHASH")
+
+        if with_coordinates:
+            command.append("WITHCOORD")
+
+        if count:
+            command.extend(["COUNT", count])
+            if count_any:
+                command.append("ANY")
+
+        if sort:
+            command.append(sort)
+
+        if store_as:
+            command.extend(["STORE", store_as])
+
+        if store_distance_as:
+            command.extend(["STOREDIST", store_distance_as])
+
+        raw = await self.run(command=command)
+
+        return format_geo(raw=raw) if self.format_return else raw
+
+    async def georadiusbymember_ro(
+        self,
+        member: str,
+        radius: float,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        with_distance: bool = False,
+        with_hash: bool = False,
+        with_coordinates: bool = False,
+        count: int | None = None,
+        count_any: bool = False,
+        sort: Literal["ASC", "DESC"] | None = None,
+    ) -> list[str] | list[dict[str, float | int]]:
         """
-        See https://redis.io/commands/georadiusbymember_ro
+        See https://redis.io/commands/georadiusbymember
+
+        The measuring unit can be passed with "unit".
+
+        "ANY" was replaced with "count_any".
+
+        "ASC" and "DESC" are written as sort.
         """
 
-        command: list = []
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "GEOSEARCH" with the "radius" and "member" arguments.
 
-        return await self.run(command=command)
+                Source: https://redis.io/commands/georadius
+                """
+            )
 
-    async def geosearch(self):
+        if count_any is not None and count is None:
+            raise Exception(
+                """
+                "count_any" can only be used together with "count".
+                """
+            )
+
+        command: list = ["GEORADIUSBYMEMBER_RO", member, radius, unit]
+
+        if with_distance:
+            command.append("WITHDIST")
+
+        if with_hash:
+            command.append("WITHHASH")
+
+        if with_coordinates:
+            command.append("WITHCOORD")
+
+        if count:
+            command.extend(["COUNT", count])
+            if count_any:
+                command.append("ANY")
+
+        if sort:
+            command.append(sort)
+
+        raw = await self.run(command=command)
+
+        return format_geo(raw=raw) if self.format_return else raw
+
+    async def geosearch(
+        self,
+        key: str,
+        member: str | None = None,
+        longitude: float | None = None,
+        latitude: float | None = None,
+        radius: float | None = None,
+        width: float | None = None,
+        height: float | None = None,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        sort: Literal["ASC", "DESC"] | None = None,
+        count: int | None = None,
+        count_any: bool = False,
+        with_distance: bool = False,
+        with_hash: bool = False,
+        with_coordinates: bool = False,
+    ) -> list[str] | list[dict[str, float | int]]:
         """
         See https://redis.io/commands/geosearch
+
+        "FROMMEMBER" was replaced with "member".
+
+        "FROMLONLAT" was replaced with "longitude" and "latitude".
+
+        "BYRADIUS" was replaced with "radius".
+
+        "BYBOX" was replaced with "width" and "height".
+
+        The measuring unit can be passed with "unit".
+
+        "ASC" and "DESC" are written as sort.
+
+        "ANY" was replaced with "count_any".
         """
 
-        command: list = []
+        if (
+            member is not None
+            and longitude is not None
+            and latitude is not None
+            ) or (
+              member is None
+              and longitude is None
+              and latitude is None
+        ):
+            raise Exception(
+                """
+                Specify either the member's name with "member", 
+                or the longitude and latitude with "longitude" and "latitude", but not both.
+                """
+            )
 
-        return await self.run(command=command)
+        if (
+            radius is not None
+            and width is not None
+            and height is not None
+            ) or (
+              radius is None
+              and width is None
+              and height is None
+        ):
+            raise Exception(
+                """
+                Specify either the radius with "radius", 
+                or the width and height with "width" and "height", but not both.
+                """
+            )
 
-    async def geosearchstore(self):
+        if count_any is not None and count is None:
+            raise Exception(
+                """
+                "count_any" can only be used together with "count".
+                """
+            )
+
+        command: list = ["GEOSEARCH", key]
+
+        if member is not None:
+            command.extend(["FROMMEMBER", member])
+
+        if longitude is not None and latitude is not None:
+            command.extend(["FROMLONLAT", longitude, latitude])
+
+        if radius is not None:
+            command.extend(["BYRADIUS", radius])
+
+        if width is not None and height is not None:
+            command.extend(["BYBOX", width, height])
+
+        command.append(unit)
+
+        if sort:
+            command.append(sort)
+
+        if count:
+            command.extend(["COUNT", count])
+            if count_any:
+                command.append("ANY")
+
+        if with_distance:
+            command.append("WITHDIST")
+
+        if with_hash:
+            command.append("WITHHASH")
+
+        if with_coordinates:
+            command.append("WITHCOORD")
+
+        raw = await self.run(command=command)
+
+        return format_geo(raw=raw) if self.format_return else raw
+
+    async def geosearchstore(
+        self,
+        destination_key: str,
+        source_key: str,
+        member: str | None = None,
+        longitude: float | None = None,
+        latitude: float | None = None,
+        radius: float | None = None,
+        width: float | None = None,
+        height: float | None = None,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        sort: Literal["ASC", "DESC"] | None = None,
+        count: int | None = None,
+        count_any: bool = False,
+        store_distance: bool = False,
+    ) -> int:
         """
         See https://redis.io/commands/geosearchstore
+
+        "FROMMEMBER" was replaced with "member".
+
+        "FROMLONLAT" was replaced with "longitude" and "latitude".
+
+        "BYRADIUS" was replaced with "radius".
+
+        "BYBOX" was replaced with "width" and "height".
+
+        The measuring unit can be passed with "unit".
+
+        "ASC" and "DESC" are written as sort.
+
+        "ANY" was replaced with "count_any".
         """
 
-        command: list = []
+        if (
+            member is not None
+            and longitude is not None
+            and latitude is not None
+            ) or (
+              member is None
+              and longitude is None
+              and latitude is None
+        ):
+            raise Exception(
+                """
+                Specify either the member's name with "member", 
+                or the longitude and latitude with "longitude" and "latitude", but not both.
+                """
+            )
+
+        if (
+            radius is not None
+            and width is not None
+            and height is not None
+            ) or (
+              radius is None
+              and width is None
+              and height is None
+        ):
+            raise Exception(
+                """
+                Specify either the radius with "radius", 
+                or the width and height with "width" and "height", but not both.
+                """
+            )
+
+        if count_any is not None and count is None:
+            raise Exception(
+                """
+                "count_any" can only be used together with "count".
+                """
+            )
+
+        command: list = ["GEOSEARCHSTORE", destination_key, source_key]
+
+        if member is not None:
+            command.extend(["FROMMEMBER", member])
+
+        if longitude is not None and latitude is not None:
+            command.extend(["FROMLONLAT", longitude, latitude])
+
+        if radius is not None:
+            command.extend(["BYRADIUS", radius])
+
+        if width is not None and height is not None:
+            command.extend(["BYBOX", width, height])
+
+        command.append(unit)
+
+        if sort:
+            command.append(sort)
+
+        if count:
+            command.extend(["COUNT", count])
+            if count_any:
+                command.append("ANY")
+
+        if store_distance:
+            command.append("STOREDIST")
 
         return await self.run(command=command)
 
@@ -636,7 +990,7 @@ class Redis:
         return await self.run(command=command)
 
 
-# We don't inherit from "Redis" mainly because of the methods signatures
+# We don't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Redis, key: str):
         self.client = client
