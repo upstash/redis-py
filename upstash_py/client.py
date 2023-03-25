@@ -4,12 +4,12 @@ from upstash_py.config import config
 from upstash_py.utils.format import format_geo_positions, format_geo_members_return, format_hash
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
-from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember
+from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, GeneralAtomicValue
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,
-    FormattedHashReturn
+    FormattedHashReturn,
 )
 
 
@@ -154,7 +154,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def setbit(self, key: str, offset: int, value: int) -> int:
+    async def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int:
         """
         See https://redis.io/commands/setbit
         """
@@ -384,12 +384,14 @@ class Redis:
     ) -> int:
         """
         See https://redis.io/commands/geoadd
+
+        The members should be added as a sequence of GeoMember dict types (longitude, latitude, name).
         """
 
         if nx is not None and xx is not None:
             raise Exception(
                 """
-                "XX" and "NX" are mutually exclusive.
+                "NX" and "XX" are mutually exclusive.
                 """
             )
 
@@ -1030,6 +1032,8 @@ class Redis:
                 """
                 As of Redis version 4.0.0, this command is regarded as deprecated.
                 It can be replaced by "HSET".
+                
+                Source: https://redis.io/commands/hmset
                 """
             )
 
@@ -1116,7 +1120,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def hsetnx(self, key: str, field: str, value: str) -> Literal[1, 0]:
+    async def hsetnx(self, key: str, field: str, value: GeneralAtomicValue) -> Literal[1, 0]:
         """
         See https://redis.io/commands/hsetnx
         """
@@ -1143,6 +1147,33 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def pfadd(self, key: str, *elements: GeneralAtomicValue) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/pfadd
+        """
+
+        command: list = ["PFADD", key, *elements]
+
+        return await self.run(command=command)
+
+    async def pfcount(self, *keys: str) -> int:
+        """
+        See https://redis.io/commands/pfcount
+        """
+
+        command: list = ["PFCOUNT", *keys]
+
+        return await self.run(command=command)
+
+    async def pfmerge(self, destination_key: str, *source_keys: str) -> str:
+        """
+        See https://redis.io/commands/pfmerge
+        """
+
+        command: list = ["PFMERGE", destination_key, *source_keys]
+
+        return await self.run(command=command)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1152,30 +1183,12 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def set(self, key: str, value: str) -> str:
+    async def set(self, key: str, value: GeneralAtomicValue) -> str:
         """
         See https://redis.io/commands/set
         """
 
         command: list = ["SET", key, value]
-
-        return await self.run(command=command)
-
-    async def lpush(self, key: str, *elements: str) -> int:
-        """
-        See https://redis.io/commands/lpush
-        """
-
-        command: list = ["LPUSH", key, *elements]
-
-        return await self.run(command=command)
-
-    async def lrange(self, key: str, start: int, stop: int) -> list:
-        """
-        See https://redis.io/commands/lpush
-        """
-
-        command: list = ["LRANGE", key, start, stop]
 
         return await self.run(command=command)
 
