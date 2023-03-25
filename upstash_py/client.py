@@ -421,7 +421,7 @@ class Redis:
         """
         See https://redis.io/commands/geodist
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
         """
 
         command: list = ["GEODIST", key, first_member, second_member, unit]
@@ -472,11 +472,11 @@ class Redis:
         """
         See https://redis.io/commands/georadius
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
         "ANY" was replaced with "count_any".
 
-        "ASC" and "DESC" are written as sort.
+        The sorting options can be specified with "sort".
 
         "[STORE and STORE_DIST] key" are written as "store_as" and "store_distance_as".
         """
@@ -543,11 +543,11 @@ class Redis:
         """
         See https://redis.io/commands/georadius_ro
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
         "ANY" was replaced with "count_any".
 
-        "ASC" and "DESC" are written as sort.
+        The sorting options can be specified with "sort".
         """
 
         if not self.allow_deprecated:
@@ -607,11 +607,11 @@ class Redis:
         """
         See https://redis.io/commands/georadiusbymember
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
         "ANY" was replaced with "count_any".
 
-        "ASC" and "DESC" are written as sort.
+        The sorting options can be specified with "sort".
 
         "[STORE and STORE_DIST] key" are written as "store_as" and "store_distance_as".
         """
@@ -677,11 +677,11 @@ class Redis:
         """
         See https://redis.io/commands/georadiusbymember
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
         "ANY" was replaced with "count_any".
 
-        "ASC" and "DESC" are written as sort.
+        The sorting options can be specified with "sort".
         """
 
         if not self.allow_deprecated:
@@ -752,9 +752,9 @@ class Redis:
 
         "BYBOX" was replaced with "width" and "height".
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
-        "ASC" and "DESC" are written as sort.
+        The sorting options can be specified with "sort".
 
         "ANY" was replaced with "count_any".
         """
@@ -862,7 +862,7 @@ class Redis:
 
         "BYBOX" was replaced with "width" and "height".
 
-        The measuring unit can be passed with "unit".
+        The measuring unit can be specified with "unit".
 
         "ASC" and "DESC" are written as sort.
 
@@ -1174,6 +1174,72 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def lindex(self, key: str, index: int) -> str | None:
+        """
+        See https://redis.io/commands/lindex
+        """
+
+        command: list = ["LINDEX", key, index]
+
+        return await self.run(command=command)
+
+    async def linsert(
+        self,
+        key: str,
+        position: Literal["BEFORE", "AFTER"],
+        pivot: str,
+        element: GeneralAtomicValue
+    ) -> int:
+        """
+        See https://redis.io/commands/linsert
+
+        The positioning can be specified with "position".
+        """
+
+        command: list = ["LINSERT", key, position, pivot, element]
+
+        return await self.run(command=command)
+
+    async def llen(self, key: str) -> int:
+        """
+        See https://redis.io/commands/llen
+        """
+
+        command: list = ["LLEN", key]
+
+        return await self.run(command=command)
+
+    async def lmove(
+        self,
+        source_key: str,
+        destination_key: str,
+        source_position: Literal["LEFT", "RIGHT"],
+        destination_position: Literal["LEFT", "RIGHT"]
+    ) -> str | None:
+        """
+        See https://redis.io/commands/lmove
+
+        The positioning can be specified with "source_position" and "destination_position".
+        """
+
+        command: list = ["LMOVE", source_key, destination_key, source_position, destination_position]
+
+        return await self.run(command=command)
+
+    async def lpop(self, key: str, count: int = None) -> (str | None) | list[str | None]:
+        """
+        See https://redis.io/commands/lpop
+
+        If "count" is specified, it will return a list of values.
+        """
+
+        command: list = ["LPOP", key]
+
+        if count:
+            command.append(count)
+
+        return await self.run(command=command)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1202,6 +1268,7 @@ class BitFieldCommands:
     def get(self, encoding: str, offset: BitFieldOffset) -> Self:
         """
         Returns the specified bit field.
+
         Source: https://redis.io/commands/bitfield
         """
 
@@ -1213,6 +1280,7 @@ class BitFieldCommands:
     def set(self, encoding: str, offset: BitFieldOffset, value: int) -> Self:
         """
         Set the specified bit field and returns its old value.
+
         Source: https://redis.io/commands/bitfield
         """
 
@@ -1224,6 +1292,7 @@ class BitFieldCommands:
     def incrby(self, encoding: str, offset: BitFieldOffset, increment: int) -> Self:
         """
         Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
+
         Source: https://redis.io/commands/bitfield
         """
 
@@ -1240,6 +1309,7 @@ class BitFieldCommands:
         The supported encodings are up to 64 bits for signed integers, and up to 63 bits for unsigned integers.
         This limitation with unsigned integers is due to the fact that currently the Redis protocol is unable to
         return 64-bit unsigned integers as replies.
+
         Source: https://redis.io/commands/bitfield
         """
 
@@ -1260,6 +1330,7 @@ class BitFieldRO:
     def get(self, encoding: str, offset: BitFieldOffset) -> Self:
         """
         Returns the specified bit field.
+
         Source: https://redis.io/commands/bitfield
         """
 
