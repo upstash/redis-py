@@ -1,10 +1,16 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
-from upstash_py.utils.format import format_geo_positions, format_geo_members, format_hash
+from upstash_py.utils.format import format_geo_positions, format_geo_members_return, format_hash
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
-from schema.commands.parameters import BitFieldOffset, GeoMember
+from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember
+from upstash_py.schema.commands.returns import (
+    GeoMembersReturn,
+    FormattedGeoMembersReturn,
+    HashReturn,
+    FormattedHashReturn
+)
 
 
 class Redis:
@@ -25,7 +31,7 @@ class Redis:
         self.allow_deprecated = allow_deprecated
         self.format_return = format_return
 
-        # If the encoding is set as "True", we default to config.
+        # If the encoding is set as "True", it defaults to config.
         self.rest_encoding = config["REST_ENCODING"] if rest_encoding else rest_encoding
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
@@ -38,7 +44,7 @@ class Redis:
         """
 
         self._session = ClientSession()
-        # We need to return the session object because it will be used in "async with" statements.
+        # It needs to return the session object because it will be used in "async with" statements.
         return self._session
 
     async def __aexit__(self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> None:
@@ -460,7 +466,7 @@ class Redis:
         sort: Literal["ASC", "DESC"] | None = None,
         store_as: str | None = None,
         store_distance_as: str | None = None
-    ) -> list[str] | list[dict[str, float | int]]:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadius
 
@@ -515,9 +521,9 @@ class Redis:
         if store_distance_as:
             command.extend(["STOREDIST", store_distance_as])
 
-        raw: list[str] = await self.run(command=command)
+        raw: GeoMembersReturn = await self.run(command=command)
 
-        return format_geo_members(raw=raw) if self.format_return else raw
+        return format_geo_members_return(raw=raw) if self.format_return else raw
 
     async def georadius_ro(
         self,
@@ -531,7 +537,7 @@ class Redis:
         count: int | None = None,
         count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
-    ) -> list[str] | list[dict[str, float | int]]:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadius_ro
 
@@ -578,9 +584,9 @@ class Redis:
         if sort:
             command.append(sort)
 
-        raw: list[str] = await self.run(command=command)
+        raw: GeoMembersReturn = await self.run(command=command)
 
-        return format_geo_members(raw=raw) if self.format_return else raw
+        return format_geo_members_return(raw=raw) if self.format_return else raw
 
     async def georadiusbymember(
         self,
@@ -595,7 +601,7 @@ class Redis:
         sort: Literal["ASC", "DESC"] | None = None,
         store_as: str | None = None,
         store_distance_as: str | None = None
-    ) -> list[str] | list[dict[str, float | int]]:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadiusbymember
 
@@ -650,9 +656,9 @@ class Redis:
         if store_distance_as:
             command.extend(["STOREDIST", store_distance_as])
 
-        raw: list[str] = await self.run(command=command)
+        raw: GeoMembersReturn = await self.run(command=command)
 
-        return format_geo_members(raw=raw) if self.format_return else raw
+        return format_geo_members_return(raw=raw) if self.format_return else raw
 
     async def georadiusbymember_ro(
         self,
@@ -665,7 +671,7 @@ class Redis:
         count: int | None = None,
         count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
-    ) -> list[str] | list[dict[str, float | int]]:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadiusbymember
 
@@ -712,9 +718,9 @@ class Redis:
         if sort:
             command.append(sort)
 
-        raw: list[str] = await self.run(command=command)
+        raw: GeoMembersReturn = await self.run(command=command)
 
-        return format_geo_members(raw=raw) if self.format_return else raw
+        return format_geo_members_return(raw=raw) if self.format_return else raw
 
     async def geosearch(
         self,
@@ -732,7 +738,7 @@ class Redis:
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
-    ) -> list[str] | list[dict[str, float | int]]:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/geosearch
 
@@ -823,9 +829,9 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        raw: list[str] = await self.run(command=command)
+        raw: GeoMembersReturn = await self.run(command=command)
 
-        return format_geo_members(raw=raw) if self.format_return else raw
+        return format_geo_members_return(raw=raw) if self.format_return else raw
 
     async def geosearchstore(
         self,
@@ -956,14 +962,14 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def hgetall(self, key: str) -> list[str] | dict[str, str]:
+    async def hgetall(self, key: str) -> HashReturn | FormattedHashReturn:
         """
         See https://redis.io/commands/hgetall
         """
 
         command: list = ["HGETALL", key]
 
-        raw: list[str] = await self.run(command=command)
+        raw: HashReturn = await self.run(command=command)
 
         return format_hash(raw=raw) if self.format_return else raw
 
@@ -1039,7 +1045,7 @@ class Redis:
         key: str,
         count: int = None,
         with_values: bool = False
-    ) -> (str | None) | (list[str] | dict[str, str]):
+    ) -> (str | None) | (HashReturn | FormattedHashReturn):
         """
         See https://redis.io/commands/hrandfield
         """
@@ -1059,7 +1065,7 @@ class Redis:
         if with_values:
             command.append("WITHVALUES")
 
-        raw: (str | None) | (list[str] | dict[str, str]) = await self.run(command=command)
+        raw: (str | None) | HashReturn = await self.run(command=command)
 
         # It makes sense to format the output only when the values are also provided.
         if not with_values or not self.format_return:
@@ -1074,11 +1080,13 @@ class Redis:
         pattern: str = None,
         count: int = None,
         return_cursor: bool = True
-    ) -> list[int | list[str]] | list[int | dict[str, str]] | list[str] | dict[str, str]:
+    ) -> (list[int | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
         """
         See https://redis.io/commands/hscan
 
         "MATCH" was replaced with "pattern".
+
+        If "return_cursor" is False, it won't return the cursor.
         """
 
         command: list = ["HSCAN", key, cursor]
@@ -1089,10 +1097,51 @@ class Redis:
         if count:
             command.extend(["COUNT", count])
 
-        raw = self.run(command=command)
+        raw: list[int | HashReturn] | HashReturn = await self.run(command=command)
 
-        # TODO - Format the output.
-        return raw
+        if return_cursor:
+            return [raw[0], format_hash(raw=raw[1])] if self.format_return else raw
+
+        return format_hash(raw=raw[1]) if self.format_return else raw[1]
+
+    async def hset(self, key: str, fields_and_values: dict) -> int:
+        """
+        See https://redis.io/commands/hset
+        """
+
+        command: list = ["HSET", key]
+
+        for field, value in fields_and_values.items():
+            command.extend([field, value])
+
+        return await self.run(command=command)
+
+    async def hsetnx(self, key: str, field: str, value: str) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/hsetnx
+        """
+
+        command: list = ["HSETNX", key, field, value]
+
+        return await self.run(command=command)
+
+    async def hstrlen(self, key: str, field: str) -> int:
+        """
+        See https://redis.io/commands/hstrlen
+        """
+
+        command: list = ["HSTRLEN", key, field]
+
+        return await self.run(command=command)
+
+    async def hvals(self, key: str) -> list[str]:
+        """
+        See https://redis.io/commands/hvals
+        """
+
+        command: list = ["HVALS", key]
+
+        return await self.run(command=command)
 
     async def get(self, key: str) -> str:
         """
@@ -1131,7 +1180,7 @@ class Redis:
         return await self.run(command=command)
 
 
-# We don't inherit from "Redis" mainly because of the methods signatures.
+# It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Redis, key: str):
         self.client = client

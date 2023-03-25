@@ -1,4 +1,13 @@
+from upstash_py.schema.commands.returns import (
+    GeoMembersReturn,
+    FormattedGeoMembersReturn,
+    HashReturn,
+    FormattedHashReturn
+)
+
+
 def format_geo_positions(raw: list[str | None]) -> list[dict[str, float | int] | None]:
+
     """
     Format the raw output returned by GEOPOS.
     """
@@ -10,18 +19,21 @@ def format_geo_positions(raw: list[str | None]) -> list[dict[str, float | int] |
             # If the member doesn't exist, GEOPOS will return nil.
         } if isinstance(member, list) else None
 
-        for member in raws
+        for member in raw
     ]
 
 
-def format_geo_members(
-    raw: list[str],
+def format_geo_members_return(
+    raw: GeoMembersReturn,
     with_distance: bool | None = None,
     with_hash: bool | None = None,
     with_coordinates: bool | None = None
-) -> list[dict[str, float | int]]:
+) -> FormattedGeoMembersReturn:
     """
-    Format the raw output returned by some Geo commands.
+    Format the raw output returned by some Geo commands, usually the ones that return properties of members.
+
+    Note that the output's type might differ from the "GeoMember" type that represents the initial properties of
+    a geo member.
 
     They generally return, if requested, in order:
      - the distance (float)
@@ -33,7 +45,7 @@ def format_geo_members(
     All represented as strings
     """
 
-    result: list[dict[str, float | int]] = []
+    result: FormattedGeoMembersReturn = []
 
     for member in raw:
         formatted_member: dict[str, float | int] = {
@@ -70,7 +82,7 @@ def format_geo_members(
     return result
 
 
-def format_hash(raw: list[str]) -> dict[str, str]:
+def format_hash(raw: HashReturn) -> FormattedHashReturn:
     """
     Format the raw output returned by HGETALL.
     """
