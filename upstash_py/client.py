@@ -622,7 +622,7 @@ class Redis:
                 As of Redis version 6.2.0, this command is regarded as deprecated.
                 It can be replaced by "GEOSEARCH" and "GEOSEARCHSTORE" with the "radius" and "member" arguments.
 
-                Source: https://redis.io/commands/georadius
+                Source: https://redis.io/commands/georadiusbymember
                 """
             )
 
@@ -690,7 +690,7 @@ class Redis:
                 As of Redis version 6.2.0, this command is regarded as deprecated.
                 It can be replaced by "GEOSEARCH" with the "radius" and "member" arguments.
 
-                Source: https://redis.io/commands/georadius
+                Source: https://redis.io/commands/georadiusbymember_ro
                 """
             )
 
@@ -1226,7 +1226,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lpop(self, key: str, count: int = None) -> (str | None) | list[str | None]:
+    async def lpop(self, key: str, count: int = None) -> str | list[str] | None:
         """
         See https://redis.io/commands/lpop
 
@@ -1237,6 +1237,142 @@ class Redis:
 
         if count:
             command.append(count)
+
+        return await self.run(command=command)
+
+    async def lpos(
+        self,
+        key: str,
+        element: GeneralAtomicValue,
+        first_return: int = None,
+        count: int = None,
+        max_number_of_comparisons: int = None,
+    ) -> (int | None) | list[int]:
+        """
+        See https://redis.io/commands/lpos
+
+        "RANK" was replaced with "first_return".
+        When set, it will return the positions starting from the specified occurrence.
+
+        "MAXLEN" was replaced with "max_number_of_comparisons".
+        """
+
+        command: list = ["LPOS", key, element]
+
+        if first_return:
+            command.extend(["RANK", first_return])
+
+        if count:
+            command.extend(["COUNT", count])
+
+        if max_number_of_comparisons:
+            command.extend(["MAXLEN", max_number_of_comparisons])
+
+        return await self.run(command=command)
+
+    async def lpush(self, key: str, *elements: GeneralAtomicValue) -> int:
+        """
+        See https://redis.io/commands/lpush
+        """
+
+        command: list = ["LPUSH", key, *elements]
+
+        return await self.run(command=command)
+
+    async def lpushx(self, key: str, *elements: GeneralAtomicValue) -> int:
+        """
+        See https://redis.io/commands/lpushx
+        """
+
+        command: list = ["LPUSHX", key, *elements]
+
+        return await self.run(command=command)
+
+    async def lrange(self, key: str, start: int, stop: int) -> list[str]:
+        """
+        See https://redis.io/commands/lrange
+        """
+
+        command: list = ["LRANGE", key, start, stop]
+
+        return await self.run(command=command)
+
+    async def lrem(self, key: str, count: int, element: GeneralAtomicValue) -> int:
+        """
+        See https://redis.io/commands/lrem
+        """
+
+        command: list = ["LREM", key, count, element]
+
+        return await self.run(command=command)
+
+    async def lset(self, key: str, index: int, element: GeneralAtomicValue) -> str:
+        """
+        See https://redis.io/commands/lset
+        """
+
+        command: list = ["LSET", key, index, element]
+
+        return await self.run(command=command)
+
+    async def ltrim(self, key: str, start: int, stop: int) -> str:
+        """
+        See https://redis.io/commands/ltrim
+        """
+
+        command: list = ["LTRIM", key, start, stop]
+
+        return await self.run(command=command)
+
+    async def rpop(self, key: str, count: int = None) -> str | list[str] | None:
+        """
+        See https://redis.io/commands/rpop
+
+        If "count" is specified, it will return a list of values.
+        """
+
+        command: list = ["RPOP", key]
+
+        if count:
+            command.append(count)
+
+        return await self.run(command=command)
+
+    async def rpoplpush(self, source_key: str, destination_key: str) -> str | None:
+        """
+        See https://redis.io/commands/rpoplpush
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "LMOVE" with 
+                "source_position" set to "RIGHT" and the "destination_position" set to "LEFT".
+
+                Source: https://redis.io/commands/rpoplpush
+                """
+            )
+
+        command: list = ["RPOPLPUSH", source_key, destination_key]
+
+        return await self.run(command=command)
+
+    async def rpush(self, key: str, *elements: GeneralAtomicValue) -> int:
+        """
+        See https://redis.io/commands/rpush
+        """
+
+        command: list = ["RPUSH", key, *elements]
+
+        return await self.run(command=command)
+
+    async def rpushx(self, key: str, *elements: GeneralAtomicValue) -> int:
+        """
+        See https://redis.io/commands/rpushx
+        """
+
+        command: list = ["RPUSHX", key, *elements]
 
         return await self.run(command=command)
 
