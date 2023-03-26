@@ -6,10 +6,20 @@ from upstash_py.schema.commands.returns import (
 )
 
 
+def _list_to_dict(raw: list) -> dict:
+    """
+    Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
+    """
+    return {
+        raw[iterator]: raw[iterator + 1]
+        for iterator in range(0, len(raw), 2)
+    }
+
+
 def format_geo_positions(raw: list[str | None]) -> list[dict[str, float | int] | None]:
 
     """
-    Format the raw output returned by GEOPOS.
+    Format the raw output returned by "GEOPOS".
     """
 
     return [
@@ -30,7 +40,7 @@ def format_geo_members_return(
     with_coordinates: bool | None = None
 ) -> FormattedGeoMembersReturn:
     """
-    Format the raw output returned by some Geo commands, usually the ones that return properties of members.
+    Format the raw output given by some Geo commands, usually the ones that return properties of members.
 
     Note that the output's type might differ from the "GeoMember" type that represents the initial properties of
     a geo member.
@@ -84,10 +94,16 @@ def format_geo_members_return(
 
 def format_hash(raw: HashReturn) -> FormattedHashReturn:
     """
-    Format the raw output returned by HGETALL.
+    Format the raw output given by Hash commands, usually the ones that return the field-value
+    pairs of Hashes.
     """
 
-    return {
-        raw[iterator]: raw[iterator + 1]
-        for iterator in range(0, len(raw), 2)
-    }
+    return _list_to_dict(raw=raw)
+
+
+def format_pubsub_numsub(raw: list[str | int]) -> dict[str, int]:
+    """
+    Format the raw output returned by "PUBSUB NUMSUB".
+    """
+
+    return _list_to_dict(raw=raw)

@@ -9,8 +9,8 @@ Note that this might differ from the "GeoMember" type that represents the initia
 FormattedGeoMembersReturn = list[dict[str, float | int]]
 
 
-# The raw output returned by the Hash commands that return the key-pair values of a hash.
+# The raw output returned by the Hash commands that return the field-value pairs of a hash.
 HashReturn = list[str]
 
-# The output resulted by formatting "HashReturn"s
+# The output resulted by formatting "HashReturn"
 FormattedHashReturn = dict[str, str]

@@ -1,7 +1,7 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
-from upstash_py.utils.format import format_geo_positions, format_geo_members_return, format_hash
+from upstash_py.utils.format import format_geo_positions, format_geo_members_return, format_hash, format_pubsub_numsub
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, GeneralAtomicValue
@@ -1376,6 +1376,22 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def publish(self, channel: str, message: str) -> int:
+        """
+        See https://redis.io/commands/publish
+        """
+
+        command: list = ["PUBLISH", channel, message]
+
+        return await self.run(command=command)
+
+    async def pubsub(self) -> "PubSub":
+        """
+        See https://redis.io/commands/pubsub
+        """
+
+        return PubSub(client=self)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1477,3 +1493,41 @@ class BitFieldRO:
 
     async def execute(self) -> RESTResult:
         return await self.client.run(command=self.command)
+
+
+class PubSub:
+    def __init__(self, client: Redis):
+        self.client = client
+        self.command: list = ["PUBSUB"]
+
+    async def channels(self, pattern: str = None) -> list[str]:
+        """
+        See https://redis.io/commands/pubsub
+        """
+
+        self.command.append("CHANNELS")
+
+        if pattern:
+            self.command.append(pattern)
+
+        return await self.client.run(command=self.command)
+
+    async def numpat(self) -> int:
+        """
+        See https://redis.io/commands/pubsub
+        """
+
+        self.command.append("NUMPAT")
+
+        return await self.client.run(command=self.command)
+
+    async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
+        """
+        See https://redis.io/commands/pubsub
+        """
+
+        self.command.extend(["NUMSUB", *channels])
+
+        raw: list[str | int] = await self.client.run(command=self.command)
+
+        return format_pubsub_numsub(raw=raw) if self.client.format_return else raw
