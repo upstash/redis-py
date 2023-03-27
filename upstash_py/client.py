@@ -1466,6 +1466,13 @@ class Redis:
 
         return Script(client=self)
 
+    async def acl(self) -> "ACL":
+        """
+        See https://redis.io/commands/acl
+        """
+
+        return ACL(client=self)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1576,7 +1583,7 @@ class PubSub:
 
     async def channels(self, pattern: str = None) -> list[str]:
         """
-        See https://redis.io/commands/pubsub
+        See https://redis.io/commands/pubsub-channels
         """
 
         self.command.append("CHANNELS")
@@ -1588,7 +1595,7 @@ class PubSub:
 
     async def numpat(self) -> int:
         """
-        See https://redis.io/commands/pubsub
+        See https://redis.io/commands/pubsub-numpat
         """
 
         self.command.append("NUMPAT")
@@ -1597,7 +1604,7 @@ class PubSub:
 
     async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
         """
-        See https://redis.io/commands/pubsub
+        See https://redis.io/commands/pubsub-numsub
         """
 
         self.command.extend(["NUMSUB", *channels])
@@ -1614,7 +1621,7 @@ class Script:
 
     async def exists(self, *sha1_digests: str) -> list[Literal[1, 0]] | list[bool]:
         """
-        See https://redis.io/commands/script
+        See https://redis.io/commands/script-exists
         """
 
         self.command.extend(["EXISTS", *sha1_digests])
@@ -1625,7 +1632,7 @@ class Script:
 
     async def flush(self, mode: Literal["ASYNC", "SYNC"]) -> str:
         """
-        See https://redis.io/commands/script
+        See https://redis.io/commands/script-flush
 
         The mode can be specified with the same-name parameter.
         """
@@ -1639,9 +1646,100 @@ class Script:
 
     async def load(self, script: str) -> str:
         """
-        See https://redis.io/commands/script
+        See https://redis.io/commands/script-load
         """
 
         self.command.extend(["LOAD", script])
 
         return await self.client.run(command=self.command)
+
+
+class ACL:
+    def __init__(self, client: Redis):
+        self.client = client
+        self.command: list = ["ACL"]
+
+    async def cat(self, category_name: str | None = None) -> list[str]:
+        """
+        See https://redis.io/commands/acl-cat
+        """
+
+        self.command.append("CAT")
+
+        if category_name:
+            self.command.append(category_name)
+
+        return await self.client.run(command=self.command)
+
+    async def deluser(self, *usernames: str) -> int:
+        """
+        See https://redis.io/commands/acl-deluser
+        """
+
+        self.command.extend(["DELUSER", *usernames])
+
+        return await self.client.run(command=self.command)
+
+    async def genpass(self, bits: int = None) -> str:
+        """
+        See https://redis.io/commands/acl-genpass
+        """
+
+        self.command.append("GENPASS")
+
+        if bits:
+            self.command.append(bits)
+
+        return await self.client.run(command=self.command)
+
+    # Is it possible to format this output?
+    async def getuser(self, username: str) -> list[str] | None:
+        """
+        See https://redis.io/commands/acl-getuser
+        """
+
+        self.command.extend(["GETUSER", username])
+
+        return await self.client.run(command=self.command)
+
+    async def list_rules(self) -> list[str]:
+        """
+        See https://redis.io/commands/acl-list
+        """
+
+        self.command.append("LIST")
+
+        return await self.client.run(command=self.command)
+
+    async def load(self) -> str:
+        """
+        See https://redis.io/commands/acl-load
+        """
+
+        self.command.append("LOAD")
+
+        return await self.client.run(command=self.command)
+
+    async def log(self, count: int = None, reset: bool = False) -> list[str]:
+        """
+        See https://redis.io/commands/acl-log
+        """
+
+        if count is not None and reset:
+            raise Exception(
+                """ 
+                Cannot specify both "count" and "reset".
+                """
+            )
+
+        self.command.append("LOG")
+
+        if count:
+            self.command.append(count)
+
+        if reset:
+            self.command.append("RESET")
+
+        return await self.client.run(command=self.command)
+
+
