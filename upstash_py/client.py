@@ -1,7 +1,13 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
-from upstash_py.utils.format import format_geo_positions, format_geo_members_return, format_hash, format_pubsub_numsub
+from upstash_py.utils.format import (
+    format_geo_positions,
+    format_geo_members_return,
+    format_hash,
+    format_pubsub_numsub,
+    format_bool_list
+)
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, GeneralAtomicValue
@@ -184,7 +190,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0]:
+    async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/copy
         """
@@ -194,7 +200,9 @@ class Redis:
         if replace:
             command.append("REPLACE")
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def delete(self, *keys: str) -> int:
         """
@@ -214,23 +222,27 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def expire(self, key: str, seconds: int) -> Literal[1, 0]:
+    async def expire(self, key: str, seconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/expire
         """
 
         command: list = ["EXPIRE", key, seconds]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
 
-    async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0]:
+        return bool(raw) if self.format_return else raw
+
+    async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/expireat
         """
 
         command: list = ["EXPIREAT", key, unix_time_seconds]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def keys(self, pattern: str) -> list[str]:
         """
@@ -241,32 +253,38 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def persist(self, key: str) -> Literal[1, 0]:
+    async def persist(self, key: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/persist
         """
 
         command: list = ["PERSIST", key]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
 
-    async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0]:
+        return bool(raw) if self.format_return else raw
+
+    async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pexpire
         """
 
         command: list = ["PEXPIRE", key, milliseconds]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
 
-    async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0]:
+        return bool(raw) if self.format_return else raw
+
+    async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pexpireat
         """
 
         command: list = ["EXPIREAT", key, unix_time_milliseconds]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def pttl(self, key: str) -> int:
         """
@@ -295,14 +313,16 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def renamenx(self, key: str, new_key: str) -> Literal[1, 0]:
+    async def renamenx(self, key: str, new_key: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/renamenx
         """
 
         command: list = ["RENAMENX", key, new_key]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def scan(
         self,
@@ -946,14 +966,16 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def hexists(self, key: str, field: str) -> Literal[1, 0]:
+    async def hexists(self, key: str, field: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/hexists
         """
 
         command: list = ["HEXISTS", key, field]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def hget(self, key: str, field: str) -> str | None:
         """
@@ -1120,14 +1142,16 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def hsetnx(self, key: str, field: str, value: GeneralAtomicValue) -> Literal[1, 0]:
+    async def hsetnx(self, key: str, field: str, value: GeneralAtomicValue) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/hsetnx
         """
 
         command: list = ["HSETNX", key, field, value]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def hstrlen(self, key: str, field: str) -> int:
         """
@@ -1147,14 +1171,16 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def pfadd(self, key: str, *elements: GeneralAtomicValue) -> Literal[1, 0]:
+    async def pfadd(self, key: str, *elements: GeneralAtomicValue) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pfadd
         """
 
         command: list = ["PFADD", key, *elements]
 
-        return await self.run(command=command)
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
 
     async def pfcount(self, *keys: str) -> int:
         """
@@ -1392,6 +1418,54 @@ class Redis:
 
         return PubSub(client=self)
 
+    async def eval(self, script: str, keys: list[str] = None, arguments: list[GeneralAtomicValue] = None) -> Any:
+        """
+        See https://redis.io/commands/eval
+
+        The keys and arguments can be specified with the same-name parameters.
+        The number of keys is calculated automatically.
+        """
+
+        command: list = ["EVAL", script]
+
+        if keys:
+            command.extend([len(keys), *keys])
+
+        if arguments:
+            command.extend(arguments)
+
+        return await self.run(command=command)
+
+    async def evalsha(
+        self,
+        sha1_digest: str,
+        keys: list[str] = None,
+        arguments: list[GeneralAtomicValue] = None
+    ) -> Any:
+        """
+        See https://redis.io/commands/evalsha
+
+        The keys and arguments can be specified with the same-name parameters.
+        The number of keys is calculated automatically.
+        """
+
+        command: list = ["EVALSHA", sha1_digest]
+
+        if keys:
+            command.extend([len(keys), *keys])
+
+        if arguments:
+            command.extend(arguments)
+
+        return await self.run(command=command)
+
+    async def script(self) -> "Script":
+        """
+        See https://redis.io/commands/script
+        """
+
+        return Script(client=self)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1531,3 +1605,43 @@ class PubSub:
         raw: list[str | int] = await self.client.run(command=self.command)
 
         return format_pubsub_numsub(raw=raw) if self.client.format_return else raw
+
+
+class Script:
+    def __init__(self, client: Redis):
+        self.client = client
+        self.command: list = ["SCRIPT"]
+
+    async def exists(self, *sha1_digests: str) -> list[Literal[1, 0]] | list[bool]:
+        """
+        See https://redis.io/commands/script
+        """
+
+        self.command.extend(["EXISTS", *sha1_digests])
+
+        raw: list[Literal[1, 0]] = await self.client.run(command=self.command)
+
+        return format_bool_list(raw=raw) if self.client.format_return else raw
+
+    async def flush(self, mode: Literal["ASYNC", "SYNC"]) -> str:
+        """
+        See https://redis.io/commands/script
+
+        The mode can be specified with the same-name parameter.
+        """
+
+        self.command.append("FLUSH")
+
+        if mode:
+            self.command.append(mode)
+
+        return await self.client.run(command=self.command)
+
+    async def load(self, script: str) -> str:
+        """
+        See https://redis.io/commands/script
+        """
+
+        self.command.extend(["LOAD", script])
+
+        return await self.client.run(command=self.command)

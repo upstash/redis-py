@@ -4,6 +4,7 @@ from upstash_py.schema.commands.returns import (
     HashReturn,
     FormattedHashReturn
 )
+from typing import Literal
 
 
 def _list_to_dict(raw: list) -> dict:
@@ -107,3 +108,11 @@ def format_pubsub_numsub(raw: list[str | int]) -> dict[str, int]:
     """
 
     return _list_to_dict(raw=raw)
+
+
+def format_bool_list(raw: list[Literal[0, 1]]) -> list[bool]:
+    """
+    Format a list of boolean integers.
+    """
+
+    return [bool(value) for value in raw]
