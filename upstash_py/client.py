@@ -6,7 +6,8 @@ from upstash_py.utils.format import (
     format_geo_members_return,
     format_hash,
     format_pubsub_numsub,
-    format_bool_list
+    format_bool_list,
+    format_time,
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
@@ -1466,12 +1467,61 @@ class Redis:
 
         return Script(client=self)
 
+    """
+    Need to double-check compatibility with the classic Redis API for this one.
     async def acl(self) -> "ACL":
+        # See https://redis.io/commands/acl
+        
+        return ACL(client=self)
+    """
+
+    async def dbsize(self) -> int:
         """
-        See https://redis.io/commands/acl
+        See https://redis.io/commands/dbsize
         """
 
-        return ACL(client=self)
+        command: list = ["DBSIZE"]
+
+        return await self.run(command=command)
+
+    async def flushall(self, mode: Literal["ASYNC", "SYNC"] = None) -> str:
+        """
+        See https://redis.io/commands/flushall
+
+        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
+        """
+
+        command: list = ["FLUSHALL"]
+
+        if mode:
+            command.append(mode)
+
+        return await self.run(command=command)
+
+    async def flushdb(self, mode: Literal["ASYNC", "SYNC"] = None) -> str:
+        """
+        See https://redis.io/commands/flushdb
+
+        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
+        """
+
+        command: list = ["FLUSHDB"]
+
+        if mode:
+            command.append(mode)
+
+        return await self.run(command=command)
+
+    async def server_time(self) -> list[str] | dict[str, int]:
+        """
+        See https://redis.io/commands/time
+        """
+
+        command: list = ["TIME"]
+
+        raw: list[str] = await self.run(command=command)
+
+        return format_time(raw=raw) if self.format_return else raw
 
     async def get(self, key: str) -> str:
         """
@@ -1634,7 +1684,7 @@ class Script:
         """
         See https://redis.io/commands/script-flush
 
-        The mode can be specified with the same-name parameter.
+        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
         """
 
         self.command.append("FLUSH")
@@ -1654,15 +1704,14 @@ class Script:
         return await self.client.run(command=self.command)
 
 
+"""
 class ACL:
     def __init__(self, client: Redis):
         self.client = client
         self.command: list = ["ACL"]
 
     async def cat(self, category_name: str | None = None) -> list[str]:
-        """
-        See https://redis.io/commands/acl-cat
-        """
+        # See https://redis.io/commands/acl-cat
 
         self.command.append("CAT")
 
@@ -1672,18 +1721,14 @@ class ACL:
         return await self.client.run(command=self.command)
 
     async def deluser(self, *usernames: str) -> int:
-        """
-        See https://redis.io/commands/acl-deluser
-        """
+        # See https://redis.io/commands/acl-deluser
 
         self.command.extend(["DELUSER", *usernames])
 
         return await self.client.run(command=self.command)
 
     async def genpass(self, bits: int = None) -> str:
-        """
-        See https://redis.io/commands/acl-genpass
-        """
+        # See https://redis.io/commands/acl-genpass
 
         self.command.append("GENPASS")
 
@@ -1694,43 +1739,31 @@ class ACL:
 
     # Is it possible to format this output?
     async def getuser(self, username: str) -> list[str] | None:
-        """
-        See https://redis.io/commands/acl-getuser
-        """
+        # See https://redis.io/commands/acl-getuser
 
         self.command.extend(["GETUSER", username])
 
         return await self.client.run(command=self.command)
 
     async def list_rules(self) -> list[str]:
-        """
-        See https://redis.io/commands/acl-list
-        """
+        # See https://redis.io/commands/acl-list
 
         self.command.append("LIST")
 
         return await self.client.run(command=self.command)
 
     async def load(self) -> str:
-        """
-        See https://redis.io/commands/acl-load
-        """
+        # See https://redis.io/commands/acl-load
 
         self.command.append("LOAD")
 
         return await self.client.run(command=self.command)
 
     async def log(self, count: int = None, reset: bool = False) -> list[str]:
-        """
-        See https://redis.io/commands/acl-log
-        """
+        # See https://redis.io/commands/acl-log
 
         if count is not None and reset:
-            raise Exception(
-                """ 
-                Cannot specify both "count" and "reset".
-                """
-            )
+            raise Exception("Cannot specify both count and reset.")
 
         self.command.append("LOG")
 
@@ -1741,5 +1774,4 @@ class ACL:
             self.command.append("RESET")
 
         return await self.client.run(command=self.command)
-
-
+"""
