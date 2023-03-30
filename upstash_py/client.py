@@ -1671,6 +1671,24 @@ class Redis:
         # The raw result is composed of the new cursor and the array of elements.
         return raw[1] if not return_cursor else raw
 
+    async def sunion(self, *keys: str) -> list[str]:
+        """
+        See https://redis.io/commands/sunion
+        """
+
+        command: list = ["SUNION", *keys]
+
+        return await self.run(command=command)
+
+    async def sunionstore(self, destination_key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/sunionstore
+        """
+
+        command: list = ["SUNIONSTORE", destination_key, *keys]
+
+        return await self.run(command=command)
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
