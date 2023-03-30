@@ -2,7 +2,9 @@ from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,
-    FormattedHashReturn
+    FormattedHashReturn,
+    SortedSetReturn,
+    FormattedSortedSetReturn,
 )
 from typing import Literal
 
@@ -127,3 +129,12 @@ def format_time_output(raw: list[str]) -> dict[str, int]:
         "seconds": int(raw[0]),
         "microseconds": int(raw[1])
     }
+
+
+def format_sorted_set(raw: SortedSetReturn) -> FormattedSortedSetReturn:
+    """
+    Format the raw output given by Sorted Set commands, usually the ones that return the member-score
+    pairs of Sorted Sets.
+    """
+
+    return _list_to_dict(raw=raw)

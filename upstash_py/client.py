@@ -8,6 +8,7 @@ from upstash_py.utils.format import (
     format_pubsub_numsub,
     format_bool_list,
     format_time_output,
+    format_sorted_set,
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
@@ -17,6 +18,8 @@ from upstash_py.schema.commands.returns import (
     FormattedGeoMembersReturn,
     HashReturn,
     FormattedHashReturn,
+    SortedSetReturn,
+    FormattedSortedSetReturn
 )
 
 
@@ -409,7 +412,7 @@ class Redis:
         The members should be added as a sequence of GeoMember dict types (longitude, latitude, name).
         """
 
-        if nx is not None and xx is not None:
+        if nx and xx:
             raise Exception(
                 """
                 "NX" and "XX" are mutually exclusive.
@@ -512,7 +515,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -581,7 +584,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -647,7 +650,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -715,7 +718,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -812,7 +815,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -922,7 +925,7 @@ class Redis:
                 """
             )
 
-        if count_any is not None and count is None:
+        if count_any and count is None:
             raise Exception(
                 """
                 "count_any" can only be used together with "count".
@@ -1092,13 +1095,11 @@ class Redis:
         if with_values:
             command.append("WITHVALUES")
 
-        raw: (str | None) | HashReturn = await self.run(command=command)
+            raw: HashReturn = await self.run(command=command)
 
-        # It makes sense to format the output only when the values are also provided.
-        if not with_values or not self.format_return:
-            return raw
+            return format_hash(raw=raw) if self.format_return else raw
 
-        return format_hash(raw=raw)
+        return await self.run(command=command)
 
     async def hscan(
         self,
@@ -1686,6 +1687,197 @@ class Redis:
         """
 
         command: list = ["SUNIONSTORE", destination_key, *keys]
+
+        return await self.run(command=command)
+
+    async def zadd(
+        self,
+        key: str,
+        sorted_set_members: dict,
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+        ch: bool = False,
+        incr: bool = False,
+    ) -> int | (str | None | float):
+        """
+        See https://redis.io/commands/zadd
+
+        The members should be added with a dict containing their names and scores.
+        """
+
+        if nx and xx:
+            raise Exception(
+                """
+                "NX" and "XX" are mutually exclusive.
+                """
+            )
+
+        if gt and lt:
+            raise Exception(
+                """
+                "GT" and "LT" are mutually exclusive.
+                """
+            )
+
+        if nx and (gt or lt):
+            raise Exception(
+                """
+                "NX" and "GT"/"LT" are mutually exclusive.
+                """
+            )
+
+        command: list = ["ZADD", key]
+
+        if nx:
+            command.append("NX")
+
+        if xx:
+            command.append("XX")
+
+        if gt:
+            command.append("GT")
+
+        if lt:
+            command.append("LT")
+
+        if ch:
+            command.append("CH")
+
+        if incr:
+            command.append("INCR")
+
+            for name, score in sorted_set_members.items():
+                command.extend([score, name])
+
+            raw: (str | None) = await self.run(command=command)
+
+            return float(raw) if self.format_return and raw else raw
+
+        for name, score in sorted_set_members.items():
+            command.extend([score, name])
+
+        return await self.run(command=command)
+
+    async def zcard(self, key: str) -> int:
+        """
+        See https://redis.io/commands/zcard
+        """
+
+        command: list = ["ZCARD", key]
+
+        return await self.run(command=command)
+
+    async def zcount(self, key: str, min_score: int | str, max_score: int | str) -> int:
+        """
+        See https://redis.io/commands/zcount
+
+        If you need to use "-inf" and "+inf", please write them as strings.
+        """
+
+        command: list = ["ZCOUNT", key, min_score, max_score]
+
+        return await self.run(command=command)
+
+    """
+    This has actually 3 return scenarios, but, 
+    whether "with_scores" is specified or not, its return type will be list[str].
+    """
+    async def zdiff(self, *keys: str, with_scores: bool = False) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zdiff
+
+        The number of keys is calculated automatically.
+        """
+
+        command: list = ["ZDIFF", len(keys), *keys]
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+        raw: SortedSetReturn = await self.run(command=command)
+
+        return format_sorted_set(raw) if self.format_return and with_scores else raw
+
+    async def zdiffstore(self, destination_key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/zdiffstore
+
+        The number of keys is calculated automatically.
+        """
+
+        command: list = ["ZDIFFSTORE", destination_key, len(keys), *keys]
+
+        return await self.run(command=command)
+
+    async def zincrby(self, key: str, increment: float, member: str) -> str | float:
+        """
+        See https://redis.io/commands/zincrby
+        """
+
+        command: list = ["ZINCRBY", key, increment, member]
+
+        raw: str = await self.run(command=command)
+
+        return float(raw) if self.format_return else raw
+
+    """
+    This has actually 3 return scenarios, but, 
+    whether "with_scores" is specified or not, its return type will be list[str].
+    """
+    async def zinter(
+        self,
+        *keys: str,
+        multiplication_factors: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        with_scores: bool = False,
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zinter
+
+        The number of keys is calculated automatically.
+
+        The "WEIGHTS" can be specified with "multiplication_factors".
+        """
+
+        command: list = ["ZINTER", len(keys), *keys]
+
+        if multiplication_factors:
+            command.extend(["WEIGHTS", *multiplication_factors])
+
+        if aggregate:
+            command.extend(["AGGREGATE", aggregate])
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+        raw: SortedSetReturn = await self.run(command=command)
+
+        return format_sorted_set(raw) if self.format_return and with_scores else raw
+
+    async def zinterstore(
+        self,
+        destination_key: str,
+        *keys: str,
+        multiplication_factors: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+    ) -> int:
+        """
+        See https://redis.io/commands/zinterstore
+
+        The number of keys is calculated automatically.
+
+        The "WEIGHTS" can be specified with "multiplication_factors".
+        """
+
+        command: list = ["ZINTERSTORE", destination_key, len(keys), *keys]
+
+        if multiplication_factors:
+            command.extend(["WEIGHTS", *multiplication_factors])
+
+        if aggregate:
+            command.extend(["AGGREGATE", aggregate])
 
         return await self.run(command=command)
 
