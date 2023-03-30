@@ -3,12 +3,14 @@ from asyncio import sleep
 from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
 from upstash_py.utils.base import base64_to_string
 from aiohttp import ClientSession
+from json import dumps
 
 
 def decode(raw: RESTResult, encoding: str) -> RESTResult:
     """
     Decode the response received from the REST API.
     """
+
     if encoding == "base64":
         if isinstance(raw, str):
             return "OK" if raw == "OK" else base64_to_string(raw)
@@ -26,7 +28,10 @@ def decode(raw: RESTResult, encoding: str) -> RESTResult:
                # If it's a list, decode each string in it
                else [
                    base64_to_string(member) if isinstance(member, str)
-                   else raw for member in element
+
+                   else raw
+
+                   for member in element
                ] if isinstance(element, list)
 
                else element
@@ -49,6 +54,15 @@ async def execute(
     """
     Execute the given command over the REST API.
     """
+
+    # Serialize the command; more specifically, write string-incompatible types as JSON strings.
+    command = [
+        element if isinstance(element, str | int | float)
+
+        else dumps(element)
+
+        for element in command
+    ]
 
     for i in range(retries + 1):
         try:

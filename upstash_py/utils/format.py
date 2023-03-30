@@ -118,7 +118,7 @@ def format_bool_list(raw: list[Literal[0, 1]]) -> list[bool]:
     return [bool(value) for value in raw]
 
 
-def format_time(raw: list[str]) -> dict[str, int]:
+def format_time_output(raw: list[str]) -> dict[str, int]:
     """
     Format the raw output returned by "TIME".
     """

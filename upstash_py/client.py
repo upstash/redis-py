@@ -7,11 +7,11 @@ from upstash_py.utils.format import (
     format_hash,
     format_pubsub_numsub,
     format_bool_list,
-    format_time,
+    format_time_output,
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
-from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, GeneralAtomicValue
+from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
@@ -357,7 +357,7 @@ class Redis:
         raw: list[int, list] = await self.run(command=command)
 
         # The raw result is composed of the new cursor and the array of elements.
-        return raw if return_cursor else raw[1]
+        return raw[1] if not return_cursor else raw
 
     async def touch(self, *keys: str) -> int:
         """
@@ -1129,6 +1129,7 @@ class Redis:
         if return_cursor:
             return [raw[0], format_hash(raw=raw[1])] if self.format_return else raw
 
+        # The raw result is composed of the new cursor and the array of elements.
         return format_hash(raw=raw[1]) if self.format_return else raw[1]
 
     async def hset(self, key: str, fields_and_values: dict) -> int:
@@ -1143,7 +1144,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def hsetnx(self, key: str, field: str, value: GeneralAtomicValue) -> Literal[1, 0] | bool:
+    async def hsetnx(self, key: str, field: str, value: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/hsetnx
         """
@@ -1172,7 +1173,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def pfadd(self, key: str, *elements: GeneralAtomicValue) -> Literal[1, 0] | bool:
+    async def pfadd(self, key: str, *elements: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pfadd
         """
@@ -1214,8 +1215,8 @@ class Redis:
         self,
         key: str,
         position: Literal["BEFORE", "AFTER"],
-        pivot: str,
-        element: GeneralAtomicValue
+        pivot: Any,
+        element: Any
     ) -> int:
         """
         See https://redis.io/commands/linsert
@@ -1270,7 +1271,7 @@ class Redis:
     async def lpos(
         self,
         key: str,
-        element: GeneralAtomicValue,
+        element: Any,
         first_return: int = None,
         count: int = None,
         max_number_of_comparisons: int = None,
@@ -1297,7 +1298,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lpush(self, key: str, *elements: GeneralAtomicValue) -> int:
+    async def lpush(self, key: str, *elements: Any) -> int:
         """
         See https://redis.io/commands/lpush
         """
@@ -1306,7 +1307,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lpushx(self, key: str, *elements: GeneralAtomicValue) -> int:
+    async def lpushx(self, key: str, *elements: Any) -> int:
         """
         See https://redis.io/commands/lpushx
         """
@@ -1324,7 +1325,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lrem(self, key: str, count: int, element: GeneralAtomicValue) -> int:
+    async def lrem(self, key: str, count: int, element: Any) -> int:
         """
         See https://redis.io/commands/lrem
         """
@@ -1333,7 +1334,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lset(self, key: str, index: int, element: GeneralAtomicValue) -> str:
+    async def lset(self, key: str, index: int, element: Any) -> str:
         """
         See https://redis.io/commands/lset
         """
@@ -1385,7 +1386,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def rpush(self, key: str, *elements: GeneralAtomicValue) -> int:
+    async def rpush(self, key: str, *elements: Any) -> int:
         """
         See https://redis.io/commands/rpush
         """
@@ -1394,7 +1395,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def rpushx(self, key: str, *elements: GeneralAtomicValue) -> int:
+    async def rpushx(self, key: str, *elements: Any) -> int:
         """
         See https://redis.io/commands/rpushx
         """
@@ -1419,7 +1420,7 @@ class Redis:
 
         return PubSub(client=self)
 
-    async def eval(self, script: str, keys: list[str] = None, arguments: list[GeneralAtomicValue] = None) -> Any:
+    async def eval(self, script: str, keys: list[str] = None, arguments: list[str] = None) -> Any:
         """
         See https://redis.io/commands/eval
 
@@ -1440,8 +1441,8 @@ class Redis:
     async def evalsha(
         self,
         sha1_digest: str,
-        keys: list[str] = None,
-        arguments: list[GeneralAtomicValue] = None
+        keys: list = None,
+        arguments: list = None
     ) -> Any:
         """
         See https://redis.io/commands/evalsha
@@ -1521,7 +1522,154 @@ class Redis:
 
         raw: list[str] = await self.run(command=command)
 
-        return format_time(raw=raw) if self.format_return else raw
+        return format_time_output(raw=raw) if self.format_return else raw
+
+    async def sadd(self, key: str, *members: Any) -> int:
+        """
+        See https://redis.io/commands/sadd
+        """
+
+        command: list = ["SADD", key, *members]
+
+        return await self.run(command=command)
+
+    async def scard(self, key: str) -> int:
+        """
+        See https://redis.io/commands/scard
+        """
+
+        command: list = ["SCARD", key]
+
+        return await self.run(command=command)
+
+    async def sdiff(self, *keys: str) -> list[str]:
+        """
+        See https://redis.io/commands/sdiff
+        """
+
+        command: list = ["SDIFF", *keys]
+
+        return await self.run(command=command)
+
+    async def sdiffstore(self, destination_key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/sdiffstore
+        """
+
+        command: list = ["SDIFFSTORE", destination_key, *keys]
+
+        return await self.run(command=command)
+
+    async def sinter(self, *keys: str) -> list[str]:
+        """
+        See https://redis.io/commands/sinter
+        """
+
+        command: list = ["SINTER", *keys]
+
+        return await self.run(command=command)
+
+    async def sinterstore(self, destination_key: str, *keys: str) -> int:
+        """
+        See https://redis.io/commands/sinterstore
+        """
+
+        command: list = ["SINTERSTORE", destination_key, *keys]
+
+        return await self.run(command=command)
+
+    async def sismember(self, key: str, member: Any) -> Literal[1, 0] | bool:
+        """
+        See https://redis.io/commands/sismember
+        """
+
+        command: list = ["SISMEMBER", key, member]
+
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
+
+    async def smembers(self, key: str) -> list[str]:
+        """
+        See https://redis.io/commands/smembers
+        """
+
+        command: list = ["SMEMBERS", key]
+
+        return await self.run(command=command)
+
+    async def smove(self, source_key: str, destination_key: str, member: Any) -> Literal[1, 0] | bool:
+        """
+        See https://redis.io/commands/smove
+        """
+
+        command: list = ["SMOVE", source_key, destination_key, member]
+
+        raw: Literal[1, 0] = await self.run(command=command)
+
+        return bool(raw) if self.format_return else raw
+
+    async def spop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+        """
+        See https://redis.io/commands/spop
+        """
+
+        command: list = ["SPOP", key]
+
+        if count:
+            command.append(count)
+
+        return await self.run(command=command)
+
+    async def srandmember(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+        """
+        See https://redis.io/commands/srandmember
+        """
+
+        command: list = ["SRANDMEMBER", key]
+
+        if count:
+            command.append(count)
+
+        return await self.run(command=command)
+
+    async def srem(self, key: str, *members: Any) -> int:
+        """
+        See https://redis.io/commands/srem
+        """
+
+        command: list = ["SREM", key, *members]
+
+        return await self.run(command=command)
+
+    async def sscan(
+        self,
+        key: str,
+        cursor: int,
+        pattern: str | None = None,
+        count: int | None = None,
+        return_cursor: bool = True,
+    ) -> list[int | list[str]] | list[str]:
+        """
+        See https://redis.io/commands/sscan
+
+        "MATCH" was replaced with "pattern".
+
+        If "return_cursor" is False, it won't return the cursor.
+        """
+
+        command: list = ["SSCAN", key, cursor]
+
+        if pattern:
+            command.extend(["MATCH", pattern])
+
+        if count:
+            command.extend(["COUNT", count])
+
+        raw: list[int | list[str]] = await self.run(command=command)
+
+        # The raw result is composed of the new cursor and the array of elements.
+        return raw[1] if not return_cursor else raw
 
     async def get(self, key: str) -> str:
         """
@@ -1532,7 +1680,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def set(self, key: str, value: GeneralAtomicValue) -> str:
+    async def set(self, key: str, value: Any) -> str:
         """
         See https://redis.io/commands/set
         """
