@@ -15,7 +15,7 @@ HashReturn = list[str]
 # The output resulted by formatting "HashReturn"
 FormattedHashReturn = dict[str, str]
 
-# The raw output returned by the Sorted Set commands that return the properties of a sorted set.
+# The raw output returned by the Sorted Set commands that return the member-score pairs of a sorted set.
 SortedSetReturn = list[str]
 
 # The output resulted by formatting "SortedSetReturn"

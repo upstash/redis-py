@@ -138,3 +138,19 @@ def format_sorted_set(raw: SortedSetReturn) -> FormattedSortedSetReturn:
     """
 
     return _list_to_dict(raw=raw)
+
+
+def format_float_list(raw: list[str | None], allow_none: bool = True) -> list[float | None]:
+    """
+    Format a list of strings representing floats.
+
+    If "allow_none" is True, possible None values will be allowed and handled.
+    """
+
+    return [
+        float(value) if not allow_none or value is not None
+
+        else None
+
+        for value in raw
+    ]

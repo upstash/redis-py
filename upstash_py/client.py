@@ -9,6 +9,7 @@ from upstash_py.utils.format import (
     format_bool_list,
     format_time_output,
     format_sorted_set,
+    format_float_list,
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
@@ -147,10 +148,10 @@ class Redis:
 
         command: list = ["BITPOS", key, bit]
 
-        if start:
+        if start is not None:
             command.append(start)
 
-        if end:
+        if end is not None:
             command.append(end)
 
         return await self.run(command=command)
@@ -340,6 +341,8 @@ class Redis:
         See https://redis.io/commands/scan
 
         "MATCH" was replaced with "pattern".
+
+        "COUNT" defaults to 10.
 
         "TYPE" was replaced with "scan_type".
 
@@ -533,7 +536,7 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -602,7 +605,7 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -668,7 +671,7 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -736,7 +739,7 @@ class Redis:
         if with_coordinates:
             command.append("WITHCOORD")
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -841,7 +844,7 @@ class Redis:
         if sort:
             command.append(sort)
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -951,7 +954,7 @@ class Redis:
         if sort:
             command.append(sort)
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
             if count_any:
                 command.append("ANY")
@@ -1073,11 +1076,15 @@ class Redis:
     async def hrandfield(
         self,
         key: str,
-        count: int = None,
+        count: int | None = None,
         with_values: bool = False
     ) -> (str | None) | (HashReturn | FormattedHashReturn):
         """
         See https://redis.io/commands/hrandfield
+
+        "COUNT" defaults to 1.
+
+        "count" can only be used together with "with_values".
         """
 
         if count is None and with_values:
@@ -1089,7 +1096,7 @@ class Redis:
 
         command: list = ["HRANDFIELD", key]
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
 
         if with_values:
@@ -1105,8 +1112,8 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        pattern: str = None,
-        count: int = None,
+        pattern: str | None = None,
+        count: int | None = None,
         return_cursor: bool = True
     ) -> (list[int | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
         """
@@ -1114,15 +1121,17 @@ class Redis:
 
         "MATCH" was replaced with "pattern".
 
+        "COUNT" defaults to 10.
+
         If "return_cursor" is False, it won't return the cursor.
         """
 
         command: list = ["HSCAN", key, cursor]
 
-        if pattern:
+        if pattern is not None:
             command.extend(["MATCH", pattern])
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
 
         raw: list[int | HashReturn] | HashReturn = await self.run(command=command)
@@ -1255,16 +1264,18 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def lpop(self, key: str, count: int = None) -> str | list[str] | None:
+    async def lpop(self, key: str, count: int | None = None) -> str | list[str] | None:
         """
         See https://redis.io/commands/lpop
+
+        "COUNT" defaults to 1.
 
         If "count" is specified, it will return a list of values.
         """
 
         command: list = ["LPOP", key]
 
-        if count:
+        if count is not None:
             command.append(count)
 
         return await self.run(command=command)
@@ -1273,9 +1284,9 @@ class Redis:
         self,
         key: str,
         element: Any,
-        first_return: int = None,
-        count: int = None,
-        max_number_of_comparisons: int = None,
+        first_return: int | None = None,
+        count: int | None = None,
+        max_number_of_comparisons: int | None = None,
     ) -> (int | None) | list[int]:
         """
         See https://redis.io/commands/lpos
@@ -1288,13 +1299,13 @@ class Redis:
 
         command: list = ["LPOS", key, element]
 
-        if first_return:
+        if first_return is not None:
             command.extend(["RANK", first_return])
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
 
-        if max_number_of_comparisons:
+        if max_number_of_comparisons is not None:
             command.extend(["MAXLEN", max_number_of_comparisons])
 
         return await self.run(command=command)
@@ -1353,16 +1364,16 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def rpop(self, key: str, count: int = None) -> str | list[str] | None:
+    async def rpop(self, key: str, count: int | None = None) -> str | list[str] | None:
         """
         See https://redis.io/commands/rpop
 
-        If "count" is specified, it will return a list of values.
+        "COUNT" defaults to 1.
         """
 
         command: list = ["RPOP", key]
 
-        if count:
+        if count is not None:
             command.append(count)
 
         return await self.run(command=command)
@@ -1421,7 +1432,7 @@ class Redis:
 
         return PubSub(client=self)
 
-    async def eval(self, script: str, keys: list[str] = None, arguments: list[str] = None) -> Any:
+    async def eval(self, script: str, keys: list[str] | None = None, arguments: list | None = None) -> Any:
         """
         See https://redis.io/commands/eval
 
@@ -1442,8 +1453,8 @@ class Redis:
     async def evalsha(
         self,
         sha1_digest: str,
-        keys: list = None,
-        arguments: list = None
+        keys: list[str] | None = None,
+        arguments: list | None = None
     ) -> Any:
         """
         See https://redis.io/commands/evalsha
@@ -1486,7 +1497,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def flushall(self, mode: Literal["ASYNC", "SYNC"] = None) -> str:
+    async def flushall(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
         See https://redis.io/commands/flushall
 
@@ -1500,7 +1511,7 @@ class Redis:
 
         return await self.run(command=command)
 
-    async def flushdb(self, mode: Literal["ASYNC", "SYNC"] = None) -> str:
+    async def flushdb(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
         See https://redis.io/commands/flushdb
 
@@ -1613,11 +1624,13 @@ class Redis:
     async def spop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/spop
+
+        "COUNT" defaults to 1.
         """
 
         command: list = ["SPOP", key]
 
-        if count:
+        if count is not None:
             command.append(count)
 
         return await self.run(command=command)
@@ -1625,11 +1638,13 @@ class Redis:
     async def srandmember(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/srandmember
+
+        "COUNT" defaults to 1.
         """
 
         command: list = ["SRANDMEMBER", key]
 
-        if count:
+        if count is not None:
             command.append(count)
 
         return await self.run(command=command)
@@ -1656,15 +1671,17 @@ class Redis:
 
         "MATCH" was replaced with "pattern".
 
+        "COUNT" defaults to 10.
+
         If "return_cursor" is False, it won't return the cursor.
         """
 
         command: list = ["SSCAN", key, cursor]
 
-        if pattern:
+        if pattern is not None:
             command.extend(["MATCH", pattern])
 
-        if count:
+        if count is not None:
             command.extend(["COUNT", count])
 
         raw: list[int | list[str]] = await self.run(command=command)
@@ -1881,6 +1898,65 @@ class Redis:
 
         return await self.run(command=command)
 
+    async def zlexcount(self, key: str, min_score: str, max_score: str) -> int:
+        """
+        See https://redis.io/commands/zlexcount
+        """
+
+        if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+            raise Exception(
+                """
+                "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
+                """
+            )
+
+        command: list = ["ZLEXCOUNT", key, min_score, max_score]
+
+        return await self.run(command=command)
+
+    async def zmscore(self, key: str, *members: str) -> list[str | None] | list[float | None]:
+        """
+        See https://redis.io/commands/zmscore
+        """
+
+        command: list = ["ZMSCORE", key, *members]
+
+        raw: list[str | None] = await self.run(command=command)
+
+        return format_float_list(raw=raw) if self.format_return else raw
+
+    async def zpopmax(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zpopmax
+
+        "COUNT" defaults to 1.
+        """
+
+        command: list = ["ZPOPMAX", key]
+
+        if count is not None:
+            command.append(count)
+
+        raw: SortedSetReturn = await self.run(command=command)
+
+        return format_sorted_set(raw=raw) if self.format_return else raw
+
+    async def zpopmin(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zpopmin
+
+        "COUNT" defaults to 1.
+        """
+
+        command: list = ["ZPOPMIN", key]
+
+        if count is not None:
+            command.append(count)
+
+        raw: SortedSetReturn = await self.run(command=command)
+
+        return format_sorted_set(raw=raw) if self.format_return else raw
+
     async def get(self, key: str) -> str:
         """
         See https://redis.io/commands/get
@@ -1989,14 +2065,14 @@ class PubSub:
         self.client = client
         self.command: list = ["PUBSUB"]
 
-    async def channels(self, pattern: str = None) -> list[str]:
+    async def channels(self, pattern: str | None = None) -> list[str]:
         """
         See https://redis.io/commands/pubsub-channels
         """
 
         self.command.append("CHANNELS")
 
-        if pattern:
+        if pattern is not None:
             self.command.append(pattern)
 
         return await self.client.run(command=self.command)
@@ -2073,7 +2149,7 @@ class ACL:
 
         self.command.append("CAT")
 
-        if category_name:
+        if category_name is not None:
             self.command.append(category_name)
 
         return await self.client.run(command=self.command)
@@ -2085,12 +2161,12 @@ class ACL:
 
         return await self.client.run(command=self.command)
 
-    async def genpass(self, bits: int = None) -> str:
+    async def genpass(self, bits: int | None = None) -> str:
         # See https://redis.io/commands/acl-genpass
 
         self.command.append("GENPASS")
 
-        if bits:
+        if bits is not None:
             self.command.append(bits)
 
         return await self.client.run(command=self.command)
@@ -2117,7 +2193,7 @@ class ACL:
 
         return await self.client.run(command=self.command)
 
-    async def log(self, count: int = None, reset: bool = False) -> list[str]:
+    async def log(self, count: int | None = None, reset: bool = False) -> list[str]:
         # See https://redis.io/commands/acl-log
 
         if count is not None and reset:
@@ -2125,7 +2201,7 @@ class ACL:
 
         self.command.append("LOG")
 
-        if count:
+        if count is not None:
             self.command.append(count)
 
         if reset:
