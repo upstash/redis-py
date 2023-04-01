@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-# str allows for "#" syntax.
+# "str" allows for "#" syntax.
 BitFieldOffset = int | str
 
 
@@ -11,3 +11,7 @@ class GeoMember(TypedDict):
     longitude: float
     latitude: float
     name: str
+
+
+# str allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
+FloatMinMax = float | str
