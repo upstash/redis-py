@@ -1,4 +1,5 @@
 from upstash_py.schema.commands.parameters import FloatMinMax
+from upstash_py.utils.comparison import all_are_specified, one_is_specified
 from typing import Literal
 
 
@@ -16,15 +17,21 @@ def handle_geosearch_exceptions(
     Handle exceptions for "GEOSEARCH*" commands.
     """
 
-    if (
-        member is not None
-        and longitude is not None
-        and latitude is not None
-    ) or (
-        member is None
-        and longitude is None
-        and latitude is None
-    ):
+    if not all_are_specified(longitude, latitude):
+        raise Exception(
+            """
+            Both "longitude" and "latitude" must be specified.
+            """
+        )
+
+    if not all_are_specified(width, height):
+        raise Exception(
+            """
+            Both "width" and "height" must be specified.
+            """
+        )
+
+    if not one_is_specified(member, longitude):
         raise Exception(
             """
             Specify either the member's name with "member", 
@@ -32,15 +39,7 @@ def handle_geosearch_exceptions(
             """
         )
 
-    if (
-        radius is not None
-        and width is not None
-        and height is not None
-    ) or (
-        radius is None
-        and width is None
-        and height is None
-    ):
+    if not one_is_specified(radius, width):
         raise Exception(
             """
             Specify either the radius with "radius", 
@@ -78,7 +77,7 @@ def handle_non_deprecated_zrange_exceptions(
             """
         )
 
-    if (offset is not None and count is None) or (offset is None and count is not None):
+    if not all_are_specified(offset, count):
         raise Exception(
             """
             Both "offset" and "count" must be specified.
@@ -103,7 +102,7 @@ def handle_zrangebylex_exceptions(
             """
         )
 
-    if (offset is not None and count is None) or (offset is None and count is not None):
+    if not all_are_specified(offset, count):
         raise Exception(
             """
             Both "offset" and "count" must be specified.

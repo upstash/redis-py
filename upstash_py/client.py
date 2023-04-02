@@ -16,6 +16,7 @@ from upstash_py.utils.exception import (
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
 )
+from upstash_py.utils.comparison import all_are_specified, one_is_specified
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
@@ -90,10 +91,10 @@ class Redis:
         See https://redis.io/commands/bitcount
         """
 
-        if (start is None and end is not None) or (start is not None and end is None):
+        if not all_are_specified(start, end):
             raise Exception(
                 """
-                Both the start and end must be specified.
+                Both "start" and "end" must be specified.
                 """
             )
 
@@ -147,7 +148,7 @@ class Redis:
         if start is None and end is not None:
             raise Exception(
                 """
-                The end is specified, but the start is missing.
+                "End" is specified, but "start" is missing.
                 """
             )
 
@@ -423,7 +424,7 @@ class Redis:
         if nx and xx:
             raise Exception(
                 """
-                "NX" and "XX" are mutually exclusive.
+                "nx" and "xx" are mutually exclusive.
                 """
             )
 
@@ -1652,27 +1653,27 @@ class Redis:
         """
         See https://redis.io/commands/zadd
 
-        The members should be added with a dict containing their names and scores.
+        The members should be specified with a dict containing their names and scores.
         """
 
         if nx and xx:
             raise Exception(
                 """
-                "NX" and "XX" are mutually exclusive.
+                "nx" and "xx" are mutually exclusive.
                 """
             )
 
         if gt and lt:
             raise Exception(
                 """
-                "GT" and "LT" are mutually exclusive.
+                "gt" and "lt" are mutually exclusive.
                 """
             )
 
         if nx and (gt or lt):
             raise Exception(
                 """
-                "NX" and "GT"/"LT" are mutually exclusive.
+                "nx" and "gt"/"lt" are mutually exclusive.
                 """
             )
 
@@ -2030,7 +2031,7 @@ class Redis:
                 """
             )
 
-        if (offset is not None and count is None) or (offset is None and count is not None):
+        if not all_are_specified(offset, count):
             raise Exception(
                 """
                 Both "offset" and "count" must be specified.
@@ -2237,7 +2238,7 @@ class Redis:
                 """
             )
 
-        if (offset is not None and count is None) or (offset is None and count is not None):
+        if not all_are_specified(offset, count):
             raise Exception(
                 """
                 Both "offset" and "count" must be specified.
@@ -2273,7 +2274,7 @@ class Redis:
         cursor: int,
         pattern: str | None = None,
         count: int | None = None,
-        return_cursor: bool = False
+        return_cursor: bool = True
     ) -> (
             list[int | SortedSetReturn] | list[int | FormattedSortedSetReturn]
          ) | (
@@ -2377,7 +2378,34 @@ class Redis:
 
         return await self.run(command)
 
-    async def get(self, key: str) -> str:
+    async def append_to_string(self, key: str, value: Any) -> int:
+        """
+        See https://redis.io/commands/append
+        """
+
+        command: list = ["APPEND", key, value]
+
+        return await self.run(command)
+
+    async def decr(self, key: str) -> int:
+        """
+        See https://redis.io/commands/decr
+        """
+
+        command: list = ["DECR", key]
+
+        return await self.run(command)
+
+    async def decrby(self, key: str, decrement: int) -> int:
+        """
+        See https://redis.io/commands/decrby
+        """
+
+        command: list = ["DECRBY", key, decrement]
+
+        return await self.run(command)
+
+    async def get(self, key: str) -> str | None:
         """
         See https://redis.io/commands/get
         """
@@ -2386,12 +2414,303 @@ class Redis:
 
         return await self.run(command)
 
-    async def set(self, key: str, value: Any) -> str:
+    async def getdel(self, key: str) -> str | None:
         """
-        See https://redis.io/commands/set
+        See https://redis.io/commands/getdel
         """
 
+        command: list = ["GETDEL", key]
+
+        return await self.run(command)
+
+    async def getex(
+        self,
+        key: str,
+        seconds: int | None = None,
+        milliseconds: int | None = None,
+        unix_time_seconds: int | None = None,
+        unix_time_milliseconds: int | None = None,
+        persist: bool | None = None
+    ) -> str | None:
+        """
+        See https://redis.io/commands/getex
+
+        The optional expiration settings ("EX", "PX", "EXAT", "PXAT") except for "PERSIST"
+        were replaced with their corresponding units.
+        """
+
+        if not one_is_specified(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, persist):
+            raise Exception("Exactly one of the expiration settings must be specified.")
+
+        command: list = ["GETEX", key]
+
+        if seconds is not None:
+            command.extend(["EX", seconds])
+
+        if milliseconds is not None:
+            command.extend(["PX", milliseconds])
+
+        if unix_time_seconds is not None:
+            command.extend(["EXAT", unix_time_seconds])
+
+        if unix_time_milliseconds is not None:
+            command.extend(["PXAT", unix_time_milliseconds])
+
+        if persist is not None:
+            command.append("PERSIST")
+
+        return await self.run(command)
+
+    async def getrange(self, key: str, start: int, end: int) -> str:
+        """
+        See https://redis.io/commands/getrange
+        """
+
+        command: list = ["GETRANGE", key, start, end]
+
+        return await self.run(command)
+
+    async def getset(self, key: str, value: Any) -> str | None:
+        """
+        See https://redis.io/commands/getset
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "set" with "get".
+                
+                Source: https://redis.io/commands/getset
+                """
+            )
+
+        command: list = ["GETSET", key, value]
+
+        return await self.run(command)
+
+    async def incr(self, key: str) -> int:
+        """
+        See https://redis.io/commands/incr
+        """
+
+        command: list = ["INCR", key]
+
+        return await self.run(command)
+
+    async def incrby(self, key: str, increment: int) -> int:
+        """
+        See https://redis.io/commands/incrby
+        """
+
+        command: list = ["INCRBY", key, increment]
+
+        return await self.run(command)
+
+    async def incrbyfloat(self, key: str, increment: float) -> str | float:
+        """
+        See https://redis.io/commands/incrbyfloat
+        """
+
+        command: list = ["INCRBYFLOAT", key, increment]
+
+        raw: str = await self.run(command)
+
+        return float(raw) if self.format_return else raw
+
+    async def mget(self, *keys: str) -> list[str | None]:
+        """
+        See https://redis.io/commands/mget
+        """
+
+        command: list = ["MGET", *keys]
+
+        return await self.run(command)
+
+    async def mset(self, keys_and_values: dict) -> Literal["OK"]:
+        """
+        See https://redis.io/commands/mset
+
+        The key-value pairs should be specified as a dict.
+        """
+
+        command: list = ["MSET"]
+
+        for key, value in keys_and_values.items():
+            command.extend([key, value])
+
+        return await self.run(command)
+
+    async def msetnx(self, keys_and_values: dict) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/msetnx
+
+        The key-value pairs should be specified as a dict.
+        """
+
+        command: list = ["MSETNX"]
+
+        for key, value in keys_and_values.items():
+            command.extend([key, value])
+
+        return await self.run(command)
+
+    async def psetex(self, key: str, milliseconds: int, value: Any) -> str:
+        """
+        See https://redis.io/commands/psetex
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 2.6.12, this command is regarded as deprecated.
+                It can be replaced by "set" with "milliseconds".
+                
+                Source: https://redis.io/commands/psetex
+                """
+            )
+
+        command: list = ["PSETEX", key, milliseconds, value]
+
+        return await self.run(command)
+
+    async def set(
+        self,
+        key: str,
+        value: Any,
+        nx: bool = False,
+        xx: bool = False,
+        get: bool = False,
+        seconds: int | None = None,
+        milliseconds: int | None = None,
+        unix_time_seconds: int | None = None,
+        unix_time_milliseconds: int | None = None,
+        keep_ttl: bool = False,
+    ) -> str | None:
+        """
+        See https://redis.io/commands/set
+
+        The optional expiration settings ("EX", "PX", "EXAT", "PXAT") except for "KEEPTTL"
+        were replaced with their corresponding units.
+        """
+
+        if nx and xx:
+            raise Exception(
+                """
+                "nx" and "xx" are mutually exclusive.
+                """
+            )
+
+        if not one_is_specified(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, keep_ttl):
+            raise Exception("Exactly one of the expiration settings must be specified.")
+
+        if nx and get:
+            raise Exception(
+                """
+                "nx" and "get" are mutually exclusive.
+                """
+            )
+
         command: list = ["SET", key, value]
+
+        if nx:
+            command.append("NX")
+
+        if xx:
+            command.append("XX")
+
+        if get:
+            command.append("GET")
+
+        if seconds is not None:
+            command.extend(["EX", seconds])
+
+        if milliseconds is not None:
+            command.extend(["PX", milliseconds])
+
+        if unix_time_seconds is not None:
+            command.extend(["EXAT", unix_time_seconds])
+
+        if unix_time_milliseconds is not None:
+            command.extend(["PXAT", unix_time_milliseconds])
+
+        if keep_ttl:
+            command.append("KEEPTTL")
+
+        return await self.run(command)
+
+    async def setex(self, key: str, seconds: int, value: Any) -> str:
+        """
+        See https://redis.io/commands/setex
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 2.6.12, this command is regarded as deprecated.
+                It can be replaced by "set" with "seconds".
+                
+                Source: https://redis.io/commands/setex
+                """
+            )
+
+        command: list = ["SETEX", key, seconds, value]
+
+        return await self.run(command)
+
+    async def setnx(self, key: str, value: Any) -> Literal[1, 0]:
+        """
+        See https://redis.io/commands/setnx
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 2.6.12, this command is regarded as deprecated.
+                It can be replaced by "set" with "nx".
+                
+                Source: https://redis.io/commands/setnx
+                """
+            )
+
+        command: list = ["SETNX", key, value]
+
+        return await self.run(command)
+
+    async def setrange(self, key: str, offset: int, value: Any) -> int:
+        """
+        See https://redis.io/commands/setrange
+        """
+
+        command: list = ["SETRANGE", key, offset, value]
+
+        return await self.run(command)
+
+    async def strlen(self, key: str) -> int:
+        """
+        See https://redis.io/commands/strlen
+        """
+
+        command: list = ["STRLEN", key]
+
+        return await self.run(command)
+
+    async def substr(self, key: str, start: int, end: int) -> str:
+        """
+        See https://redis.io/commands/substr
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 2.0.0, this command is regarded as deprecated.
+                It can be replaced by "getrange".
+                
+                Source: https://redis.io/commands/substr
+                """
+            )
+
+        command: list = ["SUBSTR", key, start, end]
 
         return await self.run(command)
 
