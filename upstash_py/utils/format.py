@@ -19,7 +19,7 @@ def _list_to_dict(raw: list) -> dict:
     }
 
 
-def format_geo_positions(raw: list[str | None]) -> list[dict[str, float | int] | None]:
+def format_geo_positions_return(raw: list[str | None]) -> list[dict[str, float | int] | None]:
 
     """
     Format the raw output returned by "GEOPOS".
@@ -95,7 +95,7 @@ def format_geo_members_return(
     return result
 
 
-def format_hash(raw: HashReturn) -> FormattedHashReturn:
+def format_hash_return(raw: HashReturn) -> FormattedHashReturn:
     """
     Format the raw output given by Hash commands, usually the ones that return the field-value
     pairs of Hashes.
@@ -104,7 +104,7 @@ def format_hash(raw: HashReturn) -> FormattedHashReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_pubsub_numsub(raw: list[str | int]) -> dict[str, int]:
+def format_pubsub_numsub_return(raw: list[str | int]) -> dict[str, int]:
     """
     Format the raw output returned by "PUBSUB NUMSUB".
     """
@@ -120,7 +120,7 @@ def format_bool_list(raw: list[Literal[0, 1]]) -> list[bool]:
     return [bool(value) for value in raw]
 
 
-def format_time_output(raw: list[str]) -> dict[str, int]:
+def format_server_time_return(raw: list[str]) -> dict[str, int]:
     """
     Format the raw output returned by "TIME".
     """
@@ -131,7 +131,7 @@ def format_time_output(raw: list[str]) -> dict[str, int]:
     }
 
 
-def format_sorted_set(raw: SortedSetReturn) -> FormattedSortedSetReturn:
+def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
     """
     Format the raw output given by Sorted Set commands, usually the ones that return the member-score
     pairs of Sorted Sets.

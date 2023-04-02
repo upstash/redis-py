@@ -2,16 +2,20 @@ from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import config
 from upstash_py.utils.format import (
-    format_geo_positions,
+    format_geo_positions_return,
     format_geo_members_return,
-    format_hash,
-    format_pubsub_numsub,
+    format_hash_return,
+    format_pubsub_numsub_return,
     format_bool_list,
-    format_time_output,
-    format_sorted_set,
+    format_server_time_return,
+    format_sorted_set_return,
     format_float_list
 )
-from upstash_py.utils.exception import handle_geosearch_exceptions
+from upstash_py.utils.exception import (
+    handle_geosearch_exceptions,
+    handle_non_deprecated_zrange_exceptions,
+    handle_zrangebylex_exceptions,
+)
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
@@ -337,7 +341,7 @@ class Redis:
         count: int | None = None,
         scan_type: str | None = None,
         return_cursor: bool = True
-    ) -> list[int | list] | list:
+    ) -> list[int | list[str]] | list:
         """
         See https://redis.io/commands/scan
 
@@ -480,7 +484,7 @@ class Redis:
 
         raw: list[str | None] = await self.run(command)
 
-        return format_geo_positions(raw) if self.format_return else raw
+        return format_geo_positions_return(raw) if self.format_return else raw
 
     async def georadius(
         self,
@@ -929,7 +933,7 @@ class Redis:
 
         raw: HashReturn = await self.run(command)
 
-        return format_hash(raw) if self.format_return else raw
+        return format_hash_return(raw) if self.format_return else raw
 
     async def hincrby(self, key: str, field: str, increment: int) -> int:
         """
@@ -1031,7 +1035,7 @@ class Redis:
 
                 raw: HashReturn = await self.run(command)
 
-                return format_hash(raw) if self.format_return else raw
+                return format_hash_return(raw) if self.format_return else raw
 
         return await self.run(command)
 
@@ -1064,10 +1068,10 @@ class Redis:
         raw: list[int | HashReturn] | HashReturn = await self.run(command)
 
         if return_cursor:
-            return [raw[0], format_hash(raw[1])] if self.format_return else raw
+            return [raw[0], format_hash_return(raw[1])] if self.format_return else raw
 
         # The raw result is composed of the new cursor and the array of elements.
-        return format_hash(raw[1]) if self.format_return else raw[1]
+        return format_hash_return(raw[1]) if self.format_return else raw[1]
 
     async def hset(self, key: str, fields_and_values: dict) -> int:
         """
@@ -1191,7 +1195,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def lpop(self, key: str, count: int | None = None) -> str | list[str] | None:
+    async def lpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/lpop
 
@@ -1291,7 +1295,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def rpop(self, key: str, count: int | None = None) -> str | list[str] | None:
+    async def rpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/rpop
 
@@ -1461,7 +1465,7 @@ class Redis:
 
         raw: list[str] = await self.run(command)
 
-        return format_time_output(raw) if self.format_return else raw
+        return format_server_time_return(raw) if self.format_return else raw
 
     async def sadd(self, key: str, *members: Any) -> int:
         """
@@ -1697,7 +1701,7 @@ class Redis:
 
             raw: (str | None) = await self.run(command)
 
-            return float(raw) if self.format_return and raw else raw
+            return float(raw) if self.format_return and raw is not None else raw
 
         for name, score in sorted_set_members.items():
             command.extend([score, name])
@@ -1726,7 +1730,7 @@ class Redis:
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is specified or not, its return type will be list[str].
+    whether "with_scores" is True or not, its return type will be list[str].
     """
     async def zdiff(self, *keys: str, with_scores: bool = False) -> SortedSetReturn | FormattedSortedSetReturn:
         """
@@ -1742,7 +1746,7 @@ class Redis:
 
             raw: SortedSetReturn = await self.run(command)
 
-            return format_sorted_set(raw) if self.format_return and with_scores else raw
+            return format_sorted_set_return(raw) if self.format_return else raw
 
         return await self.run(command)
 
@@ -1770,7 +1774,7 @@ class Redis:
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is specified or not, its return type will be list[str].
+    whether "with_scores" is True or not, its return type will be list[str].
     """
     async def zinter(
         self,
@@ -1800,7 +1804,7 @@ class Redis:
 
             raw: SortedSetReturn = await self.run(command)
 
-            return format_sorted_set(raw) if self.format_return and with_scores else raw
+            return format_sorted_set_return(raw) if self.format_return else raw
 
         return await self.run(command)
 
@@ -1870,7 +1874,7 @@ class Redis:
 
         raw: SortedSetReturn = await self.run(command)
 
-        return format_sorted_set(raw) if self.format_return else raw
+        return format_sorted_set_return(raw) if self.format_return else raw
 
     async def zpopmin(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
         """
@@ -1886,7 +1890,7 @@ class Redis:
 
         raw: SortedSetReturn = await self.run(command)
 
-        return format_sorted_set(raw) if self.format_return else raw
+        return format_sorted_set_return(raw) if self.format_return else raw
 
     async def zrandmember(
         self,
@@ -1917,13 +1921,13 @@ class Redis:
 
                 raw: SortedSetReturn = await self.run(command)
 
-                return format_sorted_set(raw) if self.format_return else raw
+                return format_sorted_set_return(raw) if self.format_return else raw
 
         return await self.run(command)
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is specified or not, its return type will be list[str].
+    whether "with_scores" is True or not, its return type will be list[str].
     """
     async def zrange(
         self,
@@ -1944,23 +1948,7 @@ class Redis:
         "BYSCORE" and "BYLEX" can be specified with "range_method".
         """
 
-        if range_method == "BYLEX" and (
-            not start.startswith(("(", "[", "+inf", "-inf"))
-            or not stop.startswith(("(", "[", "+inf", "-inf"))
-        ):
-            raise Exception(
-                """
-                "start" and "stop" must either start with "(" or "[" or be "+inf" or "-inf" when 
-                the ranging method is "BYLEX".
-                """
-            )
-
-        if (offset is not None and count is None) or (offset is None and count is not None):
-            raise Exception(
-                """
-                Both "offset" and "count" must be specified.
-                """
-            )
+        handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
 
         command: list = ["ZRANGE", key, start, stop]
 
@@ -1978,7 +1966,7 @@ class Redis:
 
             raw: SortedSetReturn = await self.run(command)
 
-            return format_sorted_set(raw) if self.format_return and with_scores else raw
+            return format_sorted_set_return(raw) if self.format_return else raw
 
         return await self.run(command)
 
@@ -1998,16 +1986,47 @@ class Redis:
             raise Exception(
                 """
                 As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with the range_method set to "BYLEX".
+                It can be replaced by "zrange" with "range_method" set to "BYLEX".
                 
                 Source: https://redis.io/commands/zrangebylex
                 """
             )
 
-        if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+        handle_zrangebylex_exceptions(min_score, max_score, offset, count)
+
+        command: list = ["ZRANGEBYLEX", key, min_score, max_score]
+
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
+
+        return await self.run(command)
+
+    """
+    This has actually 3 return scenarios, but, 
+    whether "with_scores" is True or not, its return type will be list[str].
+    """
+    async def zrangebyscore(
+        self,
+        key: str,
+        min_score: FloatMinMax,
+        max_score: FloatMinMax,
+        with_scores: bool = False,
+        offset: int | None = None,
+        count: int | None = None
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zrangebyscore
+
+        If you need to use "-inf" and "+inf", please write them as strings.
+        """
+
+        if not self.allow_deprecated:
             raise Exception(
                 """
-                "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "zrange" with "range_method" set to "BYSCORE".
+                
+                Source: https://redis.io/commands/zrangebyscore
                 """
             )
 
@@ -2018,10 +2037,343 @@ class Redis:
                 """
             )
 
-        command: list = ["ZRANGEBYLEX", key, min_score, max_score]
+        command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
 
         if offset is not None:
             command.extend(["LIMIT", offset, count])
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+            raw: SortedSetReturn = await self.run(command)
+
+            return format_sorted_set_return(raw) if self.format_return else raw
+
+        return await self.run(command)
+
+    async def zrangestore(
+        self,
+        destination_key: str,
+        source_key: str,
+        start: FloatMinMax,
+        stop: FloatMinMax,
+        range_method: Literal["BYSCORE", "BYLEX"] | None = None,
+        rev: bool = False,
+        offset: int | None = None,
+        count: int | None = None
+    ) -> int:
+        """
+        See https://redis.io/commands/zrangestore
+
+        If you need to use "-inf" and "+inf", please write them as strings.
+
+        "min" and "max" were replaced with "start" and "stop" to match "zrange".
+
+        "BYSCORE" and "BYLEX" can be specified with "range_method".
+        """
+
+        handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
+
+        command: list = ["ZRANGESTORE", destination_key, source_key, start, stop]
+
+        if range_method:
+            command.append(range_method)
+
+        if rev:
+            command.append("REV")
+
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
+
+        return await self.run(command)
+
+    async def zrank(self, key: str, member: str) -> int | None:
+        """
+        See https://redis.io/commands/zrank
+        """
+
+        command: list = ["ZRANK", key, member]
+
+        return await self.run(command)
+
+    async def zrem(self, key: str, *members: str) -> int:
+        """
+        See https://redis.io/commands/zrem
+        """
+
+        command: list = ["ZREM", key, *members]
+
+        return await self.run(command)
+
+    async def zremrangebylex(self, key: str, min_score: str, max_score: str) -> int:
+        """
+        See https://redis.io/commands/zremrangebylex
+        """
+
+        if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+            raise Exception(
+                """
+                "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
+                """
+            )
+
+        command: list = ["ZREMRANGEBYLEX", key, min_score, max_score]
+
+        return await self.run(command)
+
+    async def zremrangebyrank(self, key: str, start: int, stop: int) -> int:
+        """
+        See https://redis.io/commands/zremrangebyrank
+        """
+
+        command: list = ["ZREMRANGEBYRANK", key, start, stop]
+
+        return await self.run(command)
+
+    async def zremrangebyscore(self, key: str, min_score: FloatMinMax, max_score: FloatMinMax) -> int:
+        """
+        See https://redis.io/commands/zremrangebyscore
+
+        If you need to use "-inf" and "+inf", please write them as strings.
+        """
+
+        command: list = ["ZREMRANGEBYSCORE", key, min_score, max_score]
+
+        return await self.run(command)
+
+    """
+    This has actually 3 return scenarios, but,
+    whether "with_scores" is True or not, its return type will be list[str].
+    """
+    async def zrevrange(
+        self,
+        key: str,
+        start: int,
+        stop: int,
+        with_scores: bool = False
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zrevrange
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "zrange" with "rev" set to True.
+                
+                Source: https://redis.io/commands/zrevrange
+                """
+            )
+
+        command: list = ["ZREVRANGE", key, start, stop]
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+            raw: SortedSetReturn = await self.run(command)
+
+            return format_sorted_set_return(raw) if self.format_return else raw
+
+        return await self.run(command)
+
+    async def zrevrangebylex(
+        self,
+        key: str,
+        max_score: str,
+        min_score: str,
+        offset: int | None = None,
+        count: int | None = None
+    ) -> list[str]:
+        """
+        See https://redis.io/commands/zrevrangebylex
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYLEX".
+                
+                Source: https://redis.io/commands/zrevrangebylex
+                """
+            )
+
+        handle_zrangebylex_exceptions(min_score, max_score, offset, count)
+
+        command: list = ["ZREVRANGEBYLEX", key, max_score, min_score]
+
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
+
+        return await self.run(command)
+
+    """
+    This has actually 3 return scenarios, but,
+    whether "with_scores" is True or not, its return type will be list[str].
+    """
+    async def zrevrangebyscore(
+        self,
+        key: str,
+        max_score: FloatMinMax,
+        min_score: FloatMinMax,
+        with_scores: bool = False,
+        offset: int | None = None,
+        count: int | None = None
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zrevrangebyscore
+
+        If you need to use "-inf" and "+inf", please write them as strings.
+        """
+
+        if not self.allow_deprecated:
+            raise Exception(
+                """
+                As of Redis version 6.2.0, this command is regarded as deprecated.
+                It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
+                
+                Source: https://redis.io/commands/zrevrangebyscore
+                """
+            )
+
+        if (offset is not None and count is None) or (offset is None and count is not None):
+            raise Exception(
+                """
+                Both "offset" and "count" must be specified.
+                """
+            )
+
+        command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
+
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+            raw: SortedSetReturn = await self.run(command)
+
+            return format_sorted_set_return(raw) if self.format_return else raw
+
+        return await self.run(command)
+
+    async def zrevrank(self, key: str, member: str) -> int | None:
+        """
+        See https://redis.io/commands/zrevrank
+        """
+
+        command: list = ["ZREVRANK", key, member]
+
+        return await self.run(command)
+
+    async def zscan(
+        self,
+        key: str,
+        cursor: int,
+        pattern: str | None = None,
+        count: int | None = None,
+        return_cursor: bool = False
+    ) -> (
+            list[int | SortedSetReturn] | list[int | FormattedSortedSetReturn]
+         ) | (
+            SortedSetReturn | FormattedSortedSetReturn
+         ):
+        """
+        See https://redis.io/commands/zscan
+
+        "MATCH" was replaced with "pattern".
+
+        "COUNT" defaults to 10.
+
+        If "return_cursor" is False, it won't return the cursor.
+        """
+
+        command: list = ["ZSCAN", key, cursor]
+
+        if pattern is not None:
+            command.extend(["MATCH", pattern])
+
+        if count is not None:
+            command.extend(["COUNT", count])
+
+        raw: list[int | SortedSetReturn] = await self.run(command)
+
+        if return_cursor:
+            return [raw[0], format_sorted_set_return(raw[1])] if self.format_return else raw
+
+        # The raw result is composed of the new cursor and the array of elements.
+        return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
+
+    async def zscore(self, key: str, member: str) -> str | None | float:
+        """
+        See https://redis.io/commands/zscore
+        """
+
+        command: list = ["ZSCORE", key, member]
+
+        raw: str | None = await self.run(command)
+
+        return float(raw) if self.format_return and raw is not None else raw
+
+    """
+    This has actually 3 return scenarios, but,
+    whether "with_scores" is True or not, its return type will be list[str].
+    """
+    async def zunion(
+        self,
+        *keys: str,
+        multiplication_factors: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        with_scores: bool = False
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        """
+        See https://redis.io/commands/zunion
+
+        The number of keys is calculated automatically.
+
+        The "WEIGHTS" can be specified with "multiplication_factors".
+        """
+
+        command: list = ["ZUNION", len(keys), *keys]
+
+        if multiplication_factors:
+            command.extend(["WEIGHTS", *multiplication_factors])
+
+        if aggregate:
+            command.extend(["AGGREGATE", aggregate])
+
+        if with_scores:
+            command.append("WITHSCORES")
+
+            raw: SortedSetReturn = await self.run(command)
+
+            return format_sorted_set_return(raw) if self.format_return else raw
+
+        return await self.run(command)
+
+    async def zunionstore(
+        self,
+        destination_key: str,
+        *keys: str,
+        multiplication_factors: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None
+    ) -> int:
+        """
+        See https://redis.io/commands/zunionstore
+
+        The number of keys is calculated automatically.
+
+        The "WEIGHTS" can be specified with "multiplication_factors".
+        """
+
+        command: list = ["ZUNIONSTORE", destination_key, len(keys), *keys]
+
+        if multiplication_factors:
+            command.extend(["WEIGHTS", *multiplication_factors])
+
+        if aggregate:
+            command.extend(["AGGREGATE", aggregate])
 
         return await self.run(command)
 
@@ -2163,7 +2515,7 @@ class PubSub:
 
         raw: list[str | int] = await self.client.run(command=self.command)
 
-        return format_pubsub_numsub(raw) if self.client.format_return else raw
+        return format_pubsub_numsub_return(raw) if self.client.format_return else raw
 
 
 class Script:
