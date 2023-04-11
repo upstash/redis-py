@@ -19,7 +19,7 @@ def _list_to_dict(raw: list) -> dict:
     }
 
 
-def format_geo_positions_return(raw: list[str | None]) -> list[dict[str, float | int] | None]:
+def format_geo_positions_return(raw: list[list[str] | None]) -> list[dict[str, float | int] | None]:
 
     """
     Format the raw output returned by "GEOPOS".
@@ -61,7 +61,7 @@ def format_geo_members_return(
     result: FormattedGeoMembersReturn = []
 
     for member in raw:
-        formatted_member: dict[str, float | int] = {
+        formatted_member: dict[str, str | float | int] = {
             "member": member[0]
         }
 

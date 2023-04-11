@@ -366,7 +366,7 @@ class Redis:
         if scan_type is not None:
             command.extend(["TYPE", scan_type])
 
-        raw: list[int, list] = await self.run(command)
+        raw: list[int | list[str]] = await self.run(command)
 
         # The raw result is composed of the new cursor and the array of elements.
         return raw[1] if not return_cursor else raw
@@ -474,7 +474,7 @@ class Redis:
         self,
         key: str,
         *members: str
-    ) -> list[str | None] | list[dict[str, float] | None]:
+    ) -> list[list[str] | None] | list[dict[str, float] | None]:
         """
         See https://redis.io/commands/geopos
 
@@ -483,7 +483,7 @@ class Redis:
 
         command: list = ["GEOPOS", key, *members]
 
-        raw: list[str | None] = await self.run(command)
+        raw: list[list[str] | None] = await self.run(command)
 
         return format_geo_positions_return(raw) if self.format_return else raw
 

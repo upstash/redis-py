@@ -6,7 +6,7 @@ The output resulted by formatting "GeoMembersReturn".
 
 Note that this might differ from the "GeoMember" type that represents the initial properties of a geo member.
 """
-FormattedGeoMembersReturn = list[dict[str, float | int]]
+FormattedGeoMembersReturn = list[dict[str, str | float | int]]
 
 
 # The raw output returned by the Hash commands that return the field-value pairs of a hash.
