@@ -10,6 +10,7 @@ packages = [{include = "upstash_py"}]
 python = "^3.11"
 aiohttp = "^3.8.4"
 pytest = "^7.3.0"
+pytest-asyncio = "^0.21.0"
 
 
 [build-system]

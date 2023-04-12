@@ -2,7 +2,7 @@ from typing import TypedDict
 
 
 # The type of the "result" field returned by the REST API.
-RESTResult = str | int | list | dict | None
+RESTResult = str | int | list | None
 
 """
  The type of encoding that will be passed as a header to the REST API. 
