@@ -1,7 +1,7 @@
 from upstash_py.exception import UpstashException
 from upstash_py.http.decode import decode
-from asyncio import sleep
 from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
+from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
 

@@ -1,6 +1,13 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
-from upstash_py.config import config
+from upstash_py.config import (
+    ENABLE_TELEMETRY,
+    REST_ENCODING,
+    REST_RETRIES,
+    REST_RETRY_INTERVAL,
+    ALLOW_DEPRECATED,
+    FORMAT_RETURN
+)
 from upstash_py.utils.format import (
     format_geo_positions_return,
     format_geo_members_return,
@@ -35,32 +42,31 @@ class Redis:
         self,
         url: str,
         token: str,
-        enable_telemetry: bool = config["ENABLE_TELEMETRY"],
-        rest_encoding: RESTEncoding = config["REST_ENCODING"],
-        rest_retries: int = config["REST_RETRIES"],
-        rest_retry_interval: int = config["REST_RETRY_INTERVAL"],
-        allow_deprecated: bool = config["ALLOW_DEPRECATED"],
-        format_return: bool = config["FORMAT_RETURN"]
+        enable_telemetry: bool = ENABLE_TELEMETRY,
+        rest_encoding: RESTEncoding = REST_ENCODING,
+        rest_retries: int = REST_RETRIES,
+        rest_retry_interval: int = REST_RETRY_INTERVAL,
+        allow_deprecated: bool = ALLOW_DEPRECATED,
+        format_return: bool = FORMAT_RETURN
     ):
         self.url = url
         self.token = token
+
         self.enable_telemetry = enable_telemetry
+
         self.allow_deprecated = allow_deprecated
         self.format_return = format_return
 
-        # If the encoding is set as "True", it defaults to config.
-        self.rest_encoding = config["REST_ENCODING"] if rest_encoding else rest_encoding
+        self.rest_encoding = rest_encoding
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
-
-        self._session: ClientSession | None = None
 
     async def __aenter__(self) -> ClientSession:
         """
         Enter the async context.
         """
 
-        self._session = ClientSession()
+        self._session: ClientSession = ClientSession()
         # It needs to return the session object because it will be used in "async with" statements.
         return self._session
 

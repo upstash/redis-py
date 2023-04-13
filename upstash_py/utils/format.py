@@ -13,6 +13,7 @@ def _list_to_dict(raw: list) -> dict:
     """
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
+
     return {
         raw[iterator]: raw[iterator + 1]
         for iterator in range(0, len(raw), 2)
@@ -20,7 +21,6 @@ def _list_to_dict(raw: list) -> dict:
 
 
 def format_geo_positions_return(raw: list[list[str] | None]) -> list[dict[str, float | int] | None]:
-
     """
     Format the raw output returned by "GEOPOS".
     """
@@ -140,15 +140,13 @@ def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_float_list(raw: list[str | None], allow_none: bool = True) -> list[float | None]:
+def format_float_list(raw: list[str | None]) -> list[float | None]:
     """
-    Format a list of strings representing floats.
-
-    If "allow_none" is True, possible None values will be allowed and handled.
+    Format a list of strings representing floats or None values.
     """
 
     return [
-        float(value) if not allow_none or value is not None
+        float(value) if value is not None
 
         else None
 
