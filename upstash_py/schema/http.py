@@ -2,7 +2,10 @@ from typing import TypedDict, Literal, TypeVar
 
 
 # The type of the "result" field returned by the REST API.
-RESTResult = TypeVar("RESTResult", str, int, list, None)
+RESTResult = TypeVar(
+    "RESTResult",
+    str, int, list, None, Literal[0, 1], Literal["OK"]
+)
 
 """
  The type of encoding that will be passed as a header to the REST API. 
