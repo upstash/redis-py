@@ -1,5 +1,8 @@
-# The raw output returned by some Geo commands, usually the ones that return properties of members.
-GeoMembersReturn = list[str]
+"""
+The raw output returned by some Geo commands, usually the ones that return properties of members.
+If no additional properties are requested, the output is a list of strings, each string representing a member.
+"""
+GeoMembersReturn = list[str | list[str]]
 
 """
 The output resulted by formatting "GeoMembersReturn".

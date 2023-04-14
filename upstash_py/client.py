@@ -23,7 +23,7 @@ from upstash_py.utils.exception import (
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
 )
-from upstash_py.utils.comparison import one_is_specified
+from upstash_py.utils.comparison import number_are_not_none
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
@@ -97,7 +97,7 @@ class Redis:
         See https://redis.io/commands/bitcount
         """
 
-        if one_is_specified(start, end):
+        if number_are_not_none(start, end, number=1):
             raise Exception("Both \"start\" and \"end\" must be specified.")
 
         command: list = ["BITCOUNT", key]
@@ -539,7 +539,11 @@ Source: https://redis.io/commands/georadius""")
 
         raw: GeoMembersReturn = await self.run(command)
 
-        return format_geo_members_return(raw) if self.format_return else raw
+        # If none of the additional properties are requested, the result will be "list[str]".
+        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+
+        return raw
 
     async def georadius_ro(
         self,
@@ -593,7 +597,11 @@ Source: https://redis.io/commands/georadius_ro""")
 
         raw: GeoMembersReturn = await self.run(command)
 
-        return format_geo_members_return(raw) if self.format_return else raw
+        # If none of the additional properties are requested, the result will be "list[str]".
+        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+
+        return raw
 
     async def georadiusbymember(
         self,
@@ -656,7 +664,11 @@ Source: https://redis.io/commands/georadiusbymember""")
 
         raw: GeoMembersReturn = await self.run(command)
 
-        return format_geo_members_return(raw) if self.format_return else raw
+        # If none of the additional properties are requested, the result will be "list[str]".
+        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+
+        return raw
 
     async def georadiusbymember_ro(
         self,
@@ -709,7 +721,11 @@ Source: https://redis.io/commands/georadiusbymember""")
 
         raw: GeoMembersReturn = await self.run(command)
 
-        return format_geo_members_return(raw) if self.format_return else raw
+        # If none of the additional properties are requested, the result will be "list[str]".
+        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+
+        return raw
 
     async def geosearch(
         self,
@@ -783,7 +799,11 @@ Source: https://redis.io/commands/georadiusbymember""")
 
         raw: GeoMembersReturn = await self.run(command)
 
-        return format_geo_members_return(raw) if self.format_return else raw
+        # If none of the additional properties are requested, the result will be "list[str]".
+        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+
+        return raw
 
     async def geosearchstore(
         self,
@@ -1658,7 +1678,7 @@ Source: https://redis.io/commands/rpoplpush""")
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zdiff(self, *keys: str, with_scores: bool = False) -> SortedSetReturn | FormattedSortedSetReturn:
         """
@@ -1702,7 +1722,7 @@ Source: https://redis.io/commands/rpoplpush""")
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zinter(
         self,
@@ -1849,7 +1869,7 @@ Source: https://redis.io/commands/rpoplpush""")
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zrange(
         self,
@@ -1921,7 +1941,7 @@ Source: https://redis.io/commands/zrangebylex""")
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zrangebyscore(
         self,
@@ -1944,7 +1964,7 @@ Source: https://redis.io/commands/zrangebylex""")
 It can be replaced by "zrange" with "range_method" set to "BYSCORE".
 Source: https://redis.io/commands/zrangebyscore""")
 
-        if one_is_specified(offset, count):
+        if number_are_not_none(offset, count, number=1):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
@@ -2051,7 +2071,7 @@ Source: https://redis.io/commands/zrangebyscore""")
 
     """
     This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zrevrange(
         self,
@@ -2108,7 +2128,7 @@ Source: https://redis.io/commands/zrevrangebylex""")
 
     """
     This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zrevrangebyscore(
         self,
@@ -2130,7 +2150,7 @@ Source: https://redis.io/commands/zrevrangebylex""")
 It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
 Source: https://redis.io/commands/zrevrangebyscore""")
 
-        if one_is_specified(offset, count):
+        if number_are_not_none(offset, count, number=1):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
@@ -2207,7 +2227,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
 
     """
     This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its return type will be list[str].
+    whether "with_scores" is True or not, its raw return type will be list[str].
     """
     async def zunion(
         self,
@@ -2327,7 +2347,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         were replaced with their corresponding units.
         """
 
-        if not one_is_specified(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, persist):
+        if not number_are_not_none(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, persist, number=1):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         command: list = ["GETEX", key]
@@ -2475,7 +2495,14 @@ Source: https://redis.io/commands/psetex""")
         if nx and xx:
             raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
 
-        if not one_is_specified(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, keep_ttl):
+        if not number_are_not_none(
+            seconds,
+            milliseconds,
+            unix_time_seconds,
+            unix_time_milliseconds,
+            keep_ttl,
+            number=1
+        ):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         if nx and get:

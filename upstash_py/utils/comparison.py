@@ -1,9 +1,9 @@
 from typing import Any
 
 
-def one_is_specified(*parameters: Any) -> bool:
+def number_are_not_none(*parameters: Any, number: int) -> bool:
     """
-    Check if only one of the given parameters is specified.
+    Check if "number" of the given parameters are not None.
     """
 
-    return sum(parameter is not None for parameter in parameters) == 1
+    return sum(parameter is not None for parameter in parameters) == number

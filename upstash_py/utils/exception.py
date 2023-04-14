@@ -1,5 +1,5 @@
 from upstash_py.schema.commands.parameters import FloatMinMax
-from upstash_py.utils.comparison import one_is_specified
+from upstash_py.utils.comparison import number_are_not_none
 from typing import Literal
 
 
@@ -17,17 +17,17 @@ def handle_geosearch_exceptions(
     Handle exceptions for "GEOSEARCH*" commands.
     """
 
-    if one_is_specified(longitude, latitude):
+    if number_are_not_none(longitude, latitude, number=1):
         raise Exception("Both \"longitude\" and \"latitude\" must be specified.")
 
-    if one_is_specified(width, height):
+    if number_are_not_none(width, height, number=1):
         raise Exception("Both \"width\" and \"height\" must be specified.")
 
-    if not one_is_specified(member, longitude):
+    if not number_are_not_none(member, longitude, number=1):
         raise Exception("""Specify either the member's name with "member",
 or the longitude and latitude with "longitude" and "latitude", but not both.""")
 
-    if not one_is_specified(radius, width):
+    if not number_are_not_none(radius, width, number=1):
         raise Exception("""Specify either the radius with "radius",
 or the width and height with "width" and "height", but not both.""")
 
@@ -57,7 +57,7 @@ def handle_non_deprecated_zrange_exceptions(
         raise Exception(""""start" and "stop" must either start with '(' or '[' or be '+' or '-' when
 the ranging method is "BYLEX".""")
 
-    if one_is_specified(offset, count):
+    if number_are_not_none(offset, count, number=1):
         raise Exception("Both \"offset\" and \"count\" must be specified.")
 
 
@@ -76,5 +76,5 @@ def handle_zrangebylex_exceptions(
             "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
         )
 
-    if one_is_specified(offset, count):
+    if number_are_not_none(offset, count, number=1):
         raise Exception("Both \"offset\" and \"count\" must be specified.")
