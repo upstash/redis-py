@@ -1766,7 +1766,7 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zlexcount
         """
 
-        if not min_score.startswith(('(', '[', '+inf', '-inf')) or not max_score.startswith(('(', '[', '+inf', '-inf')):
+        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
             raise Exception(
                 "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
