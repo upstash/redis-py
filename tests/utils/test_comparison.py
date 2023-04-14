@@ -1,10 +1,4 @@
-from upstash_py.utils.comparison import all_are_specified, one_is_specified
-
-
-def test_all_are_specified() -> None:
-    assert all_are_specified(1, 2, 3)
-    assert not all_are_specified(1, 2, None)
-    assert not all_are_specified(None, None, None)
+from upstash_py.utils.comparison import one_is_specified
 
 
 def test_one_is_specified() -> None:

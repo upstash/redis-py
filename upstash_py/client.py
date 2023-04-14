@@ -23,7 +23,7 @@ from upstash_py.utils.exception import (
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
 )
-from upstash_py.utils.comparison import all_are_specified, one_is_specified
+from upstash_py.utils.comparison import one_is_specified
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
 from upstash_py.schema.commands.returns import (
     GeoMembersReturn,
@@ -97,7 +97,7 @@ class Redis:
         See https://redis.io/commands/bitcount
         """
 
-        if not all_are_specified(start, end):
+        if one_is_specified(start, end):
             raise Exception("Both \"start\" and \"end\" must be specified.")
 
         command: list = ["BITCOUNT", key]
@@ -1944,7 +1944,7 @@ Source: https://redis.io/commands/zrangebylex""")
 It can be replaced by "zrange" with "range_method" set to "BYSCORE".
 Source: https://redis.io/commands/zrangebyscore""")
 
-        if not all_are_specified(offset, count):
+        if one_is_specified(offset, count):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
@@ -2130,7 +2130,7 @@ Source: https://redis.io/commands/zrevrangebylex""")
 It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
 Source: https://redis.io/commands/zrevrangebyscore""")
 
-        if not all_are_specified(offset, count):
+        if one_is_specified(offset, count):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
