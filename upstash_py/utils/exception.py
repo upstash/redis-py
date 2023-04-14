@@ -18,41 +18,21 @@ def handle_geosearch_exceptions(
     """
 
     if not all_are_specified(longitude, latitude):
-        raise Exception(
-            """
-            Both "longitude" and "latitude" must be specified.
-            """
-        )
+        raise Exception("Both \"longitude\" and \"latitude\" must be specified.")
 
     if not all_are_specified(width, height):
-        raise Exception(
-            """
-            Both "width" and "height" must be specified.
-            """
-        )
+        raise Exception("Both \"width\" and \"height\" must be specified.")
 
     if not one_is_specified(member, longitude):
-        raise Exception(
-            """
-            Specify either the member's name with "member", 
-            or the longitude and latitude with "longitude" and "latitude", but not both.
-            """
-        )
+        raise Exception("""Specify either the member's name with "member",
+or the longitude and latitude with "longitude" and "latitude", but not both.""")
 
     if not one_is_specified(radius, width):
-        raise Exception(
-            """
-            Specify either the radius with "radius", 
-            or the width and height with "width" and "height", but not both.
-            """
-        )
+        raise Exception("""Specify either the radius with "radius",
+or the width and height with "width" and "height", but not both.""")
 
     if count_any and count is None:
-        raise Exception(
-            """
-            "count_any" can only be used together with "count".
-            """
-        )
+        raise Exception("\"count_any\" can only be used together with \"count\".")
 
 
 def handle_non_deprecated_zrange_exceptions(
@@ -70,19 +50,11 @@ def handle_non_deprecated_zrange_exceptions(
             not start.startswith(("(", "[", "+inf", "-inf"))
             or not stop.startswith(("(", "[", "+inf", "-inf"))
     ):
-        raise Exception(
-            """
-            "start" and "stop" must either start with "(" or "[" or be "+inf" or "-inf" when 
-            the ranging method is "BYLEX".
-            """
-        )
+        raise Exception(""""start" and "stop" must either start with "(" or "[" or be "+inf" or "-inf" when
+the ranging method is "BYLEX".""")
 
     if not all_are_specified(offset, count):
-        raise Exception(
-            """
-            Both "offset" and "count" must be specified.
-            """
-        )
+        raise Exception("Both \"offset\" and \"count\" must be specified.")
 
 
 def handle_zrangebylex_exceptions(
@@ -97,14 +69,8 @@ def handle_zrangebylex_exceptions(
 
     if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
         raise Exception(
-            """
-            "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
-            """
+            "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
         )
 
     if not all_are_specified(offset, count):
-        raise Exception(
-            """
-            Both "offset" and "count" must be specified.
-            """
-        )
+        raise Exception("Both \"offset\" and \"count\" must be specified.")

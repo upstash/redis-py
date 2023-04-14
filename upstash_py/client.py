@@ -98,11 +98,7 @@ class Redis:
         """
 
         if not all_are_specified(start, end):
-            raise Exception(
-                """
-                Both "start" and "end" must be specified.
-                """
-            )
+            raise Exception("Both \"start\" and \"end\" must be specified.")
 
         command: list = ["BITCOUNT", key]
 
@@ -136,11 +132,7 @@ class Redis:
         """
 
         if operation == "NOT" and len(source_keys) > 1:
-            raise Exception(
-                """
-                The "NOT" operation takes only one source key as argument.
-                """
-            )
+            raise Exception("The \"NOT \" operation takes only one source key as argument.")
 
         command: list = ["BITOP", operation, destination_key, *source_keys]
 
@@ -152,11 +144,7 @@ class Redis:
         """
 
         if start is None and end is not None:
-            raise Exception(
-                """
-                "End" is specified, but "start" is missing.
-                """
-            )
+            raise Exception("\"end\" is specified, but \"start\" is missing.")
 
         command: list = ["BITPOS", key, bit]
 
@@ -428,11 +416,7 @@ class Redis:
         """
 
         if nx and xx:
-            raise Exception(
-                """
-                "nx" and "xx" are mutually exclusive.
-                """
-            )
+            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
 
         command: list = ["GEOADD", key]
 
@@ -521,21 +505,12 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "geosearch" and "geosearchstore" with the "radius" argument.
-                
-                Source: https://redis.io/commands/georadius
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+It can be replaced by "geosearch" and "geosearchstore" with the "radius" argument.
+Source: https://redis.io/commands/georadius""")
 
         if count_any and count is None:
-            raise Exception(
-                """
-                "count_any" can only be used together with "count".
-                """
-            )
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUS", longitude, latitude, radius, unit]
 
@@ -590,21 +565,12 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "geosearch" with the "radius" argument.
-
-                Source: https://redis.io/commands/georadius_ro
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+It can be replaced by "geosearch" with the "radius" argument.
+Source: https://redis.io/commands/georadius_ro""")
 
         if count_any and count is None:
-            raise Exception(
-                """
-                "count_any" can only be used together with "count".
-                """
-            )
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUS_RO", longitude, latitude, radius, unit]
 
@@ -656,21 +622,12 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "geosearch" and "geosearchstore" with the "radius" and "member" arguments.
-
-                Source: https://redis.io/commands/georadiusbymember
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+It can be replaced by "geosearch" and "geosearchstore" with the "radius" and "member" arguments.
+Source: https://redis.io/commands/georadiusbymember""")
 
         if count_any and count is None:
-            raise Exception(
-                """
-                "count_any" can only be used together with "count".
-                """
-            )
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUSBYMEMBER", member, radius, unit]
 
@@ -724,21 +681,12 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "geosearch" with the "radius" and "member" arguments.
-
-                Source: https://redis.io/commands/georadiusbymember_ro
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+        It can be replaced by "geosearch" with the "radius" and "member" arguments.
+        Source: https://redis.io/commands/georadiusbymember""")
 
         if count_any and count is None:
-            raise Exception(
-                """
-                "count_any" can only be used together with "count".
-                """
-            )
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUSBYMEMBER_RO", member, radius, unit]
 
@@ -995,14 +943,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 4.0.0, this command is regarded as deprecated.
-                It can be replaced by "hset".
-                
-                Source: https://redis.io/commands/hmset
-                """
-            )
+            raise Exception("""From version 4.0.0, this command is deprecated.
+It can be replaced by "hset".
+Source: https://redis.io/commands/hmset""")
 
         command: list = ["HMSET", key]
 
@@ -1026,11 +969,7 @@ class Redis:
         """
 
         if count is None and with_values:
-            raise Exception(
-                """
-                "with_values" can only be used together with "count".
-                """
-            )
+            raise Exception("\"with_values\" can only be used together with \"count\"")
 
         command: list = ["HRANDFIELD", key]
 
@@ -1322,15 +1261,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "lmove" with 
-                "source_position" set to "RIGHT" and the "destination_position" set to "LEFT".
-
-                Source: https://redis.io/commands/rpoplpush
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+It can be replaced by "lmove" with "source_position" set to "RIGHT" and the "destination_position" set to "LEFT".
+Source: https://redis.io/commands/rpoplpush""")
 
         command: list = ["RPOPLPUSH", source_key, destination_key]
 
@@ -1663,25 +1596,13 @@ class Redis:
         """
 
         if nx and xx:
-            raise Exception(
-                """
-                "nx" and "xx" are mutually exclusive.
-                """
-            )
+            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
 
         if gt and lt:
-            raise Exception(
-                """
-                "gt" and "lt" are mutually exclusive.
-                """
-            )
+            raise Exception("\"gt\" and \"lt\" are mutually exclusive.")
 
         if nx and (gt or lt):
-            raise Exception(
-                """
-                "nx" and "gt"/"lt" are mutually exclusive.
-                """
-            )
+            raise Exception("\"nx\" and \"gt\" or \"lt\" are mutually exclusive.")
 
         command: list = ["ZADD", key]
 
@@ -1847,9 +1768,7 @@ class Redis:
 
         if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
             raise Exception(
-                """
-                "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
-                """
+                "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
             )
 
         command: list = ["ZLEXCOUNT", key, min_score, max_score]
@@ -1912,11 +1831,7 @@ class Redis:
         """
 
         if count is None and with_scores:
-            raise Exception(
-                """
-                "with_scores" can only be used together with "count".
-                """
-            )
+            raise Exception("\"with_scores\" can only be used with \"count\".")
 
         command: list = ["ZRANDMEMBER", key]
 
@@ -1991,13 +1906,9 @@ class Redis:
 
         if not self.allow_deprecated:
             raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with "range_method" set to "BYLEX".
-                
-                Source: https://redis.io/commands/zrangebylex
-                """
-            )
+                """From version 6.2.0, this command is deprecated.
+It can be replaced by "zrange" with "range_method" set to "BYLEX".
+Source: https://redis.io/commands/zrangebylex""")
 
         handle_zrangebylex_exceptions(min_score, max_score, offset, count)
 
@@ -2029,20 +1940,12 @@ class Redis:
 
         if not self.allow_deprecated:
             raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with "range_method" set to "BYSCORE".
-                
-                Source: https://redis.io/commands/zrangebyscore
-                """
-            )
+                """From 6.2.0, this command is deprecated.
+It can be replaced by "zrange" with "range_method" set to "BYSCORE".
+Source: https://redis.io/commands/zrangebyscore""")
 
         if not all_are_specified(offset, count):
-            raise Exception(
-                """
-                Both "offset" and "count" must be specified.
-                """
-            )
+            raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
 
@@ -2119,9 +2022,7 @@ class Redis:
 
         if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
             raise Exception(
-                """
-                "min_score" and "max_score" must either start with "(" or "[" or be "+inf" or "-inf".
-                """
+                "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
             )
 
         command: list = ["ZREMRANGEBYLEX", key, min_score, max_score]
@@ -2164,14 +2065,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with "rev" set to True.
-                
-                Source: https://redis.io/commands/zrevrange
-                """
-            )
+            raise Exception("""From 6.2.0, this command is deprecated.
+It can be replaced by "zrange" with "rev" set to True.
+Source: https://redis.io/commands/zrevrange""")
 
         command: list = ["ZREVRANGE", key, start, stop]
 
@@ -2197,14 +2093,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYLEX".
-                
-                Source: https://redis.io/commands/zrevrangebylex
-                """
-            )
+            raise Exception("""From 6.2.0, this command is deprecated.
+It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYLEX".
+Source: https://redis.io/commands/zrevrangebylex""")
 
         handle_zrangebylex_exceptions(min_score, max_score, offset, count)
 
@@ -2235,21 +2126,12 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
-                
-                Source: https://redis.io/commands/zrevrangebyscore
-                """
-            )
+            raise Exception("""From 6.2.0, this command is deprecated.
+It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
+Source: https://redis.io/commands/zrevrangebyscore""")
 
         if not all_are_specified(offset, count):
-            raise Exception(
-                """
-                Both "offset" and "count" must be specified.
-                """
-            )
+            raise Exception("Both \"offset\" and \"count\" must be specified.")
 
         command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
 
@@ -2482,14 +2364,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 6.2.0, this command is regarded as deprecated.
-                It can be replaced by "set" with "get".
-                
-                Source: https://redis.io/commands/getset
-                """
-            )
+            raise Exception("""From version 6.2.0, this command is deprecated.
+It can be replaced by "set" with "get".
+Source: https://redis.io/commands/getset""")
 
         command: list = ["GETSET", key, value]
 
@@ -2567,14 +2444,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 2.6.12, this command is regarded as deprecated.
-                It can be replaced by "set" with "milliseconds".
-                
-                Source: https://redis.io/commands/psetex
-                """
-            )
+            raise Exception(""" From version 2.6.12, this command is deprecated.
+It can be replaced by "set" with "milliseconds".
+Source: https://redis.io/commands/psetex""")
 
         command: list = ["PSETEX", key, milliseconds, value]
 
@@ -2601,21 +2473,13 @@ class Redis:
         """
 
         if nx and xx:
-            raise Exception(
-                """
-                "nx" and "xx" are mutually exclusive.
-                """
-            )
+            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
 
         if not one_is_specified(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, keep_ttl):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         if nx and get:
-            raise Exception(
-                """
-                "nx" and "get" are mutually exclusive.
-                """
-            )
+            raise Exception("\"nx\" and \"get\" are mutually exclusive.")
 
         command: list = ["SET", key, value]
 
@@ -2651,14 +2515,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 2.6.12, this command is regarded as deprecated.
-                It can be replaced by "set" with "seconds".
-                
-                Source: https://redis.io/commands/setex
-                """
-            )
+            raise Exception("""From version 2.6.12, this command is deprecated.
+It can be replaced by "set" with "seconds".
+Source: https://redis.io/commands/setex""")
 
         command: list = ["SETEX", key, seconds, value]
 
@@ -2670,14 +2529,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 2.6.12, this command is regarded as deprecated.
-                It can be replaced by "set" with "nx".
-                
-                Source: https://redis.io/commands/setnx
-                """
-            )
+            raise Exception("""From version 2.6.12, this command is deprecated.
+It can be replaced by "set" with "nx".
+Source: https://redis.io/commands/setnx""")
 
         command: list = ["SETNX", key, value]
 
@@ -2707,14 +2561,9 @@ class Redis:
         """
 
         if not self.allow_deprecated:
-            raise Exception(
-                """
-                As of Redis version 2.0.0, this command is regarded as deprecated.
-                It can be replaced by "getrange".
-                
-                Source: https://redis.io/commands/substr
-                """
-            )
+            raise Exception("""From version 2.0.0, this command is deprecated.
+It can be replaced by "getrange".
+Source: https://redis.io/commands/substr""")
 
         command: list = ["SUBSTR", key, start, end]
 
@@ -2942,7 +2791,7 @@ class ACL:
         # See https://redis.io/commands/acl-log
 
         if count is not None and reset:
-            raise Exception("Cannot specify both count and reset.")
+            raise Exception("Cannot specify both "count" and "reset".")
 
         self.command.append("LOG")
 
