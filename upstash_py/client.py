@@ -1766,9 +1766,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zlexcount
         """
 
-        if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+        if not min_score.startswith(('(', '[', '+inf', '-inf')) or not max_score.startswith(('(', '[', '+inf', '-inf')):
             raise Exception(
-                "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
+                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
 
         command: list = ["ZLEXCOUNT", key, min_score, max_score]
@@ -2020,9 +2020,9 @@ Source: https://redis.io/commands/zrangebyscore""")
         See https://redis.io/commands/zremrangebylex
         """
 
-        if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
             raise Exception(
-                "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
+                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
 
         command: list = ["ZREMRANGEBYLEX", key, min_score, max_score]

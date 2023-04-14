@@ -13,5 +13,5 @@ class GeoMember(TypedDict):
     name: str
 
 
-# str allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
+# "str" allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
 FloatMinMax = float | str

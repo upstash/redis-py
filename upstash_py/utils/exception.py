@@ -47,10 +47,14 @@ def handle_non_deprecated_zrange_exceptions(
     """
 
     if range_method == "BYLEX" and (
-            not start.startswith(("(", "[", "+inf", "-inf"))
-            or not stop.startswith(("(", "[", "+inf", "-inf"))
+        not (
+            isinstance(start, str) and isinstance(stop, str)
+        ) or not (
+            start.startswith(('(', '[', '+', '-'))
+            and stop.startswith(('(', '[', '+', '-'))
+        )
     ):
-        raise Exception(""""start" and "stop" must either start with "(" or "[" or be "+inf" or "-inf" when
+        raise Exception(""""start" and "stop" must either start with '(' or '[' or be '+' or '-' when
 the ranging method is "BYLEX".""")
 
     if one_is_specified(offset, count):
@@ -67,9 +71,9 @@ def handle_zrangebylex_exceptions(
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.
     """
 
-    if not min_score.startswith(("(", "[", "+inf", "-inf")) or not max_score.startswith(("(", "[", "+inf", "-inf")):
+    if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
         raise Exception(
-            "\"min_score\" and \"max_score\" must either start with \"(\" or \"[\" or be \"+inf\" or \"-inf\"."
+            "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
         )
 
     if one_is_specified(offset, count):
