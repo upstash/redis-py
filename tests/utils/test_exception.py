@@ -206,3 +206,49 @@ the ranging method is "BYLEX"."""
         count=1,
     ) is None
 
+
+def test_handle_zrangebylex_exceptions() -> None:
+    # Test if "min_score" and "max_score" are incorrectly-formatted strings.
+    with raises(Exception) as exception:
+        handle_zrangebylex_exceptions(
+            min_score="0",
+            max_score="1",
+            offset=None,
+            count=None,
+        )
+
+    assert str(exception.value) == """"min_score" and "max_score" must either start with '(' or '[' or be '+' or '-'."""
+
+    with raises(Exception) as exception:
+        handle_zrangebylex_exceptions(
+            min_score="(",
+            max_score="[",
+            offset=None,
+            count=1,
+        )
+
+    assert str(exception.value) == "Both \"offset\" and \"count\" must be specified."
+
+    # Test if no exception is raised when "min_score" and "max_score" start with '(' or '['.
+    assert handle_zrangebylex_exceptions(
+        min_score="[",
+        max_score="(",
+        offset=None,
+        count=None,
+    ) is None
+
+    # Test if no exception is raised when "min_score" and "max_score" start are '+' or '-'.
+    assert handle_zrangebylex_exceptions(
+        min_score="+",
+        max_score="-",
+        offset=None,
+        count=None,
+    ) is None
+
+    # Test if no exception is raised when both "offset" and "count" are specified.
+    assert handle_zrangebylex_exceptions(
+        min_score="(",
+        max_score="[",
+        offset=0,
+        count=1,
+    ) is None
