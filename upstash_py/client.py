@@ -2677,7 +2677,7 @@ class BitFieldRO:
 
         return self
 
-    async def execute(self) -> RESTResult:
+    async def execute(self) -> list:
         return await self.client.run(command=self.command)
 
 
