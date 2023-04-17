@@ -19,8 +19,15 @@ commands: list[list] = [
     # String.
     ["SET", "string", "test"],
 
-    # String that will be used to test BITFIELD* commands.
-    ["SET", "string_for_bitfield", "test"],
+    # Strings to be used when testing BITFIELD* commands.
+    ["SET", "string_for_bitfield_get", "test"],
+    ["SET", "string_for_bitfield_set", "test"],
+    ["SET", "string_for_bitfield_incrby", "test"],
+    ["SET", "string_for_bitfield_chained_commands", "test"],
+    ["SET", "string_for_bitfield_sat_overflow", "test"],
+    ["SET", "string_for_bitfield_wrap_overflow", "test"],
+    ["SET", "string_for_bitfield_fail_overflow", "test"],
+
 
     # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
     ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
