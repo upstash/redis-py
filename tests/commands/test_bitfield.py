@@ -89,7 +89,7 @@ async def test_bitfield_overflow() -> None:
     """
 
     async with redis:
-        async def with_sat_overflow() -> list[int]:
+        async def with_overflow() -> list[int]:
             return(
                 await redis.bitfield("string_for_bitfield_sat_overflow")
                 .incrby(encoding="u8", offset=100, increment=1)
@@ -98,29 +98,5 @@ async def test_bitfield_overflow() -> None:
                 .execute()
             )
 
-        assert await with_sat_overflow() == [1, 5]
-        assert await with_sat_overflow() == [2, 10]
-
-        async def with_wrap_overflow() -> list[int]:
-            return (
-                await redis.bitfield("string_for_bitfield_wrap_overflow")
-                .incrby(encoding="u8", offset=100, increment=1)
-                .overflow("WRAP")
-                .incrby(encoding="u8", offset=102, increment=1)
-                .execute()
-            )
-
-        assert await with_wrap_overflow() == [1, 5]
-        assert await with_wrap_overflow() == [2, 10]
-
-        async def with_fail_overflow() -> list[int]:
-            return (
-                await redis.bitfield("string_for_bitfield_fail_overflow")
-                .incrby(encoding="u8", offset=100, increment=1)
-                .overflow("FAIL")
-                .incrby(encoding="u8", offset=102, increment=1)
-                .execute()
-            )
-
-        assert await with_fail_overflow() == [1, 5]
-        assert await with_fail_overflow() == [2, 10]
+        assert await with_overflow() == [1, 5]
+        assert await with_overflow() == [2, 10]

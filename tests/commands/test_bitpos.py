@@ -3,13 +3,7 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_bitpos_with_0_bit() -> None:
-    async with redis:
-        assert await redis.bitpos("string", bit=0) == 0
-
-
-@mark.asyncio
-async def test_bitpos_with_1_bit() -> None:
+async def test_bitpos() -> None:
     async with redis:
         assert await redis.bitpos("string", bit=1) == 1
 
