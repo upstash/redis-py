@@ -174,7 +174,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def ping(self, message: str) -> str:
+    async def ping(self, message: str | None = None) -> str:
         """
         See https://redis.io/commands/ping
         """
