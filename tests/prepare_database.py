@@ -20,7 +20,6 @@ commands: list[list] = [
     ["SET", "string", "test"],
 
     # Strings to be used when testing BITFIELD* commands.
-    ["SET", "string_for_bitfield_get", "test"],
     ["SET", "string_for_bitfield_set", "test"],
     ["SET", "string_for_bitfield_incrby", "test"],
     ["SET", "string_for_bitfield_chained_commands", "test"],
@@ -28,6 +27,9 @@ commands: list[list] = [
     ["SET", "string_for_bitfield_wrap_overflow", "test"],
     ["SET", "string_for_bitfield_fail_overflow", "test"],
 
+    # Strings to be used as source keys when testing BITOP.
+    ["SET", "string_for_bitop_source_1", "abcd"],
+    ["SET", "string_for_bitop_source_2", "1234"],
 
     # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
     ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
