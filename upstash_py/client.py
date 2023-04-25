@@ -131,6 +131,9 @@ class Redis:
         See https://redis.io/commands/bitop
         """
 
+        if len(source_keys) == 0:
+            raise Exception("At least one source key must be specified.")
+
         if operation == "NOT" and len(source_keys) > 1:
             raise Exception("The \"NOT \" operation takes only one source key as argument.")
 
@@ -214,6 +217,9 @@ class Redis:
         See https://redis.io/commands/del
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be deleted.")
+
         command: list = ["DEL", *keys]
 
         return await self.run(command)
@@ -222,6 +228,9 @@ class Redis:
         """
         See https://redis.io/commands/exists
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["EXISTS", *keys]
 
@@ -370,6 +379,9 @@ class Redis:
         See https://redis.io/commands/touch
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["TOUCH", *keys]
 
         return await self.run(command)
@@ -397,6 +409,9 @@ class Redis:
         See https://redis.io/commands/unlink
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["UNLINK", *keys]
 
         return await self.run(command)
@@ -414,6 +429,9 @@ class Redis:
 
         The members should be added as a sequence of GeoMember dict types (longitude, latitude, name).
         """
+
+        if len(members) == 0:
+            raise Exception("At least one member must be added.")
 
         if nx and xx:
             raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
@@ -875,6 +893,9 @@ Source: https://redis.io/commands/georadiusbymember""")
         See https://redis.io/commands/hdel
         """
 
+        if len(fields) == 0:
+            raise Exception("At least one field must be deleted.")
+
         command: list = ["HDEL", key, *fields]
 
         return await self.run(command)
@@ -952,6 +973,9 @@ Source: https://redis.io/commands/georadiusbymember""")
         """
         See https://redis.io/commands/hmget
         """
+
+        if len(fields) == 0:
+            raise Exception("At least one field must be specified.")
 
         command: list = ["HMGET", key, *fields]
 
@@ -1096,6 +1120,9 @@ Source: https://redis.io/commands/hmset""")
         See https://redis.io/commands/pfcount
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["PFCOUNT", *keys]
 
         return await self.run(command)
@@ -1212,6 +1239,9 @@ Source: https://redis.io/commands/hmset""")
         See https://redis.io/commands/lpush
         """
 
+        if len(elements) == 0:
+            raise Exception("At least one element must be added.")
+
         command: list = ["LPUSH", key, *elements]
 
         return await self.run(command)
@@ -1220,6 +1250,9 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/lpushx
         """
+
+        if len(elements) == 0:
+            raise Exception("At least one element must be added.")
 
         command: list = ["LPUSHX", key, *elements]
 
@@ -1294,6 +1327,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/rpush
         """
 
+        if len(elements) == 0:
+            raise Exception("At least one element must be added.")
+
         command: list = ["RPUSH", key, *elements]
 
         return await self.run(command)
@@ -1302,6 +1338,9 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/rpushx
         """
+
+        if len(elements) == 0:
+            raise Exception("At least one element must be added.")
 
         command: list = ["RPUSHX", key, *elements]
 
@@ -1432,6 +1471,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/sadd
         """
 
+        if len(members) == 0:
+            raise Exception("At least one member must be added.")
+
         command: list = ["SADD", key, *members]
 
         return await self.run(command)
@@ -1450,6 +1492,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/sdiff
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["SDIFF", *keys]
 
         return await self.run(command)
@@ -1458,6 +1503,9 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/sdiffstore
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["SDIFFSTORE", destination_key, *keys]
 
@@ -1468,6 +1516,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/sinter
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["SINTER", *keys]
 
         return await self.run(command)
@@ -1476,6 +1527,9 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/sinterstore
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["SINTERSTORE", destination_key, *keys]
 
@@ -1545,6 +1599,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/srem
         """
 
+        if len(members) == 0:
+            raise Exception("At least one member must be removed.")
+
         command: list = ["SREM", key, *members]
 
         return await self.run(command)
@@ -1585,6 +1642,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/sunion
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["SUNION", *keys]
 
         return await self.run(command)
@@ -1593,6 +1653,9 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/sunionstore
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["SUNIONSTORE", destination_key, *keys]
 
@@ -1687,6 +1750,9 @@ Source: https://redis.io/commands/rpoplpush""")
         The number of keys is calculated automatically.
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["ZDIFF", len(keys), *keys]
 
         if with_scores:
@@ -1704,6 +1770,9 @@ Source: https://redis.io/commands/rpoplpush""")
 
         The number of keys is calculated automatically.
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["ZDIFFSTORE", destination_key, len(keys), *keys]
 
@@ -1739,6 +1808,9 @@ Source: https://redis.io/commands/rpoplpush""")
         The "WEIGHTS" can be specified with "multiplication_factors".
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["ZINTER", len(keys), *keys]
 
         if multiplication_factors:
@@ -1771,6 +1843,9 @@ Source: https://redis.io/commands/rpoplpush""")
         The "WEIGHTS" can be specified with "multiplication_factors".
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["ZINTERSTORE", destination_key, len(keys), *keys]
 
         if multiplication_factors:
@@ -1799,6 +1874,9 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/zmscore
         """
+
+        if len(members) == 0:
+            raise Exception("At least one member must be specified.")
 
         command: list = ["ZMSCORE", key, *members]
 
@@ -2031,6 +2109,9 @@ Source: https://redis.io/commands/zrangebyscore""")
         See https://redis.io/commands/zrem
         """
 
+        if len(members) == 0:
+            raise Exception("At least one member must be removed.")
+
         command: list = ["ZREM", key, *members]
 
         return await self.run(command)
@@ -2244,6 +2325,9 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         The "WEIGHTS" can be specified with "multiplication_factors".
         """
 
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
+
         command: list = ["ZUNION", len(keys), *keys]
 
         if multiplication_factors:
@@ -2275,6 +2359,9 @@ Source: https://redis.io/commands/zrevrangebyscore""")
 
         The "WEIGHTS" can be specified with "multiplication_factors".
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["ZUNIONSTORE", destination_key, len(keys), *keys]
 
@@ -2425,6 +2512,9 @@ Source: https://redis.io/commands/getset""")
         """
         See https://redis.io/commands/mget
         """
+
+        if len(keys) == 0:
+            raise Exception("At least one key must be specified.")
 
         command: list = ["MGET", *keys]
 
@@ -2729,6 +2819,9 @@ class Script:
         See https://redis.io/commands/script-exists
         """
 
+        if len(sha1_digests) == 0:
+            raise Exception("At least one sha1 digest must be provided.")
+
         self.command.extend(["EXISTS", *sha1_digests])
 
         raw: list[Literal[1, 0]] = await self.client.run(command=self.command)
@@ -2777,6 +2870,9 @@ class ACL:
 
     async def deluser(self, *usernames: str) -> int:
         # See https://redis.io/commands/acl-deluser
+        
+        if len(usernames) == 0:
+            raise Exception("At least one username must be provided.")
 
         self.command.extend(["DELUSER", *usernames])
 
