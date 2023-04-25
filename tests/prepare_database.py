@@ -43,6 +43,8 @@ commands: list[list] = [
     # String that will be used as a destination key to test COPY with REPLACE.
     ["SET", "string_as_copy_destination", "test"],
 
+    # String to be deleted when testing DELETE.
+    ["SET", "string_for_delete", "a"],
 
     # Hash.
     ["HSET", "hash", "field_1", "test_1", "field_2", "test_2"],
