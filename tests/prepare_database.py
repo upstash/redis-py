@@ -19,6 +19,15 @@ commands: list[list] = [
     # String.
     ["SET", "string", "test"],
 
+    # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
+    ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
+
+    # String that's set with a numeric value.
+    ["SET", "string_with_numeric_value", 1],
+
+    # String that's set with a JSON-compatible value.
+    ["SET", "string_with_json_value", dumps({"1": 2})],
+
     # Strings to be used when testing BITFIELD* commands.
     ["SET", "string_for_bitfield_set", "test"],
     ["SET", "string_for_bitfield_incrby", "test"],
@@ -28,17 +37,11 @@ commands: list[list] = [
     ["SET", "string_for_bitfield_fail_overflow", "test"],
 
     # Strings to be used as source keys when testing BITOP.
-    ["SET", "string_for_bitop_source_1", "abcd"],
-    ["SET", "string_for_bitop_source_2", "1234"],
+    ["SET", "string_as_bitop_source_1", "abcd"],
+    ["SET", "string_as_bitop_source_2", "1234"],
 
-    # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
-    ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
-
-    # String that's set with a numeric value.
-    ["SET", "string_with_numeric_value", 1],
-
-    # String that's set with a JSON-compatible value.
-    ["SET", "string_with_json_value", dumps({"1": 2})],
+    # String that will be used as a destination key to test COPY with REPLACE.
+    ["SET", "string_as_copy_destination", "test"],
 
 
     # Hash.
