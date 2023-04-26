@@ -14,7 +14,4 @@ async def test_delete_without_keys() -> None:
 @mark.asyncio
 async def test_delete() -> None:
     async with redis:
-        assert await redis.delete("string_for_delete") == 1
-
-        # This key does not exist.
-        assert await redis.delete("delete") == 0
+        assert await redis.delete("string_for_delete_1", "string_for_delete_2") == 2

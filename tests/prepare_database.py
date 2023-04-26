@@ -22,12 +22,6 @@ commands: list[list] = [
     # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
     ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
 
-    # String that's set with a numeric value.
-    ["SET", "string_with_numeric_value", 1],
-
-    # String that's set with a JSON-compatible value.
-    ["SET", "string_with_json_value", dumps({"1": 2})],
-
     # Strings to be used when testing BITFIELD* commands.
     ["SET", "string_for_bitfield_set", "test"],
     ["SET", "string_for_bitfield_incrby", "test"],
@@ -44,36 +38,23 @@ commands: list[list] = [
     ["SET", "string_as_copy_destination", "test"],
 
     # String to be deleted when testing DELETE.
-    ["SET", "string_for_delete", "a"],
+    ["SET", "string_for_delete_1", "a"],
+    ["SET", "string_for_delete_2", "a"],
+
+    # String to be used when testing expiry-setting commands.
+    ["SET", "string_with_no_expiry", "a"],
+
 
     # Hash.
     ["HSET", "hash", "field_1", "test_1", "field_2", "test_2"],
-
-    # Hash that has at least a field with a numeric value.
-    ["HSET", "hash_with_numeric_value", "field_1", 1, "field_2", "2"],
-
-    # Hash that has at least a field with a JSON-compatible value.
-    ["HSET", "hash_with_json_value", "field_1", dumps({"1": 2}), "field_2", "2"],
 
 
     # List.
     ["LPUSH", "list", "element_1", "element_2"],
 
-    # List that has at least an element with a numeric value.
-    ["LPUSH", "list_with_numeric_value", 1, "2"],
-
-    # List that has at least an element with a JSON-compatible value.
-    ["LPUSH", "list_with_json_value", dumps({"1": 2}), "2"],
-
 
     # Set.
     ["SADD", "set", "test_set_value_1", "test_set_value_2"],
-
-    # Set that has at least an element with a numeric value.
-    ["SADD", "set_with_numeric_value", 1, "2"],
-
-    # Set that has at least an element with a JSON-compatible value.
-    ["SADD", "set_with_json_value", dumps({"1": 2}), "2"],
 
 
     # Sorted set.
@@ -86,12 +67,6 @@ commands: list[list] = [
 
     # HyperLogLog.
     ["PFADD", "test_hyperloglog", "element_1", "element_2"],
-
-    # HyperLogLog that has at least an element with a numeric value.
-    ["PFADD", "test_hyperloglog_with_numeric_value", 1, "2"],
-
-    # HyperLogLog that has at least an element with a JSON-compatible value.
-    ["PFADD", "test_hyperloglog_with_json_value", dumps({"1": 2}), "2"],
 ]
 
 

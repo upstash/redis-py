@@ -230,7 +230,7 @@ class Redis:
         """
 
         if len(keys) == 0:
-            raise Exception("At least one key must be specified.")
+            raise Exception("At least one key must be checked.")
 
         command: list = ["EXISTS", *keys]
 

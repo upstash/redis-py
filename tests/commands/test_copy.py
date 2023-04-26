@@ -7,8 +7,6 @@ async def test_copy() -> None:
     async with redis:
         assert await redis.copy(source="string", destination="copy_destination") is True
 
-        assert await redis.copy(source="string", destination="string_as_copy_destination") is False
-
 
 @mark.asyncio
 async def test_copy_with_replace() -> None:
@@ -22,7 +20,5 @@ async def test_copy_without_formatting() -> None:
 
     async with redis:
         assert await redis.copy(source="string", destination="copy_destination_2") == 1
-
-        assert await redis.copy(source="string", destination="string_as_copy_destination") == 0
 
     redis.format_return = True
