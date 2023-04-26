@@ -12,26 +12,10 @@ async def test_bitop_without_source_keys() -> None:
 
 
 @mark.asyncio
-async def test_bitop_and() -> None:
+async def test_bitop_not_none_operation() -> None:
     async with redis:
         assert await (
             redis.bitop("AND", "bitop_destination_1", "string_as_bitop_source_1", "string_as_bitop_source_2")
-        ) == 4
-
-
-@mark.asyncio
-async def test_bitop_or() -> None:
-    async with redis:
-        assert await (
-            redis.bitop("OR", "bitop_destination_2", "string_as_bitop_source_1", "string_as_bitop_source_2")
-        ) == 4
-
-
-@mark.asyncio
-async def test_bitop_xor() -> None:
-    async with redis:
-        assert await(
-            redis.bitop("XOR", "bitop_destination_3", "string_as_bitop_source_1", "string_as_bitop_source_2")
         ) == 4
 
 

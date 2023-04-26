@@ -4,7 +4,6 @@ Flush and fill the testing database with the necessary data.
 
 from asyncio import get_event_loop
 from aiohttp import ClientSession
-from json import dumps
 from os import environ
 
 url: str = environ["UPSTASH_REDIS_REST_URL"] + "/pipeline"
@@ -42,7 +41,7 @@ commands: list[list] = [
     ["SET", "string_for_delete_2", "a"],
 
     # String to be used when testing expiry-setting commands.
-    ["SET", "string_with_no_expiry", "a"],
+    ["SET", "string_for_expire", "a"],
 
 
     # Hash.
