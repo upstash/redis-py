@@ -5,7 +5,7 @@ from tests.client import redis
 @mark.asyncio
 async def test_expire() -> None:
     async with redis:
-        assert await redis.expire("string_for_expire", 1704067200) is True
+        assert await redis.expire("string_for_expireat", 1704067200) is True
 
 
 @mark.asyncio

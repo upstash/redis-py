@@ -15,33 +15,37 @@ commands: list[list] = [
     # Flush the database.
     ["FLUSHDB"],
 
-    # String.
-    ["SET", "string", "test"],
+    [
+        "MSET",
+        # String
+        "string", "test",
+
+        # Strings to be used when testing BITFIELD* commands.
+        "string_for_bitfield_set", "test",
+        "string_for_bitfield_incrby", "test",
+        "string_for_bitfield_chained_commands", "test",
+        "string_for_bitfield_sat_overflow", "test",
+        "string_for_bitfield_wrap_overflow", "test",
+        "string_for_bitfield_fail_overflow", "test",
+
+        # Strings to be used as source keys when testing BITOP.
+        "string_as_bitop_source_1", "abcd",
+        "string_as_bitop_source_2", "1234",
+
+        # String that will be used as a destination key to test COPY with REPLACE.
+        "string_as_copy_destination_with_replace", "test",
+
+        # String to be deleted when testing DELETE.
+        "string_for_delete_1", "a",
+        "string_for_delete_2", "a",
+
+        # Strings to be used when testing expiry-setting commands.
+        "string_for_expire", "a",
+        "string_for_expireat", "a",
+    ],
 
     # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
     ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
-
-    # Strings to be used when testing BITFIELD* commands.
-    ["SET", "string_for_bitfield_set", "test"],
-    ["SET", "string_for_bitfield_incrby", "test"],
-    ["SET", "string_for_bitfield_chained_commands", "test"],
-    ["SET", "string_for_bitfield_sat_overflow", "test"],
-    ["SET", "string_for_bitfield_wrap_overflow", "test"],
-    ["SET", "string_for_bitfield_fail_overflow", "test"],
-
-    # Strings to be used as source keys when testing BITOP.
-    ["SET", "string_as_bitop_source_1", "abcd"],
-    ["SET", "string_as_bitop_source_2", "1234"],
-
-    # String that will be used as a destination key to test COPY with REPLACE.
-    ["SET", "string_as_copy_destination", "test"],
-
-    # String to be deleted when testing DELETE.
-    ["SET", "string_for_delete_1", "a"],
-    ["SET", "string_for_delete_2", "a"],
-
-    # String to be used when testing expiry-setting commands.
-    ["SET", "string_for_expire", "a"],
 
 
     # Hash.
