@@ -15,6 +15,10 @@ async def test_bitpos_with_interval() -> None:
 
         assert await redis.bitpos("string", bit=0, start=1) == 8
 
+
+@mark.asyncio
+async def test_bitpos_with_start_and_not_end() -> None:
+    async with redis:
         with raises(Exception) as exception:
             await redis.bitpos("string", bit=0, end=2)
 
