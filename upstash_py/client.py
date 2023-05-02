@@ -318,21 +318,21 @@ class Redis:
 
         return await self.run(command)
 
-    async def rename(self, key: str, new_key: str) -> str:
+    async def rename(self, key: str, new_name: str) -> str:
         """
         See https://redis.io/commands/rename
         """
 
-        command: list = ["RENAME", key, new_key]
+        command: list = ["RENAME", key, new_name]
 
         return await self.run(command)
 
-    async def renamenx(self, key: str, new_key: str) -> Literal[1, 0] | bool:
+    async def renamenx(self, key: str, new_name: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/renamenx
         """
 
-        command: list = ["RENAMENX", key, new_key]
+        command: list = ["RENAMENX", key, new_name]
 
         raw: Literal[1, 0] = await self.run(command)
 
@@ -345,7 +345,7 @@ class Redis:
         count: int | None = None,
         scan_type: str | None = None,
         return_cursor: bool = True
-    ) -> list[int | list[str]] | list:
+    ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
         See https://redis.io/commands/scan
 
@@ -369,10 +369,13 @@ class Redis:
         if scan_type is not None:
             command.extend(["TYPE", scan_type])
 
-        raw: list[int | list[str]] = await self.run(command)
-
         # The raw result is composed of the new cursor and the array of elements.
-        return raw[1] if not return_cursor else raw
+        raw: list[str | list[str]] = await self.run(command)
+
+        if return_cursor:
+            return [int(raw[0]), raw[1]] if self.format_return else raw
+
+        return raw[1]
 
     async def touch(self, *keys: str) -> int:
         """
@@ -1036,7 +1039,7 @@ Source: https://redis.io/commands/hmset""")
         pattern: str | None = None,
         count: int | None = None,
         return_cursor: bool = True
-    ) -> (list[int | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
+    ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
         """
         See https://redis.io/commands/hscan
 
@@ -1055,12 +1058,12 @@ Source: https://redis.io/commands/hmset""")
         if count is not None:
             command.extend(["COUNT", count])
 
-        raw: list[int | HashReturn] | HashReturn = await self.run(command)
+        # The raw result is composed of the new cursor and the array of elements.
+        raw: list[str | HashReturn] | HashReturn = await self.run(command)
 
         if return_cursor:
-            return [raw[0], format_hash_return(raw[1])] if self.format_return else raw
+            return [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
 
-        # The raw result is composed of the new cursor and the array of elements.
         return format_hash_return(raw[1]) if self.format_return else raw[1]
 
     async def hset(self, key: str, fields_and_values: dict) -> int:
@@ -1613,7 +1616,7 @@ Source: https://redis.io/commands/rpoplpush""")
         pattern: str | None = None,
         count: int | None = None,
         return_cursor: bool = True
-    ) -> list[int | list[str]] | list[str]:
+    ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
         See https://redis.io/commands/sscan
 
@@ -1632,10 +1635,13 @@ Source: https://redis.io/commands/rpoplpush""")
         if count is not None:
             command.extend(["COUNT", count])
 
-        raw: list[int | list[str]] = await self.run(command)
-
         # The raw result is composed of the new cursor and the array of elements.
-        return raw[1] if not return_cursor else raw
+        raw: list[str | list[str]] = await self.run(command)
+
+        if return_cursor:
+            return [int(raw[0]), raw[1]] if self.format_return else raw
+
+        return raw[1]
 
     async def sunion(self, *keys: str) -> list[str]:
         """
@@ -2265,7 +2271,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         count: int | None = None,
         return_cursor: bool = True
     ) -> (
-            list[int | SortedSetReturn] | list[int | FormattedSortedSetReturn]
+            list[str | SortedSetReturn] | list[int | FormattedSortedSetReturn]
          ) | (
             SortedSetReturn | FormattedSortedSetReturn
          ):
@@ -2290,7 +2296,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         raw: list[int | SortedSetReturn] = await self.run(command)
 
         if return_cursor:
-            return [raw[0], format_sorted_set_return(raw[1])] if self.format_return else raw
+            return [int(raw[0]), format_sorted_set_return(raw[1])] if self.format_return else raw
 
         # The raw result is composed of the new cursor and the array of elements.
         return format_sorted_set_return(raw[1]) if self.format_return else raw[1]

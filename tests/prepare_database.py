@@ -38,10 +38,6 @@ commands: list[list] = [
         # String to be deleted when testing DELETE.
         "string_for_delete_1", "a",
         "string_for_delete_2", "a",
-
-        # Strings to be used when testing expiry-setting commands.
-        "string_for_expire", "a",
-        "string_for_expireat", "a",
     ],
 
     # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.

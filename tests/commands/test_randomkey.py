@@ -3,6 +3,7 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_keys() -> None:
+async def test_randomkey() -> None:
     async with redis:
-        assert await redis.keys(pattern="hash") == ["hash"]
+        assert isinstance(await redis.randomkey(), str)
+

@@ -3,16 +3,16 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_expire() -> None:
+async def test_expireat() -> None:
     async with redis:
-        assert await redis.expire("string_for_expireat", 1704067200) is True
+        assert await redis.expireat("non_existing_key", unix_time_seconds=1704067200) is False
 
 
 @mark.asyncio
-async def test_expire_without_formatting() -> None:
+async def test_expireat_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:
-        assert await redis.expire("non_existing_key", 1704067200) == 0
+        assert await redis.expireat("non_existing_key", unix_time_seconds=1704067200) == 0
 
     redis.format_return = True
