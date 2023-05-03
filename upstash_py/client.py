@@ -422,10 +422,10 @@ class Redis:
     async def geoadd(
         self,
         key: str,
+        *members: GeoMember,
         nx: bool = False,
         xx: bool = False,
         ch: bool = False,
-        *members: GeoMember
     ) -> int:
         """
         See https://redis.io/commands/geoadd
@@ -460,8 +460,8 @@ class Redis:
         key: str,
         first_member: str,
         second_member: str,
-        unit: Literal["M", "KM", "FT", "MI"] = "M"
-    ) -> str | None:  # Can be a double represented as string.
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M"
+    ) -> str | float | None:
         """
         See https://redis.io/commands/geodist
 
@@ -470,7 +470,9 @@ class Redis:
 
         command: list = ["GEODIST", key, first_member, second_member, unit]
 
-        return await self.run(command)
+        raw: str | None = await self.run(command)
+
+        return float(raw) if self.format_return else raw
 
     async def geohash(self, key: str, *members: str) -> list[str | None]:
         """
@@ -488,8 +490,6 @@ class Redis:
     ) -> list[list[str] | None] | list[dict[str, float] | None]:
         """
         See https://redis.io/commands/geopos
-
-        If "format_return" is True, it will return the result as a dict.
         """
 
         command: list = ["GEOPOS", key, *members]
@@ -503,7 +503,7 @@ class Redis:
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -571,7 +571,7 @@ Source: https://redis.io/commands/georadius""")
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -628,7 +628,7 @@ Source: https://redis.io/commands/georadius_ro""")
         self,
         member: str,
         radius: float,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -695,7 +695,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         self,
         member: str,
         radius: float,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -757,7 +757,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         radius: float | None = None,
         width: float | None = None,
         height: float | None = None,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,
@@ -836,7 +836,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         radius: float | None = None,
         width: float | None = None,
         height: float | None = None,
-        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,
