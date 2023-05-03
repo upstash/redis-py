@@ -1,9 +1,12 @@
 from pytest import mark
 from tests.client import redis
+from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
 async def test_ttl() -> None:
     async with redis:
-        # "string" exists but doesn't have an expiry time set.
-        assert await redis.ttl("string") == -1
+        await execute_on_http("EXPIRE", "string_for_ttl", "5")
+
+        # > 1000 would rather indicate milliseconds.
+        assert await redis.ttl("string_for_ttl") < 1000

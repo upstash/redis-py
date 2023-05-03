@@ -33,15 +33,21 @@ commands: list[list] = [
         "string_as_bitop_source_2", "1234",
 
         # String that will be used as a destination key to test COPY with REPLACE.
-        "string_as_copy_destination_with_replace", "test",
+        "string_as_copy_destination_with_replace", "a",
 
         # String to be deleted when testing DELETE.
         "string_for_delete_1", "a",
         "string_for_delete_2", "a",
-    ],
 
-    # String that will expire on 1 January 2024. The expiry is set as a Unix timestamp.
-    ["SET", "string_with_unix_expiry", "test", "EXAT", 1704067200],
+        # Strings to be used when testing expiry-related commands.
+        "string_for_expire", "a",
+        "string_for_expireat", "a",
+        "string_for_pexpire", "a",
+        "string_for_pexpireat", "a",
+        "string_for_persist", "a",
+        "string_for_ttl", "a",
+        "string_for_pttl", "a",
+    ],
 
 
     # Hash.

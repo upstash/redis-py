@@ -40,3 +40,5 @@ async def test_scan_without_formatting() -> None:
     async with redis:
         result: list[int | list[str]] = await redis.scan(cursor=0)
         assert isinstance(result[0], str) and isinstance(result[1], list)
+
+    redis.format_return = True

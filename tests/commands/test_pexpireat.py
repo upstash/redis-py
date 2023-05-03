@@ -1,15 +1,21 @@
 from pytest import mark
 from tests.client import redis
+from time import time, sleep
+from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
 async def test_pexpireat() -> None:
     async with redis:
-        assert await redis.pexpireat("non_existing_key", unix_time_milliseconds=1704067200) is False
+        # Set the expiry one second from the current time.
+        assert await redis.pexpireat("string_for_pexpireat", unix_time_milliseconds=int(time() * 1000) + 1000) is True
+
+        sleep(2)
+        assert await execute_on_http("EXISTS", "string_for_pexpireat") == 0
 
 
 @mark.asyncio
-async def test_pexpire_without_formatting() -> None:
+async def test_pexpireat_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:

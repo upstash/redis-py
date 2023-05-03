@@ -294,7 +294,7 @@ class Redis:
         See https://redis.io/commands/pexpireat
         """
 
-        command: list = ["EXPIREAT", key, unix_time_milliseconds]
+        command: list = ["PEXPIREAT", key, unix_time_milliseconds]
 
         raw: Literal[1, 0] = await self.run(command)
 
