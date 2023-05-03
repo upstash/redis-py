@@ -35,7 +35,7 @@ commands: list[list] = [
         # String that will be used as a destination key to test COPY with REPLACE.
         "string_as_copy_destination_with_replace", "a",
 
-        # String to be deleted when testing DELETE.
+        # Strings to be deleted when testing DELETE.
         "string_for_delete_1", "a",
         "string_for_delete_2", "a",
 
@@ -47,6 +47,10 @@ commands: list[list] = [
         "string_for_persist", "a",
         "string_for_ttl", "a",
         "string_for_pttl", "a",
+
+        # Strings to be asynchronously deleted when testing UNLINK.
+        "string_for_unlink_1", "a",
+        "string_for_unlink_2", "a",
     ],
 
 
