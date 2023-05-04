@@ -3,6 +3,26 @@ from upstash_py.utils.comparison import number_are_not_none
 from typing import Literal
 
 
+def handle_georadius_write_exceptions(
+    with_distance: bool = False,
+    with_hash: bool = False,
+    with_coordinates: bool = False,
+    count: int | None = None,
+    count_any: bool = False,
+    store_as: str | None = None,
+    store_dist_as: str | None = None,
+) -> None:
+    """
+    Handle exceptions for "GEORADIUS*" write commands.
+    """
+
+    if count_any and count is None:
+        raise Exception("\"count_any\" can only be used together with \"count\".")
+
+    if (with_distance or with_hash or with_coordinates) and (store_as or store_dist_as):
+        raise Exception("Cannot use \"store_as\" or \"store_dist_as\" when requesting additional properties.")
+
+
 def handle_geosearch_exceptions(
     member: str | None,
     longitude: float | None,

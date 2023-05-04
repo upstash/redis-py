@@ -6,10 +6,9 @@ from pytest import raises, mark
 
 
 @mark.asyncio
-async def test_execute() -> None:
+async def test_without_encoding() -> None:
     session = ClientSession()
 
-    # Without encoding.
     assert await execute(
         session=session,
         url=environ["UPSTASH_REDIS_REST_URL"],
@@ -20,7 +19,13 @@ async def test_execute() -> None:
         command=["SET", "a", "b"]
     ) == "OK"
 
-    # With encoding.
+    await session.close()
+
+
+@mark.asyncio
+async def test_with_encoding() -> None:
+    session = ClientSession()
+
     assert await execute(
         session=session,
         url=environ["UPSTASH_REDIS_REST_URL"],
@@ -31,7 +36,13 @@ async def test_execute() -> None:
         command=["SET", "a", "b"]
     ) == "OK"
 
-    # With encoding and data that needs to be serialized as JSON.
+    await session.close()
+
+
+@mark.asyncio
+async def test_with_encoding_and_object() -> None:
+    session = ClientSession()
+
     assert await execute(
         session=session,
         url=environ["UPSTASH_REDIS_REST_URL"],
@@ -42,7 +53,13 @@ async def test_execute() -> None:
         command=["SET", "a", {"b": "c"}]
     ) == "OK"
 
-    # Test if UpstashException is raised for a failed command.
+    await session.close()
+
+
+@mark.asyncio
+async def test_with_invalid_command() -> None:
+    session = ClientSession()
+
     with raises(UpstashException):
         await execute(
             session=session,

@@ -5,7 +5,7 @@ from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
-async def test_expire() -> None:
+async def test() -> None:
     async with redis:
         assert await redis.expire("string_for_expire", seconds=1) is True
 
@@ -15,7 +15,7 @@ async def test_expire() -> None:
 
 
 @mark.asyncio
-async def test_expire_without_formatting() -> None:
+async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:

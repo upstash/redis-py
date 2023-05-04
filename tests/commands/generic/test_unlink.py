@@ -3,13 +3,13 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_unlink() -> None:
+async def test() -> None:
     async with redis:
         assert await redis.unlink("string_for_unlink_1", "string_for_unlink_2") == 2
 
 
 @mark.asyncio
-async def test_unlink_without_keys() -> None:
+async def test_without_keys() -> None:
     async with redis:
         with raises(Exception) as exception:
             await redis.unlink()

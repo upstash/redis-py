@@ -3,13 +3,13 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_geoadd() -> None:
+async def test() -> None:
     async with redis:
         assert await redis.geoadd("Geo", {"longitude": 13.361389, "latitude": 38.115556, "name": "Palermo"}) == 1
 
 
 @mark.asyncio
-async def test_geoadd_with_nx() -> None:
+async def test_with_nx() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
@@ -19,7 +19,7 @@ async def test_geoadd_with_nx() -> None:
 
 
 @mark.asyncio
-async def test_geoadd_with_xx() -> None:
+async def test_with_xx() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
@@ -29,7 +29,7 @@ async def test_geoadd_with_xx() -> None:
 
 
 @mark.asyncio
-async def test_geoadd_with_ch() -> None:
+async def test_with_ch() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
@@ -38,7 +38,7 @@ async def test_geoadd_with_ch() -> None:
 
 
 @mark.asyncio
-async def test_geoadd_without_members() -> None:
+async def test_without_members() -> None:
     async with redis:
         with raises(Exception) as exception:
             await redis.geoadd("test_geo_index")
@@ -47,7 +47,7 @@ async def test_geoadd_without_members() -> None:
 
 
 @mark.asyncio
-async def test_geoadd_with_nx_and_xx() -> None:
+async def test_with_nx_and_xx() -> None:
     async with redis:
         with raises(Exception) as exception:
             await redis.geoadd(

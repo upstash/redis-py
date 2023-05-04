@@ -4,7 +4,7 @@ from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
-async def test_pttl() -> None:
+async def test() -> None:
     async with redis:
         await execute_on_http("EXPIRE", "string_for_ttl", "500")
 

@@ -4,7 +4,7 @@ from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
-async def test_persist() -> None:
+async def test() -> None:
     async with redis:
         await execute_on_http("EXPIRE", "string_for_persist", "5")
 
@@ -15,7 +15,7 @@ async def test_persist() -> None:
 
 
 @mark.asyncio
-async def test_persist_without_formatting() -> None:
+async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:

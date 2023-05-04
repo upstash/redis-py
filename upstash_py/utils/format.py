@@ -73,23 +73,23 @@ def format_geo_members_return(
                 formatted_member["hash"] = int(member[2])
 
                 if with_coordinates:
-                    formatted_member["longitude"] = float(member[3])
-                    formatted_member["latitude"] = float(member[4])
+                    formatted_member["longitude"] = float(member[3][0])
+                    formatted_member["latitude"] = float(member[3][1])
 
             elif with_coordinates:
-                formatted_member["longitude"] = float(member[2])
-                formatted_member["latitude"] = float(member[3])
+                formatted_member["longitude"] = float(member[2][0])
+                formatted_member["latitude"] = float(member[2][1])
 
         elif with_hash:
             formatted_member["hash"] = int(member[1])
 
             if with_coordinates:
-                formatted_member["longitude"] = float(member[2])
-                formatted_member["latitude"] = float(member[3])
+                formatted_member["longitude"] = float(member[2][0])
+                formatted_member["latitude"] = float(member[2][1])
 
         elif with_coordinates:
-            formatted_member["longitude"] = float(member[1])
-            formatted_member["latitude"] = float(member[2])
+            formatted_member["longitude"] = float(member[1][0])
+            formatted_member["latitude"] = float(member[1][1])
 
         result.append(formatted_member)
 

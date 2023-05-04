@@ -5,7 +5,7 @@ from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
-async def test_pexpireat() -> None:
+async def test() -> None:
     async with redis:
         # Set the expiry one second from the current time.
         assert await redis.pexpireat("string_for_pexpireat", unix_time_milliseconds=int(time() * 1000) + 1000) is True
@@ -15,7 +15,7 @@ async def test_pexpireat() -> None:
 
 
 @mark.asyncio
-async def test_pexpireat_without_formatting() -> None:
+async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:

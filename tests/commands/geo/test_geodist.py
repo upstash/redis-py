@@ -3,19 +3,19 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_geodist() -> None:
+async def test() -> None:
     async with redis:
         assert await redis.geodist("test_geo_index", "Palermo", "Catania") == 166274.1516
 
 
 @mark.asyncio
-async def test_geodist_with_unit() -> None:
+async def test_with_unit() -> None:
     async with redis:
         assert await redis.geodist("test_geo_index", "Palermo", "Catania", unit="km") == 166.2742
 
 
 @mark.asyncio
-async def test_geodist_without_formatting() -> None:
+async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:

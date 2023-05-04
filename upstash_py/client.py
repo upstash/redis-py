@@ -22,6 +22,7 @@ from upstash_py.utils.exception import (
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
+    handle_georadius_write_exceptions
 )
 from upstash_py.utils.comparison import number_are_not_none
 from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
@@ -500,10 +501,11 @@ class Redis:
 
     async def georadius(
         self,
+        key: str,
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -512,7 +514,7 @@ class Redis:
         sort: Literal["ASC", "DESC"] | None = None,
         store_as: str | None = None,
         store_distance_as: str | None = None
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
+    ) -> GeoMembersReturn | FormattedGeoMembersReturn | int:
         """
         See https://redis.io/commands/georadius
 
@@ -530,10 +532,17 @@ class Redis:
 It can be replaced by "geosearch" and "geosearchstore" with the "radius" argument.
 Source: https://redis.io/commands/georadius""")
 
-        if count_any and count is None:
-            raise Exception("\"count_any\" can only be used together with \"count\".")
+        handle_georadius_write_exceptions(
+            with_distance,
+            with_hash,
+            with_coordinates,
+            count,
+            count_any,
+            store_as,
+            store_distance_as
+        )
 
-        command: list = ["GEORADIUS", longitude, latitude, radius, unit]
+        command: list = ["GEORADIUS", key, longitude, latitude, radius, unit]
 
         if with_distance:
             command.append("WITHDIST")
@@ -561,17 +570,18 @@ Source: https://redis.io/commands/georadius""")
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+        if self.format_return and (with_distance or with_hash or with_coordinates):
             return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
 
         return raw
 
     async def georadius_ro(
         self,
+        key: str,
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -597,7 +607,7 @@ Source: https://redis.io/commands/georadius_ro""")
         if count_any and count is None:
             raise Exception("\"count_any\" can only be used together with \"count\".")
 
-        command: list = ["GEORADIUS_RO", longitude, latitude, radius, unit]
+        command: list = ["GEORADIUS_RO", key, longitude, latitude, radius, unit]
 
         if with_distance:
             command.append("WITHDIST")
@@ -619,16 +629,17 @@ Source: https://redis.io/commands/georadius_ro""")
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+        if self.format_return and (with_distance or with_hash or with_coordinates):
             return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
 
         return raw
 
     async def georadiusbymember(
         self,
+        key: str,
         member: str,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -655,10 +666,17 @@ Source: https://redis.io/commands/georadius_ro""")
 It can be replaced by "geosearch" and "geosearchstore" with the "radius" and "member" arguments.
 Source: https://redis.io/commands/georadiusbymember""")
 
-        if count_any and count is None:
-            raise Exception("\"count_any\" can only be used together with \"count\".")
+        handle_georadius_write_exceptions(
+            with_distance,
+            with_hash,
+            with_coordinates,
+            count,
+            count_any,
+            store_as,
+            store_distance_as
+        )
 
-        command: list = ["GEORADIUSBYMEMBER", member, radius, unit]
+        command: list = ["GEORADIUSBYMEMBER", key, member, radius, unit]
 
         if with_distance:
             command.append("WITHDIST")
@@ -686,16 +704,17 @@ Source: https://redis.io/commands/georadiusbymember""")
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+        if self.format_return and (with_distance or with_hash or with_coordinates):
             return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
 
         return raw
 
     async def georadiusbymember_ro(
         self,
+        key: str,
         member: str,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         with_distance: bool = False,
         with_hash: bool = False,
         with_coordinates: bool = False,
@@ -721,7 +740,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         if count_any and count is None:
             raise Exception("\"count_any\" can only be used together with \"count\".")
 
-        command: list = ["GEORADIUSBYMEMBER_RO", member, radius, unit]
+        command: list = ["GEORADIUSBYMEMBER_RO", key, member, radius, unit]
 
         if with_distance:
             command.append("WITHDIST")
@@ -743,7 +762,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+        if self.format_return and (with_distance or with_hash or with_coordinates):
             return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
 
         return raw
@@ -751,13 +770,13 @@ Source: https://redis.io/commands/georadiusbymember""")
     async def geosearch(
         self,
         key: str,
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         member: str | None = None,
         longitude: float | None = None,
         latitude: float | None = None,
         radius: float | None = None,
         width: float | None = None,
         height: float | None = None,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,
@@ -821,7 +840,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and not number_are_not_none(with_distance, with_hash, with_coordinates, number=0):
+        if self.format_return and (with_distance or with_hash or with_coordinates):
             return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
 
         return raw
@@ -830,13 +849,13 @@ Source: https://redis.io/commands/georadiusbymember""")
         self,
         destination_key: str,
         source_key: str,
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
         member: str | None = None,
         longitude: float | None = None,
         latitude: float | None = None,
         radius: float | None = None,
         width: float | None = None,
         height: float | None = None,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,

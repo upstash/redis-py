@@ -3,7 +3,7 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_bitfield_ro_get() -> None:
+async def test_get() -> None:
     async with redis:
         # With integer offset.
         assert await redis.bitfield_ro("string").get(encoding="u8", offset=0).execute() == [116]
@@ -13,7 +13,7 @@ async def test_bitfield_ro_get() -> None:
 
 
 @mark.asyncio
-async def test_bitfield_ro_chained_commands() -> None:
+async def test_chained_commands() -> None:
     async with redis:
         assert (
             await redis.bitfield_ro("string")

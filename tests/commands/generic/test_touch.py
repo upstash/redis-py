@@ -3,13 +3,13 @@ from tests.client import redis
 
 
 @mark.asyncio
-async def test_touch() -> None:
+async def test() -> None:
     async with redis:
         assert await redis.touch("string") == 1
 
 
 @mark.asyncio
-async def test_touch_without_keys() -> None:
+async def test_without_keys() -> None:
     async with redis:
         with raises(Exception) as exception:
             await redis.touch()
