@@ -34,3 +34,16 @@ def test_with_2d_list() -> None:
         ],
         "base64"
     ) == ["a", "abcd", 1, "1", None, ["a", "abcd", 1, "1", None]]
+
+
+def test_with_3d_list() -> None:
+    assert decode(
+        [
+            "YQ==",
+            "YWJjZA==",
+            1, "MQ==",
+            None,
+            ["YQ==", "YWJjZA==", 1, "MQ==", None, ["YQ==", "YWJjZA==", 1, "MQ==", None]]
+        ],
+        "base64"
+    ) == ["a", "abcd", 1, "1", None, ["a", "abcd", 1, "1", None, ["a", "abcd", 1, "1", None]]]
