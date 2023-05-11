@@ -1,10 +1,10 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
 from upstash_py.config import (
-    ENABLE_TELEMETRY,
     REST_ENCODING,
     REST_RETRIES,
     REST_RETRY_INTERVAL,
+    ALLOW_TELEMETRY,
     ALLOW_DEPRECATED,
     FORMAT_RETURN
 )
@@ -36,6 +36,7 @@ from upstash_py.schema.commands.returns import (
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Self, Literal
+from os import environ
 
 
 class Redis:
@@ -43,17 +44,17 @@ class Redis:
         self,
         url: str,
         token: str,
-        enable_telemetry: bool = ENABLE_TELEMETRY,
         rest_encoding: RESTEncoding = REST_ENCODING,
         rest_retries: int = REST_RETRIES,
         rest_retry_interval: int = REST_RETRY_INTERVAL,
         allow_deprecated: bool = ALLOW_DEPRECATED,
-        format_return: bool = FORMAT_RETURN
+        format_return: bool = FORMAT_RETURN,
+        allow_telemetry: bool = ALLOW_TELEMETRY
     ):
         self.url = url
         self.token = token
 
-        self.enable_telemetry = enable_telemetry
+        self.allow_telemetry = allow_telemetry
 
         self.allow_deprecated = allow_deprecated
         self.format_return = format_return
@@ -61,6 +62,31 @@ class Redis:
         self.rest_encoding = rest_encoding
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
+
+    @classmethod
+    def from_env(
+        cls,
+        rest_encoding: RESTEncoding = REST_ENCODING,
+        rest_retries: int = REST_RETRIES,
+        rest_retry_interval: int = REST_RETRY_INTERVAL,
+        allow_deprecated: bool = ALLOW_DEPRECATED,
+        format_return: bool = FORMAT_RETURN,
+        allow_telemetry: bool = ALLOW_TELEMETRY,
+    ):
+        """
+        Load the credentials from environment.
+        """
+
+        return cls(
+            environ["UPSTASH_REDIS_REST_URL"],
+            environ["UPSTASH_REDIS_REST_TOKEN"],
+            rest_encoding,
+            rest_retries,
+            rest_retry_interval,
+            allow_deprecated,
+            format_return,
+            allow_telemetry
+        )
 
     async def __aenter__(self) -> ClientSession:
         """
