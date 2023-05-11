@@ -350,13 +350,13 @@ class Redis:
         """
         See https://redis.io/commands/scan
 
-        "MATCH" was replaced with "pattern".
+        :param pattern: replacement for "MATCH"
 
-        "COUNT" defaults to 10.
+        :param count: defaults to 10 on the server side
 
-        "TYPE" was replaced with "scan_type".
+        :param scan_type: replacement for "TYPE"
 
-        If "return_cursor" is False, it won't return the cursor.
+        :param return_cursor: if set to False, it won't return the cursor
         """
 
         command: list = ["SCAN", cursor]
@@ -431,7 +431,7 @@ class Redis:
         """
         See https://redis.io/commands/geoadd
 
-        The members should be added as a sequence of GeoMember dict types (longitude, latitude, name).
+        :param members: a sequence of GeoMember dict types (longitude, latitude, name).
         """
 
         if len(members) == 0:
@@ -465,8 +465,6 @@ class Redis:
     ) -> str | float | None:
         """
         See https://redis.io/commands/geodist
-
-        The measuring unit can be specified with "unit".
         """
 
         command: list = ["GEODIST", key, first_member, second_member, unit]
@@ -518,13 +516,10 @@ class Redis:
         """
         See https://redis.io/commands/georadius
 
-        The measuring unit can be specified with "unit".
+        :param count_any: replacement for "ANY"
 
-        "ANY" was replaced with "count_any".
-
-        The sorting options can be specified with "sort".
-
-        "[STORE and STORE_DIST] key" are written as "store_as" and "store_distance_as".
+        :param store_as: replacement for "STORE"
+        :param store_distance_as: replacement for "STORE_DIST"
         """
 
         if not self.allow_deprecated:
@@ -592,11 +587,7 @@ Source: https://redis.io/commands/georadius""")
         """
         See https://redis.io/commands/georadius_ro
 
-        The measuring unit can be specified with "unit".
-
-        "ANY" was replaced with "count_any".
-
-        The sorting options can be specified with "sort".
+        :param count_any: replacement for "ANY"
         """
 
         if not self.allow_deprecated:
@@ -652,13 +643,10 @@ Source: https://redis.io/commands/georadius_ro""")
         """
         See https://redis.io/commands/georadiusbymember
 
-        The measuring unit can be specified with "unit".
+        :param count_any: replacement for "ANY"
 
-        "ANY" was replaced with "count_any".
-
-        The sorting options can be specified with "sort".
-
-        "[STORE and STORE_DIST] key" are written as "store_as" and "store_distance_as".
+        :param store_as: replacement for "STORE"
+        :param store_distance_as: replacement for "STORE_DIST"
         """
 
         if not self.allow_deprecated:
@@ -725,11 +713,7 @@ Source: https://redis.io/commands/georadiusbymember""")
         """
         See https://redis.io/commands/georadiusbymember
 
-        The measuring unit can be specified with "unit".
-
-        "ANY" was replaced with "count_any".
-
-        The sorting options can be specified with "sort".
+        :param count_any: replacement for "ANY"
         """
 
         if not self.allow_deprecated:
@@ -787,19 +771,17 @@ Source: https://redis.io/commands/georadiusbymember""")
         """
         See https://redis.io/commands/geosearch
 
-        "FROMMEMBER" was replaced with "member".
+        :param member: replacement for "FROMMEMBER"
 
-        "FROMLONLAT" was replaced with "longitude" and "latitude".
+        :param longitude: replacement for "FROMLONLAT" together with "latitude"
+        :param latitude: replacement for "FROMLONLAT" together with "longitude"
 
-        "BYRADIUS" was replaced with "radius".
+        :param radius: replacement for "BYRADIUS"
 
-        "BYBOX" was replaced with "width" and "height".
+        :param width: replacement for "BYBOX" together with "height"
+        :param height: replacement for "BYBOX" together with "width"
 
-        The measuring unit can be specified with "unit".
-
-        The sorting options can be specified with "sort".
-
-        "ANY" was replaced with "count_any".
+        :param count_any: replacement for "ANY"
         """
 
         handle_geosearch_exceptions(member, longitude, latitude, radius, width, height, count, count_any)
@@ -864,19 +846,19 @@ Source: https://redis.io/commands/georadiusbymember""")
         """
         See https://redis.io/commands/geosearchstore
 
-        "FROMMEMBER" was replaced with "member".
+        :param member: replacement for "FROMMEMBER"
 
-        "FROMLONLAT" was replaced with "longitude" and "latitude".
+        :param longitude: replacement for "FROMLONLAT" together with "latitude"
+        :param latitude: replacement for "FROMLONLAT" together with "longitude"
 
-        "BYRADIUS" was replaced with "radius".
+        :param radius: replacement for "BYRADIUS"
 
-        "BYBOX" was replaced with "width" and "height".
+        :param width: replacement for "BYBOX" together with "height"
+        :param height: replacement for "BYBOX" together with "width"
 
-        The measuring unit can be specified with "unit".
+        :param count_any: replacement for "ANY"
 
-        "ASC" and "DESC" are written as sort.
-
-        "ANY" was replaced with "count_any".
+        :param store_distance: replacement for "STOREDIST"
         """
 
         handle_geosearch_exceptions(member, longitude, latitude, radius, width, height, count, count_any)
@@ -1029,9 +1011,7 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/hrandfield
 
-        "COUNT" defaults to 1.
-
-        "count" can only be used together with "with_values".
+        :param count: defaults to 1 on the server side
         """
 
         if count is None and with_values:
@@ -1062,11 +1042,11 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/hscan
 
-        "MATCH" was replaced with "pattern".
+        :param pattern: replacement for "MATCH"
 
-        "COUNT" defaults to 10.
+        :param count: defaults to 10 on the server side
 
-        If "return_cursor" is False, it won't return the cursor.
+        :param return_cursor: if set to False, it won't return the cursor
         """
 
         command: list = ["HSCAN", key, cursor]
@@ -1176,8 +1156,6 @@ Source: https://redis.io/commands/hmset""")
     ) -> int:
         """
         See https://redis.io/commands/linsert
-
-        The positioning can be specified with "position".
         """
 
         command: list = ["LINSERT", key, position, pivot, element]
@@ -1202,8 +1180,6 @@ Source: https://redis.io/commands/hmset""")
     ) -> str | None:
         """
         See https://redis.io/commands/lmove
-
-        The positioning can be specified with "source_position" and "destination_position".
         """
 
         command: list = ["LMOVE", source_key, destination_key, source_position, destination_position]
@@ -1214,9 +1190,7 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/lpop
 
-        "COUNT" defaults to 1.
-
-        If "count" is specified, it will return a list of values.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["LPOP", key]
@@ -1237,10 +1211,9 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/lpos
 
-        "RANK" was replaced with "first_return".
-        When set, it will return the positions starting from the specified occurrence.
+        :param first_return: replacement for "RANK"
 
-        "MAXLEN" was replaced with "max_number_of_comparisons".
+        :param max_number_of_comparisons: replacement for "MAXLEN"
         """
 
         command: list = ["LPOS", key, element]
@@ -1320,7 +1293,7 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/rpop
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["RPOP", key]
@@ -1388,7 +1361,6 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/eval
 
-        The keys and arguments can be specified with the same-name parameters.
         The number of keys is calculated automatically.
         """
 
@@ -1411,7 +1383,6 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/evalsha
 
-        The keys and arguments can be specified with the same-name parameters.
         The number of keys is calculated automatically.
         """
 
@@ -1452,8 +1423,6 @@ Source: https://redis.io/commands/rpoplpush""")
     async def flushall(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
         See https://redis.io/commands/flushall
-
-        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
         """
 
         command: list = ["FLUSHALL"]
@@ -1466,8 +1435,6 @@ Source: https://redis.io/commands/rpoplpush""")
     async def flushdb(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
         See https://redis.io/commands/flushdb
-
-        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
         """
 
         command: list = ["FLUSHDB"]
@@ -1592,7 +1559,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/spop
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["SPOP", key]
@@ -1606,7 +1573,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/srandmember
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["SRANDMEMBER", key]
@@ -1639,11 +1606,11 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/sscan
 
-        "MATCH" was replaced with "pattern".
+        :param pattern: replacement for "MATCH"
 
-        "COUNT" defaults to 10.
+        :param count: defaults to 10 on the server side
 
-        If "return_cursor" is False, it won't return the cursor.
+        :param return_cursor: if set to False, it won't return the cursor
         """
 
         command: list = ["SSCAN", key, cursor]
@@ -1700,7 +1667,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/zadd
 
-        The members should be specified with a dict containing their names and scores.
+        :param sorted_set_members: a dict containing their names and scores.
         """
 
         if nx and xx:
@@ -1830,7 +1797,7 @@ Source: https://redis.io/commands/rpoplpush""")
 
         The number of keys is calculated automatically.
 
-        The "WEIGHTS" can be specified with "multiplication_factors".
+        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
@@ -1865,7 +1832,7 @@ Source: https://redis.io/commands/rpoplpush""")
 
         The number of keys is calculated automatically.
 
-        The "WEIGHTS" can be specified with "multiplication_factors".
+        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
@@ -1913,7 +1880,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/zpopmax
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["ZPOPMAX", key]
@@ -1929,7 +1896,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/zpopmin
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         command: list = ["ZPOPMIN", key]
@@ -1950,7 +1917,7 @@ Source: https://redis.io/commands/rpoplpush""")
         """
         See https://redis.io/commands/zrandmember
 
-        "COUNT" defaults to 1.
+        :param count: defaults to 1 on the server side
         """
 
         if count is None and with_scores:
@@ -1989,8 +1956,6 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zrange
 
         If you need to use "-inf" and "+inf", please write them as strings.
-
-        "BYSCORE" and "BYLEX" can be specified with "range_method".
         """
 
         handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
@@ -2100,9 +2065,8 @@ Source: https://redis.io/commands/zrangebyscore""")
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
-        "min" and "max" were replaced with "start" and "stop" to match "zrange".
-
-        "BYSCORE" and "BYLEX" can be specified with "range_method".
+        :param start: replacement for "min" to match "ZRANGE"
+        :param stop: replacement for "max" to match "ZRANGE"
         """
 
         handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
@@ -2297,11 +2261,11 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         """
         See https://redis.io/commands/zscan
 
-        "MATCH" was replaced with "pattern".
+        :param pattern: replacement for "MATCH"
 
-        "COUNT" defaults to 10.
+        :param count: defaults to 10 on the server side
 
-        If "return_cursor" is False, it won't return the cursor.
+        :param return_cursor: if set to False, it won't return the cursor
         """
 
         command: list = ["ZSCAN", key, cursor]
@@ -2347,7 +2311,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
 
         The number of keys is calculated automatically.
 
-        The "WEIGHTS" can be specified with "multiplication_factors".
+        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
@@ -2382,7 +2346,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
 
         The number of keys is calculated automatically.
 
-        The "WEIGHTS" can be specified with "multiplication_factors".
+        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
@@ -2398,7 +2362,7 @@ Source: https://redis.io/commands/zrevrangebyscore""")
 
         return await self.run(command)
 
-    async def append_to_string(self, key: str, value: Any) -> int:
+    async def append(self, key: str, value: Any) -> int:
         """
         See https://redis.io/commands/append
         """
@@ -2454,9 +2418,6 @@ Source: https://redis.io/commands/zrevrangebyscore""")
     ) -> str | None:
         """
         See https://redis.io/commands/getex
-
-        The optional expiration settings ("EX", "PX", "EXAT", "PXAT") except for "PERSIST"
-        were replaced with their corresponding units.
         """
 
         if not number_are_not_none(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, persist, number=1):
@@ -2548,8 +2509,6 @@ Source: https://redis.io/commands/getset""")
     async def mset(self, keys_and_values: dict) -> Literal["OK"]:
         """
         See https://redis.io/commands/mset
-
-        The key-value pairs should be specified as a dict.
         """
 
         command: list = ["MSET"]
@@ -2562,8 +2521,6 @@ Source: https://redis.io/commands/getset""")
     async def msetnx(self, keys_and_values: dict) -> Literal[1, 0]:
         """
         See https://redis.io/commands/msetnx
-
-        The key-value pairs should be specified as a dict.
         """
 
         command: list = ["MSETNX"]
@@ -2602,9 +2559,6 @@ Source: https://redis.io/commands/psetex""")
     ) -> str | None:
         """
         See https://redis.io/commands/set
-
-        The optional expiration settings ("EX", "PX", "EXAT", "PXAT") except for "KEEPTTL"
-        were replaced with their corresponding units.
         """
 
         if nx and xx:
@@ -2856,8 +2810,6 @@ class Script:
     async def flush(self, mode: Literal["ASYNC", "SYNC"]) -> str:
         """
         See https://redis.io/commands/script-flush
-
-        The mode(ASYNC/SYNC) can be specified with the same-name parameter.
         """
 
         self.command.append("FLUSH")
