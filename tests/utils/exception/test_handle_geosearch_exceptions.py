@@ -119,7 +119,7 @@ def test_with_invalid_any() -> None:
 
 
 def test_with_member_and_radius() -> None:
-    assert handle_geosearch_exceptions(
+    handle_geosearch_exceptions(
         member="member",
         longitude=None,
         latitude=None,
@@ -128,11 +128,11 @@ def test_with_member_and_radius() -> None:
         height=None,
         count=None,
         count_any=False
-    ) is None
+    )
 
 
 def test_with_coordinates_and_width_and_height():
-    assert handle_geosearch_exceptions(
+    handle_geosearch_exceptions(
         member=None,
         longitude=1.0,
         latitude=2,
@@ -141,11 +141,11 @@ def test_with_coordinates_and_width_and_height():
         height=3.4,
         count=None,
         count_any=False
-    ) is None
+    )
 
 
 def test_with_count_and_any():
-    assert handle_geosearch_exceptions(
+    handle_geosearch_exceptions(
         member="member",
         longitude=None,
         latitude=None,
@@ -154,4 +154,4 @@ def test_with_count_and_any():
         height=None,
         count=10,
         count_any=True
-    ) is None
+    )

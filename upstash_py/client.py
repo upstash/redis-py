@@ -116,7 +116,8 @@ class Redis:
             encoding=self.rest_encoding,
             retries=self.rest_retries,
             retry_interval=self.rest_retry_interval,
-            command=command
+            command=command,
+            allow_telemetry=self.allow_telemetry
         )
 
     async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:

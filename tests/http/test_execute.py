@@ -16,7 +16,8 @@ async def test_without_encoding() -> None:
         retries=0,
         retry_interval=0,
         encoding=False,
-        command=["SET", "a", "b"]
+        command=["SET", "a", "b"],
+        allow_telemetry=False
     ) == "OK"
 
     await session.close()
@@ -33,7 +34,8 @@ async def test_with_encoding() -> None:
         retries=0,
         retry_interval=0,
         encoding="base64",
-        command=["SET", "a", "b"]
+        command=["SET", "a", "b"],
+        allow_telemetry=False
     ) == "OK"
 
     await session.close()
@@ -50,7 +52,8 @@ async def test_with_encoding_and_object() -> None:
         retries=0,
         retry_interval=0,
         encoding="base64",
-        command=["SET", "a", {"b": "c"}]
+        command=["SET", "a", {"b": "c"}],
+        allow_telemetry=False
     ) == "OK"
 
     await session.close()
@@ -69,7 +72,8 @@ async def test_with_invalid_command() -> None:
             retry_interval=0,
             encoding="base64",
             # We give one parameter to "SET" instead of two.
-            command=["SET", "a"]
+            command=["SET", "a"],
+            allow_telemetry=False
         )
 
     await session.close()

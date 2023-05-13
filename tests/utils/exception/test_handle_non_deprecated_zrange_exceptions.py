@@ -44,30 +44,30 @@ def test_with_invalid_offset_and_count() -> None:
 
 
 def test_with_parenthesis_start_and_stop() -> None:
-    assert handle_non_deprecated_zrange_exceptions(
+    handle_non_deprecated_zrange_exceptions(
         range_method="BYLEX",
         start="[",
         stop="(",
         offset=None,
         count=None,
-    ) is None
+    )
 
 
 def test_with_plus_and_minus_start_and_stop() -> None:
-    assert handle_non_deprecated_zrange_exceptions(
+    handle_non_deprecated_zrange_exceptions(
         range_method=None,
         start="-",
         stop="+",
         offset=None,
         count=None,
-    ) is None
+    )
 
 
 def test_with_offset_and_count() -> None:
-    assert handle_non_deprecated_zrange_exceptions(
+    handle_non_deprecated_zrange_exceptions(
         range_method=None,
         start=0,
         stop=1,
         offset=0,
         count=1,
-    ) is None
+    )

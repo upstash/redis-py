@@ -4,6 +4,7 @@ from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
 from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
+from platform import python_version
 
 
 async def execute(
@@ -13,7 +14,8 @@ async def execute(
     encoding: RESTEncoding,
     retries: int,
     retry_interval: int,
-    command: list
+    command: list,
+    allow_telemetry: bool
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
@@ -32,11 +34,16 @@ async def execute(
         try:
             headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
 
+            if allow_telemetry:
+                headers["Upstash-Telemetry-Runtime"] = f'python@v.{python_version()}'
+                headers["Upstash-Telemetry-Sdk"] = "upstash_py@development"
+
             if encoding:
                 headers["Upstash-Encoding"] = encoding
 
             async with session.post(url, headers=headers, json=command) as response:
                 body: RESTResponse[RESTResult] = await response.json()
+
                 # Avoid the [] syntax to prevent KeyError from being raised.
                 if body.get("error"):
                     raise UpstashException(body.get("error"))

@@ -24,12 +24,12 @@ def test_with_additional_properties_and_storedist():
 
 
 def test_with_count_and_any():
-    assert handle_georadius_write_exceptions(count=1, count_any=True) is None
+    handle_georadius_write_exceptions(count=1, count_any=True)
 
 
 def test_without_additional_properties_and_store():
-    assert handle_georadius_write_exceptions(store_as="store_as") is None
+    handle_georadius_write_exceptions(store_as="store_as")
 
 
 def test_without_additional_properties_and_storedist():
-    assert handle_georadius_write_exceptions(store_dist_as="store_dist_as") is None
+    handle_georadius_write_exceptions(store_dist_as="store_dist_as")

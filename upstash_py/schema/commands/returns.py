@@ -1,8 +1,12 @@
 """
 The raw output returned by some Geo commands, usually the ones that return properties of members.
+
 If no additional properties are requested, the output is a list of strings, each string representing a member.
+
+If coordinates are requested, each member's properties will be represented by a list (the result itself being a list),
+where the coordinates themselves will be another one.
 """
-GeoMembersReturn = list[str | list[str]]
+GeoMembersReturn = list[str | list[str | list[str]]]
 
 """
 The output resulted by formatting "GeoMembersReturn".

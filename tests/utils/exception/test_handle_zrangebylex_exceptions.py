@@ -27,28 +27,27 @@ def test_with_invalid_offset_and_count() -> None:
 
 
 def test_with_parenthesis_min_and_max_score() -> None:
-    assert handle_zrangebylex_exceptions(
+    handle_zrangebylex_exceptions(
         min_score="[",
         max_score="(",
         offset=None,
         count=None,
-    ) is None
+    )
 
 
 def test_with_plus_and_minus_min_and_max_score() -> None:
-    assert handle_zrangebylex_exceptions(
+    handle_zrangebylex_exceptions(
         min_score="-",
         max_score="+",
         offset=None,
         count=None,
-    ) is None
+    )
 
 
 def test_with_offset_and_count() -> None:
-    assert handle_zrangebylex_exceptions(
+    handle_zrangebylex_exceptions(
         min_score="(",
         max_score="[",
         offset=0,
         count=1,
-    ) is None
-
+    )
