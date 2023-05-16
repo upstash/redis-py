@@ -1,6 +1,7 @@
 from upstash_py.exception import UpstashException
 from upstash_py.http.decode import decode
 from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
+from upstash_py.schema.telemetry import TelemetryData
 from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
@@ -15,7 +16,8 @@ async def execute(
     retries: int,
     retry_interval: int,
     command: list,
-    allow_telemetry: bool
+    allow_telemetry: bool,
+    telemetry_data: TelemetryData | None = None
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
@@ -35,8 +37,16 @@ async def execute(
             headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
 
             if allow_telemetry:
-                headers["Upstash-Telemetry-Runtime"] = f'python@v.{python_version()}'
-                headers["Upstash-Telemetry-Sdk"] = "upstash_py@development"
+                if telemetry_data:
+                    headers["Upstash-Telemetry-Runtime"] = telemetry_data["runtime"]
+                    headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
+
+                    # Avoid the [] syntax to prevent KeyError from being raised.
+                    if telemetry_data.get("platform"):
+                        headers["Upstash-Telemetry-Platform"] = telemetry_data["platform"]
+                else:
+                    headers["Upstash-Telemetry-Runtime"] = f'python@v{python_version()}'
+                    headers["Upstash-Telemetry-Sdk"] = "upstash-py@development"
 
             if encoding:
                 headers["Upstash-Encoding"] = encoding

@@ -1,5 +1,6 @@
 from upstash_py.http.execute import execute
 from upstash_py.schema.http import RESTResult, RESTEncoding
+from upstash_py.schema.telemetry import TelemetryData
 from upstash_py.config import (
     REST_ENCODING,
     REST_RETRIES,
@@ -49,7 +50,8 @@ class Redis:
         rest_retry_interval: int = REST_RETRY_INTERVAL,
         allow_deprecated: bool = ALLOW_DEPRECATED,
         format_return: bool = FORMAT_RETURN,
-        allow_telemetry: bool = ALLOW_TELEMETRY
+        allow_telemetry: bool = ALLOW_TELEMETRY,
+        telemetry_data: TelemetryData | None = None
     ):
         self.url = url
         self.token = token
@@ -63,6 +65,9 @@ class Redis:
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
 
+        if allow_telemetry and telemetry_data:
+            self.telemetry_data = telemetry_data
+
     @classmethod
     def from_env(
         cls,
@@ -72,6 +77,7 @@ class Redis:
         allow_deprecated: bool = ALLOW_DEPRECATED,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
+        telemetry_data: TelemetryData | None = None
     ):
         """
         Load the credentials from environment.
@@ -85,7 +91,8 @@ class Redis:
             rest_retry_interval,
             allow_deprecated,
             format_return,
-            allow_telemetry
+            allow_telemetry,
+            telemetry_data
         )
 
     async def __aenter__(self) -> ClientSession:
@@ -117,7 +124,8 @@ class Redis:
             retries=self.rest_retries,
             retry_interval=self.rest_retry_interval,
             command=command,
-            allow_telemetry=self.allow_telemetry
+            allow_telemetry=self.allow_telemetry,
+            telemetry_data=self.telemetry_data if self.telemetry_data else None
         )
 
     async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:
