@@ -65,8 +65,7 @@ class Redis:
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
 
-        if allow_telemetry and telemetry_data:
-            self.telemetry_data = telemetry_data
+        self.telemetry_data = telemetry_data
 
     @classmethod
     def from_env(
@@ -125,7 +124,7 @@ class Redis:
             retry_interval=self.rest_retry_interval,
             command=command,
             allow_telemetry=self.allow_telemetry,
-            telemetry_data=self.telemetry_data if self.telemetry_data else None
+            telemetry_data=self.telemetry_data
         )
 
     async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:
@@ -237,6 +236,8 @@ class Redis:
     async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/copy
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["COPY", source, destination]
@@ -275,6 +276,8 @@ class Redis:
     async def expire(self, key: str, seconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/expire
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["EXPIRE", key, seconds]
@@ -286,6 +289,8 @@ class Redis:
     async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/expireat
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["EXPIREAT", key, unix_time_seconds]
@@ -306,6 +311,8 @@ class Redis:
     async def persist(self, key: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/persist
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["PERSIST", key]
@@ -317,6 +324,8 @@ class Redis:
     async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pexpire
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["PEXPIRE", key, milliseconds]
@@ -328,6 +337,8 @@ class Redis:
     async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pexpireat
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["PEXPIREAT", key, unix_time_milliseconds]
@@ -366,6 +377,8 @@ class Redis:
     async def renamenx(self, key: str, new_name: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/renamenx
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["RENAMENX", key, new_name]
@@ -392,6 +405,9 @@ class Redis:
         :param scan_type: replacement for "TYPE"
 
         :param return_cursor: if set to False, it won't return the cursor
+
+        :return: The cursor will be an integer if "format_return" is True.
+        Only the list of elements will be returned if "return_cursor" is False
         """
 
         command: list = ["SCAN", cursor]
@@ -405,7 +421,7 @@ class Redis:
         if scan_type is not None:
             command.extend(["TYPE", scan_type])
 
-        # The raw result is composed of the new cursor and the array of elements.
+        # The raw result is composed of the new cursor and the list of elements.
         raw: list[str | list[str]] = await self.run(command)
 
         if return_cursor:
@@ -500,6 +516,8 @@ class Redis:
     ) -> str | float | None:
         """
         See https://redis.io/commands/geodist
+
+        :return: A float value if "format_return" is True.
         """
 
         command: list = ["GEODIST", key, first_member, second_member, unit]
@@ -524,6 +542,8 @@ class Redis:
     ) -> list[list[str] | None] | list[dict[str, float] | None]:
         """
         See https://redis.io/commands/geopos
+
+        :return: A list of dicts with either None or the longitude and latitude if "format_return" is True.
         """
 
         command: list = ["GEOPOS", key, *members]
@@ -555,6 +575,8 @@ class Redis:
 
         :param store_as: replacement for "STORE"
         :param store_distance_as: replacement for "STORE_DIST"
+
+        :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         if not self.allow_deprecated:
@@ -623,6 +645,8 @@ Source: https://redis.io/commands/georadius""")
         See https://redis.io/commands/georadius_ro
 
         :param count_any: replacement for "ANY"
+
+        :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         if not self.allow_deprecated:
@@ -682,6 +706,8 @@ Source: https://redis.io/commands/georadius_ro""")
 
         :param store_as: replacement for "STORE"
         :param store_distance_as: replacement for "STORE_DIST"
+
+        :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         if not self.allow_deprecated:
@@ -749,6 +775,8 @@ Source: https://redis.io/commands/georadiusbymember""")
         See https://redis.io/commands/georadiusbymember
 
         :param count_any: replacement for "ANY"
+
+        :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         if not self.allow_deprecated:
@@ -817,6 +845,8 @@ Source: https://redis.io/commands/georadiusbymember""")
         :param height: replacement for "BYBOX" together with "width"
 
         :param count_any: replacement for "ANY"
+
+        :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         handle_geosearch_exceptions(member, longitude, latitude, radius, width, height, count, count_any)
@@ -942,6 +972,8 @@ Source: https://redis.io/commands/georadiusbymember""")
     async def hexists(self, key: str, field: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/hexists
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["HEXISTS", key, field]
@@ -962,6 +994,8 @@ Source: https://redis.io/commands/georadiusbymember""")
     async def hgetall(self, key: str) -> HashReturn | FormattedHashReturn:
         """
         See https://redis.io/commands/hgetall
+
+        :return: A dict of field-value pairs if "format_return" is True.
         """
 
         command: list = ["HGETALL", key]
@@ -982,6 +1016,8 @@ Source: https://redis.io/commands/georadiusbymember""")
     async def hincrbyfloat(self, key: str, field: str, increment: float) -> str | float:
         """
         See https://redis.io/commands/hincrbyfloat
+
+        :return: A float if "format_return" is True.
         """
 
         command: list = ["HINCRBYFLOAT", key, field, increment]
@@ -1047,6 +1083,8 @@ Source: https://redis.io/commands/hmset""")
         See https://redis.io/commands/hrandfield
 
         :param count: defaults to 1 on the server side
+
+        :return: A dict of field-value pairs if "count" and "with_values" are specified and "format_return" is True.
         """
 
         if count is None and with_values:
@@ -1082,6 +1120,9 @@ Source: https://redis.io/commands/hmset""")
         :param count: defaults to 10 on the server side
 
         :param return_cursor: if set to False, it won't return the cursor
+
+        :return: The cursor will be an integer if "format_return" is True.
+        Only a dict of field-value pairs will be returned if "return_cursor" is False and "format_return" is True.
         """
 
         command: list = ["HSCAN", key, cursor]
@@ -1092,7 +1133,7 @@ Source: https://redis.io/commands/hmset""")
         if count is not None:
             command.extend(["COUNT", count])
 
-        # The raw result is composed of the new cursor and the array of elements.
+        # The raw result is composed of the new cursor and the list of elements.
         raw: list[str | HashReturn] | HashReturn = await self.run(command)
 
         if return_cursor:
@@ -1115,6 +1156,8 @@ Source: https://redis.io/commands/hmset""")
     async def hsetnx(self, key: str, field: str, value: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/hsetnx
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["HSETNX", key, field, value]
@@ -1144,6 +1187,8 @@ Source: https://redis.io/commands/hmset""")
     async def pfadd(self, key: str, *elements: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pfadd
+
+        :return: A bool if "format_return" is True.
         """
 
         command: list = ["PFADD", key, *elements]
@@ -1482,6 +1527,8 @@ Source: https://redis.io/commands/rpoplpush""")
     async def server_time(self) -> list[str] | dict[str, int]:
         """
         See https://redis.io/commands/time
+
+        :return: A dict with the keys "seconds" and "microseconds" if self.format_return is True.
         """
 
         command: list = ["TIME"]
@@ -1562,6 +1609,8 @@ Source: https://redis.io/commands/rpoplpush""")
     async def sismember(self, key: str, member: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/sismember
+
+        :return: A bool if self.format_return is True.
         """
 
         command: list = ["SISMEMBER", key, member]
@@ -1582,6 +1631,8 @@ Source: https://redis.io/commands/rpoplpush""")
     async def smove(self, source_key: str, destination_key: str, member: Any) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/smove
+
+        :return: A bool if self.format_return is True.
         """
 
         command: list = ["SMOVE", source_key, destination_key, member]
@@ -1646,6 +1697,9 @@ Source: https://redis.io/commands/rpoplpush""")
         :param count: defaults to 10 on the server side
 
         :param return_cursor: if set to False, it won't return the cursor
+
+        :return: The cursor will be an integer if "format_return" is True.
+        Only the list of elements will be returned if "return_cursor" is False.
         """
 
         command: list = ["SSCAN", key, cursor]
@@ -1656,7 +1710,7 @@ Source: https://redis.io/commands/rpoplpush""")
         if count is not None:
             command.extend(["COUNT", count])
 
-        # The raw result is composed of the new cursor and the array of elements.
+        # The raw result is composed of the new cursor and the list of elements.
         raw: list[str | list[str]] = await self.run(command)
 
         if return_cursor:
@@ -1703,6 +1757,9 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zadd
 
         :param sorted_set_members: a dict containing their names and scores.
+
+        :return: A float representing the number of elements added or None if "incr" is False
+        and "format_return" is True.
         """
 
         if nx and xx:
@@ -1775,6 +1832,8 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zdiff
 
         The number of keys is calculated automatically.
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -1808,6 +1867,8 @@ Source: https://redis.io/commands/rpoplpush""")
     async def zincrby(self, key: str, increment: float, member: str) -> str | float:
         """
         See https://redis.io/commands/zincrby
+
+        :return: A float if "format_return" is True.
         """
 
         command: list = ["ZINCRBY", key, increment, member]
@@ -1833,6 +1894,8 @@ Source: https://redis.io/commands/rpoplpush""")
         The number of keys is calculated automatically.
 
         :param multiplication_factors: replacement for "WEIGHTS"
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -1900,6 +1963,8 @@ Source: https://redis.io/commands/rpoplpush""")
     async def zmscore(self, key: str, *members: str) -> list[str | None] | list[float | None]:
         """
         See https://redis.io/commands/zmscore
+
+        :return: A list of float or None values if "format_return" is True.
         """
 
         if len(members) == 0:
@@ -1916,6 +1981,8 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zpopmax
 
         :param count: defaults to 1 on the server side
+
+        :return: A dict of member-score pairs if "format_return" is True.
         """
 
         command: list = ["ZPOPMAX", key]
@@ -1932,6 +1999,8 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zpopmin
 
         :param count: defaults to 1 on the server side
+
+        :return: A dict of member-score pairs if "format_return" is True.
         """
 
         command: list = ["ZPOPMIN", key]
@@ -1953,6 +2022,8 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zrandmember
 
         :param count: defaults to 1 on the server side
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if count is None and with_scores:
@@ -1991,6 +2062,8 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zrange
 
         If you need to use "-inf" and "+inf", please write them as strings.
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
@@ -2059,6 +2132,8 @@ Source: https://redis.io/commands/zrangebylex""")
         See https://redis.io/commands/zrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if not self.allow_deprecated:
@@ -2187,6 +2262,8 @@ Source: https://redis.io/commands/zrangebyscore""")
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zrevrange
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if not self.allow_deprecated:
@@ -2248,6 +2325,8 @@ Source: https://redis.io/commands/zrevrangebylex""")
         See https://redis.io/commands/zrevrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if not self.allow_deprecated:
@@ -2301,6 +2380,9 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         :param count: defaults to 10 on the server side
 
         :param return_cursor: if set to False, it won't return the cursor
+
+        :return: The cursor will be an integer if "format_return" is True.
+        Only a dict of member-score pairs will be returned if "return_cursor" is False and "format_return" is True.
         """
 
         command: list = ["ZSCAN", key, cursor]
@@ -2316,12 +2398,14 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         if return_cursor:
             return [int(raw[0]), format_sorted_set_return(raw[1])] if self.format_return else raw
 
-        # The raw result is composed of the new cursor and the array of elements.
+        # The raw result is composed of the new cursor and the list of elements.
         return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
 
     async def zscore(self, key: str, member: str) -> str | None | float:
         """
         See https://redis.io/commands/zscore
+
+        :return: A float or None if "format_return" is True.
         """
 
         command: list = ["ZSCORE", key, member]
@@ -2347,6 +2431,8 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         The number of keys is calculated automatically.
 
         :param multiplication_factors: replacement for "WEIGHTS"
+
+        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -2521,6 +2607,8 @@ Source: https://redis.io/commands/getset""")
     async def incrbyfloat(self, key: str, increment: float) -> str | float:
         """
         See https://redis.io/commands/incrbyfloat
+
+        :return: A float if "format_return" is True.
         """
 
         command: list = ["INCRBYFLOAT", key, increment]
@@ -2814,6 +2902,8 @@ class PubSub:
     async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
         """
         See https://redis.io/commands/pubsub-numsub
+
+        :return: A dict with channel-(number-of-subscribers) pairs if "format_return" is True.
         """
 
         self.command.extend(["NUMSUB", *channels])
@@ -2831,6 +2921,8 @@ class Script:
     async def exists(self, *sha1_digests: str) -> list[Literal[1, 0]] | list[bool]:
         """
         See https://redis.io/commands/script-exists
+
+        :return: A list of bools if "format_return" is True.
         """
 
         if len(sha1_digests) == 0:
