@@ -38,15 +38,19 @@ async def execute(
 
             if allow_telemetry:
                 if telemetry_data:
-                    headers["Upstash-Telemetry-Runtime"] = telemetry_data["runtime"]
-                    headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
-
                     # Avoid the [] syntax to prevent KeyError from being raised.
+                    if telemetry_data.get("runtime"):
+                        headers["Upstash-Telemetry-Runtime"] = telemetry_data["runtime"]
+                    else:
+                        headers["Upstash-Telemetry-Runtime"] = f'python@v{python_version()}'
+
+                    if telemetry_data.get("sdk"):
+                        headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
+                    else:
+                        headers["Upstash-Telemetry-Sdk"] = "upstash-py@development"
+
                     if telemetry_data.get("platform"):
                         headers["Upstash-Telemetry-Platform"] = telemetry_data["platform"]
-                else:
-                    headers["Upstash-Telemetry-Runtime"] = f'python@v{python_version()}'
-                    headers["Upstash-Telemetry-Sdk"] = "upstash-py@development"
 
             if encoding:
                 headers["Upstash-Encoding"] = encoding

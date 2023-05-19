@@ -1,8 +1,7 @@
 from typing import TypedDict
-from typing import NotRequired
 
 
-class TelemetryData(TypedDict):
+class TelemetryData(TypedDict, total=False):  # Allow omitting properties.
     runtime: str
     sdk: str
-    platform: NotRequired[str]  # For now this will be omitted.
+    platform: str

@@ -77,3 +77,56 @@ async def test_with_invalid_command() -> None:
         )
 
     await session.close()
+
+
+@mark.asyncio
+async def test_with_default_telemetry() -> None:
+    session = ClientSession()
+
+    assert await execute(
+        session=session,
+        url=environ["UPSTASH_REDIS_REST_URL"],
+        token=environ["UPSTASH_REDIS_REST_TOKEN"],
+        retries=0,
+        retry_interval=0,
+        encoding=False,
+        command=["SET", "a", "b"],
+        allow_telemetry=True
+    ) == "OK"
+
+    await session.close()
+
+
+@mark.asyncio
+async def test_with_custom_telemetry() -> None:
+    session = ClientSession()
+
+    assert await execute(
+        session=session,
+        url=environ["UPSTASH_REDIS_REST_URL"],
+        token=environ["UPSTASH_REDIS_REST_TOKEN"],
+        retries=0,
+        retry_interval=0,
+        encoding=False,
+        command=["SET", "a", "b"],
+        allow_telemetry=True,
+        telemetry_data={
+            "runtime": "python@3.11.2",
+            "sdk": "upstash-py@development",
+            "platform": "local(testing)"
+        }
+    ) == "OK"
+
+    assert await execute(
+        session=session,
+        url=environ["UPSTASH_REDIS_REST_URL"],
+        token=environ["UPSTASH_REDIS_REST_TOKEN"],
+        retries=0,
+        retry_interval=0,
+        encoding=False,
+        command=["SET", "a", "b"],
+        allow_telemetry=True,
+        telemetry_data={
+            "sdk": "upstash-py@development"
+        }
+    ) == "OK"
