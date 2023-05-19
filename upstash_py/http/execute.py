@@ -56,7 +56,7 @@ async def execute(
                 headers["Upstash-Encoding"] = encoding
 
             async with session.post(url, headers=headers, json=command) as response:
-                body: RESTResponse[RESTResult] = await response.json()
+                body: RESTResponse = await response.json()
 
                 # Avoid the [] syntax to prevent KeyError from being raised.
                 if body.get("error"):

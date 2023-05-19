@@ -36,7 +36,7 @@ from upstash_py.schema.commands.returns import (
     FormattedSortedSetReturn
 )
 from aiohttp import ClientSession
-from typing import Type, Any, Self, Literal
+from typing import Type, Any, Literal
 from os import environ
 
 
@@ -2795,7 +2795,7 @@ class BitFieldCommands:
         self.client = client
         self.command: list = ["BITFIELD", key]
 
-    def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+    def get(self, encoding: str, offset: BitFieldOffset):
         """
         Returns the specified bit field.
 
@@ -2807,7 +2807,7 @@ class BitFieldCommands:
 
         return self
 
-    def set(self, encoding: str, offset: BitFieldOffset, value: int) -> Self:
+    def set(self, encoding: str, offset: BitFieldOffset, value: int):
         """
         Set the specified bit field and returns its old value.
 
@@ -2819,7 +2819,7 @@ class BitFieldCommands:
 
         return self
 
-    def incrby(self, encoding: str, offset: BitFieldOffset, increment: int) -> Self:
+    def incrby(self, encoding: str, offset: BitFieldOffset, increment: int):
         """
         Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
 
@@ -2831,7 +2831,7 @@ class BitFieldCommands:
 
         return self
 
-    def overflow(self, overflow: Literal["WRAP", "SAT", "FAIL"]) -> Self:
+    def overflow(self, overflow: Literal["WRAP", "SAT", "FAIL"]):
         """
         Where an integer encoding is expected, it can be composed by prefixing with i
         for signed integers and u for unsigned integers with the number of bits of our integer encoding.
@@ -2857,7 +2857,7 @@ class BitFieldRO:
         self.client = client
         self.command: list = ["BITFIELD_RO", key]
 
-    def get(self, encoding: str, offset: BitFieldOffset) -> Self:
+    def get(self, encoding: str, offset: BitFieldOffset):
         """
         Returns the specified bit field.
 

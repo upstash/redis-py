@@ -1,4 +1,4 @@
-from typing import TypedDict, Literal, TypeVar, Generic
+from typing import TypedDict, Literal, TypeVar, Any
 
 
 """
@@ -20,10 +20,10 @@ If set to False, no encoding will be used.
 RESTEncoding = str | Literal[False]
 
 
-class RESTResponse(TypedDict, Generic[RESTResult]):
+class RESTResponse(TypedDict):
     """
     The types of the fields that can be returned by the REST API.
     """
 
-    result: RESTResult
+    result: Any
     error: str
