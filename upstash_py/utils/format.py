@@ -62,6 +62,7 @@ def format_geo_members_return(
     result: FormattedGeoMembersReturn = []
 
     for member in raw:
+        # TODO better type with TypedDict
         formatted_member: dict[str, str | float | int] = {
             "member": member[0]
         }
