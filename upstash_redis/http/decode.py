@@ -1,6 +1,6 @@
-from upstash_py.schema.http import RESTResult
-from upstash_py.utils.base import base64_to_string
-from upstash_py.exception import UpstashException
+from upstash_redis.schema.http import RESTResult
+from upstash_redis.utils.base import base64_to_string
+from upstash_redis.exception import UpstashException
 
 
 def decode(raw: RESTResult, encoding: str) -> RESTResult:

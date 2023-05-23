@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "upstash-py"
-version = "0.8.0"
+name = "upstash_redis"
+version = "0.10.0"
 description = ""
 authors = ["Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
 readme = "README.md"
-packages = [{include = "upstash_py"}]
+packages = [{include = "upstash_redis"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"

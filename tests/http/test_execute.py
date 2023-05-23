@@ -1,5 +1,5 @@
-from upstash_py.http.execute import execute
-from upstash_py.exception import UpstashException
+from upstash_redis.http.execute import execute
+from upstash_redis.exception import UpstashException
 from aiohttp import ClientSession
 from os import environ
 from pytest import raises, mark
@@ -112,7 +112,7 @@ async def test_with_custom_telemetry() -> None:
         allow_telemetry=True,
         telemetry_data={
             "runtime": "python@3.11.2",
-            "sdk": "upstash-py@development",
+            "sdk": "upstash_redis@development",
             "platform": "local(testing)"
         }
     ) == "OK"
@@ -127,6 +127,6 @@ async def test_with_custom_telemetry() -> None:
         command=["SET", "a", "b"],
         allow_telemetry=True,
         telemetry_data={
-            "sdk": "upstash-py@development"
+            "sdk": "upstash_redis@development"
         }
     ) == "OK"

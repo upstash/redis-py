@@ -1,5 +1,5 @@
-from upstash_py.schema.commands.parameters import FloatMinMax
-from upstash_py.utils.comparison import number_are_not_none
+from upstash_redis.schema.commands.parameters import FloatMinMax
+from upstash_redis.utils.comparison import number_are_not_none
 from typing import Literal
 
 

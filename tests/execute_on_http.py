@@ -1,4 +1,4 @@
-from upstash_py.schema.http import RESTResult
+from upstash_redis.schema.http import RESTResult
 from aiohttp import ClientSession
 from os import environ
 

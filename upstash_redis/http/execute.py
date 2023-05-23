@@ -1,7 +1,7 @@
-from upstash_py.exception import UpstashException
-from upstash_py.http.decode import decode
-from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
-from upstash_py.schema.telemetry import TelemetryData
+from upstash_redis.exception import UpstashException
+from upstash_redis.http.decode import decode
+from upstash_redis.schema.http import RESTResult, RESTResponse, RESTEncoding
+from upstash_redis.schema.telemetry import TelemetryData
 from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
@@ -47,7 +47,7 @@ async def execute(
                     if telemetry_data.get("sdk"):
                         headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
                     else:
-                        headers["Upstash-Telemetry-Sdk"] = "upstash-py@development"
+                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@development"
 
                     if telemetry_data.get("platform"):
                         headers["Upstash-Telemetry-Platform"] = telemetry_data["platform"]

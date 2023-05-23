@@ -1,4 +1,4 @@
-from upstash_py.schema.commands.returns import (
+from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,

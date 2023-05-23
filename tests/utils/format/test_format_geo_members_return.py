@@ -1,4 +1,4 @@
-from upstash_py.utils.format import format_geo_members_return
+from upstash_redis.utils.format import format_geo_members_return
 
 
 def test_with_distance_and_hash_and_coordinates() -> None:

@@ -1,7 +1,7 @@
-from upstash_py.http.execute import execute
-from upstash_py.schema.http import RESTResult, RESTEncoding
-from upstash_py.schema.telemetry import TelemetryData
-from upstash_py.config import (
+from upstash_redis.http.execute import execute
+from upstash_redis.schema.http import RESTResult, RESTEncoding
+from upstash_redis.schema.telemetry import TelemetryData
+from upstash_redis.config import (
     REST_ENCODING,
     REST_RETRIES,
     REST_RETRY_INTERVAL,
@@ -9,7 +9,7 @@ from upstash_py.config import (
     ALLOW_DEPRECATED,
     FORMAT_RETURN
 )
-from upstash_py.utils.format import (
+from upstash_redis.utils.format import (
     format_geo_positions_return,
     format_geo_members_return,
     format_hash_return,
@@ -19,15 +19,15 @@ from upstash_py.utils.format import (
     format_sorted_set_return,
     format_float_list
 )
-from upstash_py.utils.exception import (
+from upstash_redis.utils.exception import (
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
     handle_georadius_write_exceptions
 )
-from upstash_py.utils.comparison import number_are_not_none
-from upstash_py.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
-from upstash_py.schema.commands.returns import (
+from upstash_redis.utils.comparison import number_are_not_none
+from upstash_redis.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
+from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,

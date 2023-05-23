@@ -1,4 +1,4 @@
-from upstash_py.utils.format import format_bool_list
+from upstash_redis.utils.format import format_bool_list
 
 
 def test() -> None:
