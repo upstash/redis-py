@@ -7,7 +7,7 @@ REST_ENCODING: str = "base64"
 
 REST_RETRIES: int = 1
 
-REST_RETRY_INTERVAL: int = 3
+REST_RETRY_INTERVAL: int = 3  # Seconds.
 
 FORMAT_RETURN: bool = True
 

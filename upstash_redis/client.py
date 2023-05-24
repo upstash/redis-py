@@ -46,7 +46,7 @@ class Redis:
         token: str,
         rest_encoding: RESTEncoding = REST_ENCODING,
         rest_retries: int = REST_RETRIES,
-        rest_retry_interval: int = REST_RETRY_INTERVAL,
+        rest_retry_interval: int = REST_RETRY_INTERVAL,  # Seconds.
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
         telemetry_data: TelemetryData | None = None
