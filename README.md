@@ -42,7 +42,7 @@ pip install upstash-redis
 ```
 
 If you are using a packaging and dependency management tool like [Poetry](https://python-poetry.org), you might want to check
-the respective docs in regard to adding dependency. For example, in a Poetry-managed virtual environment, you can use
+the respective docs in regard to adding a dependency. For example, in a Poetry-managed virtual environment, you can use
 ```bash
 poetry add upstash-redis
 ```
@@ -73,7 +73,8 @@ If not, all you need to know is that the `Redis` class acts both as a command gr
 If you are in a serverless environment that allows it, it's also recommended to initialise the client outside the request handler
 to be reused while your function is still hot.
 
-Running commands might look like this
+Running commands might look like this:
+
 ```python
 from upstash_redis.client import Redis
 from asyncio import run
@@ -97,7 +98,7 @@ The sdk can collect the following anonymous telemetry:
   - the sdk or sdks you're using (ex: `upstash-redisy@development, upstash-ratelimit@v.0.1.0`)
   - the platform you're running on (ex: `AWS-lambda`)
 
-If you want to opt-out, simply set `allow_telemetry` to `False` in the `Redis` constructor or in the `from_env` class method.
+If you want to opt out, simply set `allow_telemetry` to `False` in the `Redis` constructor or the `from_env` class method.
 
 
 # Retry mechanism
@@ -110,7 +111,8 @@ The sdk relies on the Upstash REST proxy, which returns the `RESP2` responses of
 By default, we apply formatting to some of them to provide a better developer experience.
 If you want the commands to output the raw return, set `format_return` to `False`.
 
-You can also opt out for individual commands
+You can also opt out of individual commands:
+
 ```python
 redis.format_return = False
 
@@ -144,7 +146,7 @@ The defaults for telemetry are set directly in the [execute](./upstash_redis/htt
 Commands should try to have a developer-friendly signature and each deviation from the Redis API must be documented with
 docstrings.
 
-To increase the DX even more, the commands should try to raise exceptions whenever parameters functions are misunderstood
+To increase the DX even more, the commands should try to raise exceptions whenever parameters logics is misunderstood
 and can't be deducted simply from the types. Example: `bitcount` in [client.py](./upstash_redis/client.py)
 
 The goal is to also isolate the complex formatting functions from the commands themselves.
@@ -159,20 +161,22 @@ and their desired behaviour. Why is this important? Because testing almost any p
 doesn't change is more like testing the REST API, not only the client.
 
 Tests should use named parameters wherever it may improve readability and should use the [execute_on_http](./tests/execute_on_http.py)
-function directly instead of the sdk itself whenever an extra command is needed to insure atomicity.
+function directly instead of the sdk itself whenever an extra command is needed to ensure atomicity.
 
-There is also the [prepare_database](./tests/prepare_database.py) script which goal is to flush and then seed the selected testing
+There is also the [prepare_database](./tests/prepare_database.py) script whose goal is to flush and then seed the selected testing
 database with the required keys. In this way, no random values have to be used.
 
 To run all the tests, make sure you are in the tests folder and have the poetry virtual environment activated with all the necessary 
 dependencies and set the `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` environment variables.
 
 Prepare the database (running this will empty your destination database):
+
 ```bash
 poetry run python prepare_database.py
 ```
 
-Run the tests
+Run the tests:
+
 ```bash
 poetry run pytest
 ```
