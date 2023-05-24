@@ -147,24 +147,3 @@ async def test_with_invalid_parameters() -> None:
             )
 
         assert str(exception.value) == "\"count_any\" can only be used together with \"count\"."
-
-
-@mark.asyncio
-async def test_without_allowing_deprecated_commands() -> None:
-    redis.allow_deprecated = False
-
-    async with redis:
-        with raises(Exception) as exception:
-            await redis.georadius(
-                "test_geo_index",
-                longitude=15,
-                latitude=37,
-                radius=200,
-                unit="KM",
-                count=None,
-                count_any=False
-            )
-
-    assert str(exception.value) == """From version 6.2.0, this command is deprecated.
-It can be replaced by "geosearch" and "geosearchstore" with the "radius" argument.
-Source: https://redis.io/commands/georadius"""

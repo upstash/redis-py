@@ -6,7 +6,6 @@ from upstash_redis.config import (
     REST_RETRIES,
     REST_RETRY_INTERVAL,
     ALLOW_TELEMETRY,
-    ALLOW_DEPRECATED,
     FORMAT_RETURN
 )
 from upstash_redis.utils.format import (
@@ -48,7 +47,6 @@ class Redis:
         rest_encoding: RESTEncoding = REST_ENCODING,
         rest_retries: int = REST_RETRIES,
         rest_retry_interval: int = REST_RETRY_INTERVAL,
-        allow_deprecated: bool = ALLOW_DEPRECATED,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
         telemetry_data: TelemetryData | None = None
@@ -58,7 +56,6 @@ class Redis:
 
         self.allow_telemetry = allow_telemetry
 
-        self.allow_deprecated = allow_deprecated
         self.format_return = format_return
 
         self.rest_encoding = rest_encoding
@@ -73,7 +70,6 @@ class Redis:
         rest_encoding: RESTEncoding = REST_ENCODING,
         rest_retries: int = REST_RETRIES,
         rest_retry_interval: int = REST_RETRY_INTERVAL,
-        allow_deprecated: bool = ALLOW_DEPRECATED,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
         telemetry_data: TelemetryData | None = None
@@ -88,7 +84,6 @@ class Redis:
             rest_encoding,
             rest_retries,
             rest_retry_interval,
-            allow_deprecated,
             format_return,
             allow_telemetry,
             telemetry_data
@@ -579,11 +574,6 @@ class Redis:
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-It can be replaced by "geosearch" and "geosearchstore" with the "radius" argument.
-Source: https://redis.io/commands/georadius""")
-
         handle_georadius_write_exceptions(
             with_distance,
             with_hash,
@@ -649,11 +639,6 @@ Source: https://redis.io/commands/georadius""")
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-It can be replaced by "geosearch" with the "radius" argument.
-Source: https://redis.io/commands/georadius_ro""")
-
         if count_any and count is None:
             raise Exception("\"count_any\" can only be used together with \"count\".")
 
@@ -709,11 +694,6 @@ Source: https://redis.io/commands/georadius_ro""")
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-It can be replaced by "geosearch" and "geosearchstore" with the "radius" and "member" arguments.
-Source: https://redis.io/commands/georadiusbymember""")
 
         handle_georadius_write_exceptions(
             with_distance,
@@ -778,11 +758,6 @@ Source: https://redis.io/commands/georadiusbymember""")
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-        It can be replaced by "geosearch" with the "radius" and "member" arguments.
-        Source: https://redis.io/commands/georadiusbymember""")
 
         if count_any and count is None:
             raise Exception("\"count_any\" can only be used together with \"count\".")
@@ -1060,11 +1035,6 @@ Source: https://redis.io/commands/georadiusbymember""")
         """
         See https://redis.io/commands/hmset
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 4.0.0, this command is deprecated.
-It can be replaced by "hset".
-Source: https://redis.io/commands/hmset""")
 
         command: list = ["HMSET", key]
 
@@ -1387,11 +1357,6 @@ Source: https://redis.io/commands/hmset""")
         """
         See https://redis.io/commands/rpoplpush
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-It can be replaced by "lmove" with "source_position" set to "RIGHT" and the "destination_position" set to "LEFT".
-Source: https://redis.io/commands/rpoplpush""")
 
         command: list = ["RPOPLPUSH", source_key, destination_key]
 
@@ -2100,12 +2065,6 @@ Source: https://redis.io/commands/rpoplpush""")
         See https://redis.io/commands/zrangebylex
         """
 
-        if not self.allow_deprecated:
-            raise Exception(
-                """From version 6.2.0, this command is deprecated.
-It can be replaced by "zrange" with "range_method" set to "BYLEX".
-Source: https://redis.io/commands/zrangebylex""")
-
         handle_zrangebylex_exceptions(min_score, max_score, offset, count)
 
         command: list = ["ZRANGEBYLEX", key, min_score, max_score]
@@ -2135,12 +2094,6 @@ Source: https://redis.io/commands/zrangebylex""")
 
         :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
-
-        if not self.allow_deprecated:
-            raise Exception(
-                """From 6.2.0, this command is deprecated.
-It can be replaced by "zrange" with "range_method" set to "BYSCORE".
-Source: https://redis.io/commands/zrangebyscore""")
 
         if number_are_not_none(offset, count, number=1):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
@@ -2266,11 +2219,6 @@ Source: https://redis.io/commands/zrangebyscore""")
         :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
-        if not self.allow_deprecated:
-            raise Exception("""From 6.2.0, this command is deprecated.
-It can be replaced by "zrange" with "rev" set to True.
-Source: https://redis.io/commands/zrevrange""")
-
         command: list = ["ZREVRANGE", key, start, stop]
 
         if with_scores:
@@ -2293,11 +2241,6 @@ Source: https://redis.io/commands/zrevrange""")
         """
         See https://redis.io/commands/zrevrangebylex
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From 6.2.0, this command is deprecated.
-It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYLEX".
-Source: https://redis.io/commands/zrevrangebylex""")
 
         handle_zrangebylex_exceptions(min_score, max_score, offset, count)
 
@@ -2328,11 +2271,6 @@ Source: https://redis.io/commands/zrevrangebylex""")
 
         :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From 6.2.0, this command is deprecated.
-It can be replaced by "zrange" with "rev" set to True and "range_method" set to "BYSCORE".
-Source: https://redis.io/commands/zrevrangebyscore""")
 
         if number_are_not_none(offset, count, number=1):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
@@ -2577,11 +2515,6 @@ Source: https://redis.io/commands/zrevrangebyscore""")
         See https://redis.io/commands/getset
         """
 
-        if not self.allow_deprecated:
-            raise Exception("""From version 6.2.0, this command is deprecated.
-It can be replaced by "set" with "get".
-Source: https://redis.io/commands/getset""")
-
         command: list = ["GETSET", key, value]
 
         return await self.run(command)
@@ -2658,11 +2591,6 @@ Source: https://redis.io/commands/getset""")
         See https://redis.io/commands/psetex
         """
 
-        if not self.allow_deprecated:
-            raise Exception(""" From version 2.6.12, this command is deprecated.
-It can be replaced by "set" with "milliseconds".
-Source: https://redis.io/commands/psetex""")
-
         command: list = ["PSETEX", key, milliseconds, value]
 
         return await self.run(command)
@@ -2733,11 +2661,6 @@ Source: https://redis.io/commands/psetex""")
         See https://redis.io/commands/setex
         """
 
-        if not self.allow_deprecated:
-            raise Exception("""From version 2.6.12, this command is deprecated.
-It can be replaced by "set" with "seconds".
-Source: https://redis.io/commands/setex""")
-
         command: list = ["SETEX", key, seconds, value]
 
         return await self.run(command)
@@ -2746,11 +2669,6 @@ Source: https://redis.io/commands/setex""")
         """
         See https://redis.io/commands/setnx
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 2.6.12, this command is deprecated.
-It can be replaced by "set" with "nx".
-Source: https://redis.io/commands/setnx""")
 
         command: list = ["SETNX", key, value]
 
@@ -2778,11 +2696,6 @@ Source: https://redis.io/commands/setnx""")
         """
         See https://redis.io/commands/substr
         """
-
-        if not self.allow_deprecated:
-            raise Exception("""From version 2.0.0, this command is deprecated.
-It can be replaced by "getrange".
-Source: https://redis.io/commands/substr""")
 
         command: list = ["SUBSTR", key, start, end]
 

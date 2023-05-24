@@ -9,8 +9,6 @@ REST_RETRIES: int = 1
 
 REST_RETRY_INTERVAL: int = 3
 
-ALLOW_DEPRECATED: bool = False
-
 FORMAT_RETURN: bool = True
 
 ALLOW_TELEMETRY: bool = True
