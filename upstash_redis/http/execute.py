@@ -21,6 +21,11 @@ async def execute(
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
+
+    :param encoding: the encoding that can be used by the REST API to parse the response before sending it
+    :param retries: how many times an HTTP request will be retried if it fails
+    :param retry_interval: how many seconds will be waited between each retry
+    :param allow_telemetry: whether anonymous telemetry can be collected
     """
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.

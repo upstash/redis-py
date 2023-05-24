@@ -51,6 +51,16 @@ class Redis:
         allow_telemetry: bool = ALLOW_TELEMETRY,
         telemetry_data: TelemetryData | None = None
     ):
+        """
+        :param url: UPSTASH_REDIS_REST_URL in the console
+        :param token: UPSTASH_REDIS_REST_TOKEN in the console
+        :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
+        :param rest_retries: how many times an HTTP request will be retried if it fails
+        :param rest_retry_interval: how many seconds will be waited between each retry
+        :param format_return: whether the raw, RESP2 result or a formatted response will be returned
+        :param allow_telemetry: whether anonymous telemetry can be collected
+        """
+
         self.url = url
         self.token = token
 
@@ -76,6 +86,12 @@ class Redis:
     ):
         """
         Load the credentials from environment.
+
+        :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
+        :param rest_retries: how many times an HTTP request will be retried if it fails
+        :param rest_retry_interval: how many seconds will be waited between each retry
+        :param format_return: whether the raw, RESP2 result or a formatted response will be returned
+        :param allow_telemetry: whether anonymous telemetry can be collected
         """
 
         return cls(

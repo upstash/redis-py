@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upstash_redis"
-version = "0.11.0"
+version = "0.12.0"
 description = ""
 authors = ["Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
 readme = "README.md"

@@ -17,7 +17,7 @@ RESTResult = TypeVar(
 The type of encoding that will be passed as a header to the REST API. 
 If set to False, no encoding will be used.
 """
-RESTEncoding = str | Literal[False]
+RESTEncoding = Literal["base64"] | Literal[False]
 
 
 class RESTResponse(TypedDict):

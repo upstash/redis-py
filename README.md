@@ -6,11 +6,11 @@ upstash-redis is a connectionless, HTTP-based Redis client for python, designed 
 - and other environments where HTTP is preferred over TCP.
 
 Inspired by other Redis clients like [@upstash/redis](https://github.com/upstash/upstash-redis) and [redis-py](https://github.com/redis/redis-py),
-the goal of this sdk is to provide a simple, dx-enchanted way to use Redis in HTTP-based environments and not only.
+the goal of this SDK is to provide a simple, dx-enchanted way to use Redis in HTTP-based environments and not only.
 
 It is `async-based` and supports `typing` features.
 
-The sdk is currently compatible with python 3.10 and above.
+The SDK is currently compatible with python 3.10 and above.
 
 <!-- toc -->
 
@@ -19,7 +19,7 @@ The sdk is currently compatible with python 3.10 and above.
     - [PyPi](#PyPi)
   - [Usage](#usage)
   - [Telemetry](#telemetry)
-- [Encoding](#usage)
+- [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
 - [Formatting returns](#formatting-returns)
 - [Contributing](#contributing)
@@ -93,12 +93,21 @@ run(main())
 
 
 # Telemetry
-The sdk can collect the following anonymous telemetry:
+The SDK can collect the following anonymous telemetry:
   - the runtime (ex: `python@v.3.10.0`)
-  - the sdk or sdks you're using (ex: `upstash-redisy@development, upstash-ratelimit@v.0.1.0`)
+  - the SDK or SDKs you're using (ex: `upstash-redisy@development, upstash-ratelimit@v.0.1.0`)
   - the platform you're running on (ex: `AWS-lambda`)
 
 If you want to opt out, simply set `allow_telemetry` to `False` in the `Redis` constructor or the `from_env` class method.
+
+
+# Encoding
+Although Redis can store invalid JSON data, there might be problems with the deserialization.
+To avoid this, the Upstash REST proxy is capable of encoding the data as base64 on the server and then sending it to the client to be
+decoded. 
+
+For very large data, this can add a few milliseconds in latency. So, if you're sure that your data is valid JSON, you can set
+`rest_encoding` to `False`.
 
 
 # Retry mechanism
@@ -107,7 +116,7 @@ after the error. If you want to customize that, set `rest_retries` and `rest_ret
 
 
 # Formatting returns
-The sdk relies on the Upstash REST proxy, which returns the `RESP2` responses of the given commands.
+The SDK relies on the Upstash REST proxy, which returns the `RESP2` responses of the given commands.
 By default, we apply formatting to some of them to provide a better developer experience.
 If you want the commands to output the raw return, set `format_return` to `False`.
 
@@ -161,7 +170,7 @@ and their desired behaviour. Why is this important? Because testing almost any p
 doesn't change is more like testing the REST API, not only the client.
 
 Tests should use named parameters wherever it may improve readability and should use the [execute_on_http](./tests/execute_on_http.py)
-function directly instead of the sdk itself whenever an extra command is needed to ensure atomicity.
+function directly instead of the SDK itself whenever an extra command is needed to ensure atomicity.
 
 There is also the [prepare_database](./tests/prepare_database.py) script whose goal is to flush and then seed the selected testing
 database with the required keys. In this way, no random values have to be used.
@@ -199,5 +208,5 @@ in platforms such as AWS Lambda.
 For that to be possible, some typing features like the "Self" type and the Generic 
 TypedDict were removed.
 
-Currently, this is the only branch from which the sdk is released, and it holds the
-version used by the rate-limit sdk too.
+Currently, this is the only branch from which the SDK is released, and it holds the
+version used by the rate-limit SDK too.
