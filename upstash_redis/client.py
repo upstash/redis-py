@@ -1489,7 +1489,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def server_time(self) -> list[str] | dict[str, int]:
+    async def time(self) -> list[str] | dict[str, int]:
         """
         See https://redis.io/commands/time
 
