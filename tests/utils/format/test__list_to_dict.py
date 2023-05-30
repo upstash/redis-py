@@ -1,4 +1,4 @@
-from upstash_py.utils.format import _list_to_dict
+from upstash_redis.utils.format import _list_to_dict
 
 
 def test() -> None:

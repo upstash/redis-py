@@ -1,4 +1,4 @@
-from upstash_py.utils.format import format_geo_positions_return
+from upstash_redis.utils.format import format_geo_positions_return
 
 
 def test() -> None:

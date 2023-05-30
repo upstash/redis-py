@@ -1,7 +1,7 @@
-from upstash_py.exception import UpstashException
-from upstash_py.http.decode import decode
-from upstash_py.schema.http import RESTResult, RESTResponse, RESTEncoding
-from upstash_py.schema.telemetry import TelemetryData
+from upstash_redis.exception import UpstashException
+from upstash_redis.http.decode import decode
+from upstash_redis.schema.http import RESTResult, RESTResponse, RESTEncoding
+from upstash_redis.schema.telemetry import TelemetryData
 from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
@@ -21,6 +21,11 @@ async def execute(
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
+
+    :param encoding: the encoding that can be used by the REST API to parse the response before sending it
+    :param retries: how many times an HTTP request will be retried if it fails
+    :param retry_interval: how many seconds will be waited between each retry
+    :param allow_telemetry: whether anonymous telemetry can be collected
     """
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
@@ -47,7 +52,7 @@ async def execute(
                     if telemetry_data.get("sdk"):
                         headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
                     else:
-                        headers["Upstash-Telemetry-Sdk"] = "upstash-py@development"
+                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@development"
 
                     if telemetry_data.get("platform"):
                         headers["Upstash-Telemetry-Platform"] = telemetry_data["platform"]
@@ -56,7 +61,7 @@ async def execute(
                 headers["Upstash-Encoding"] = encoding
 
             async with session.post(url, headers=headers, json=command) as response:
-                body: RESTResponse[RESTResult] = await response.json()
+                body: RESTResponse = await response.json()
 
                 # Avoid the [] syntax to prevent KeyError from being raised.
                 if body.get("error"):

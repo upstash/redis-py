@@ -1,4 +1,4 @@
-from upstash_py.utils.exception import handle_non_deprecated_zrange_exceptions
+from upstash_redis.utils.exception import handle_non_deprecated_zrange_exceptions
 from pytest import raises
 
 

@@ -1,4 +1,4 @@
-from upstash_py.utils.base import base64_to_string
+from upstash_redis.utils.base import base64_to_string
 
 
 def test() -> None:

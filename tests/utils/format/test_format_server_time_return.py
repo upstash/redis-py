@@ -1,4 +1,4 @@
-from upstash_py.utils.format import format_server_time_return
+from upstash_redis.utils.format import format_server_time_return
 
 
 def test() -> None:

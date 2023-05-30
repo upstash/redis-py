@@ -1,4 +1,4 @@
-from upstash_py.schema.commands.returns import (
+from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,
@@ -62,6 +62,7 @@ def format_geo_members_return(
     result: FormattedGeoMembersReturn = []
 
     for member in raw:
+        # TODO better type with TypedDict
         formatted_member: dict[str, str | float | int] = {
             "member": member[0]
         }

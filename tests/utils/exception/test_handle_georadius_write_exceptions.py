@@ -1,4 +1,4 @@
-from upstash_py.utils.exception import handle_georadius_write_exceptions
+from upstash_redis.utils.exception import handle_georadius_write_exceptions
 from pytest import raises
 
 

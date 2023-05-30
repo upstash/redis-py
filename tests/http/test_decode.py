@@ -1,4 +1,4 @@
-from upstash_py.http.execute import decode
+from upstash_redis.http.execute import decode
 
 
 def test() -> None:
