@@ -1,4 +1,4 @@
-# Upstash Rate Limit - python edition
+# Upstash Redis - python edition
 
 upstash-redis is a connectionless, HTTP-based Redis client for python, designed to be used in serverless and serverful environments such as:
 - AWS Lambda
