@@ -83,16 +83,17 @@ commands: list[list] = [
 
 
     # HyperLogLog.
-    ["PFADD", "test_hyperloglog", "element_1", "element_2"],
+    ["PFADD", "hyperloglog", "element_1", "element_2"],
+
+    # HyperLogLogs to be used when testing
+    ["PFADD", "hyperloglog_for_pfmerge_1", "1", "2", "3", "4"],
+    ["PFADD", "hyperloglog_for_pfmerge_2", "1", "2", "3"]
 ]
 
 
 async def main() -> None:
     async with ClientSession() as session:
         async with session.post(url=url, headers=headers, json=commands) as response:
-            for command in commands:
-                print(command)
-
             if response.status != 200:
                 raise Exception((await response.json()).get("error"))
 
