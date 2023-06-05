@@ -1,4 +1,4 @@
-from upstash_redis.schema.http import RESTResult
+from upstash_redis.schema.http import RESTResult, RESTResponse
 from aiohttp import ClientSession
 from os import environ
 
@@ -11,7 +11,10 @@ headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
 async def execute_on_http(*command_elements: str) -> RESTResult:
     async with ClientSession() as session:
         async with session.post(url=url, headers=headers, json=[*command_elements]) as response:
-            if response.status != 200:
-                raise Exception(f'Command failed to execute: {[*command_elements]}')
+            body: RESTResponse = await response.json()
 
-            return (await response.json())["result"]
+            # Avoid the [] syntax to prevent KeyError from being raised.
+            if body.get("error"):
+                raise Exception(body.get("error"))
+
+            return body["result"]
