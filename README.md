@@ -18,6 +18,8 @@ The SDK is currently compatible with python 3.10 and above.
   - [Install](#install)
     - [PyPi](#PyPi)
   - [Usage](#usage)
+    - [Command groups](#command-groups)
+    - [BITFIELD and BITFIELD_RO](#bitfield-and-bitfieldro)
   - [Telemetry](#telemetry)
 - [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
@@ -89,6 +91,37 @@ async def main():
 
 run(main())
 
+```
+
+### Command groups
+Most of the command groups, such as `PUBSUB` and `SCRIPT`, are available as an instance attribute of the `Redis` class.
+
+```python
+await redis.pubsub.channels()
+
+await redis.script.flush(mode="ASYNC")
+```
+
+
+### BITFIELD and BITFIELD_RO
+One particular case is represented by these two chained commands, which are available as functions that return an instance of 
+the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` function to run the commands.
+
+```python
+await (
+    redis.bitfield("test_key")
+    .incrby(encoding="i8", offset=100, increment=100)
+    .overflow("SAT")
+    .incrby(encoding="i8", offset=100, increment=100)
+    .execute()
+)
+
+await (
+    redis.bitfield_ro("test_key_2")
+    .get(encoding="u8", offset=0)
+    .get(encoding="u8", offset="#1")
+    .execute()
+)
 ```
 
 
