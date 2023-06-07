@@ -20,6 +20,7 @@ The SDK is currently compatible with python 3.10 and above.
   - [Usage](#usage)
     - [Command groups](#command-groups)
     - [BITFIELD and BITFIELD_RO](#bitfield-and-bitfieldro)
+    - [Custom commands](#custom-commands)
   - [Telemetry](#telemetry)
 - [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
@@ -123,6 +124,18 @@ await (
     .execute()
 )
 ```
+
+
+### Custom commands
+If you want to run a command that hasn't been implemented, you can use the `run` function of your client instance
+and pass the command as `list`
+
+```python
+await redis.run(command=["XLEN", "test_stream"])
+```
+
+If you want to have more control over your session management or need to use multiple custom values, use
+the [execute](./upstash_redis/http/execute.py) function directly.
 
 
 # Telemetry
