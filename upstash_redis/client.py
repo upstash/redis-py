@@ -74,6 +74,19 @@ class Redis:
 
         self.telemetry_data = telemetry_data
 
+        # See https://redis.io/commands/pubsub/
+        self.pubsub = PubSub(client=self)
+
+        # See https://redis.io/commands/script/
+        self.script = Script(client=self)
+
+        """
+        Need to double-check compatibility with the classic Redis API for this one.
+        
+        See https://redis.io/commands/acl
+        self.acl = ACL(client=self)
+        """
+
     @classmethod
     def from_env(
         cls,
@@ -1411,13 +1424,6 @@ class Redis:
 
         return await self.run(command)
 
-    async def pubsub(self) -> "PubSub":
-        """
-        See https://redis.io/commands/pubsub
-        """
-
-        return PubSub(client=self)
-
     async def eval(self, script: str, keys: list[str] | None = None, arguments: list | None = None) -> Any:
         """
         See https://redis.io/commands/eval
@@ -1456,21 +1462,6 @@ class Redis:
             command.extend(arguments)
 
         return await self.run(command)
-
-    async def script(self) -> "Script":
-        """
-        See https://redis.io/commands/script
-        """
-
-        return Script(client=self)
-
-    """
-    Need to double-check compatibility with the classic Redis API for this one.
-    async def acl(self) -> "ACL":
-        # See https://redis.io/commands/acl
-        
-        return ACL(client=self)
-    """
 
     async def dbsize(self) -> int:
         """
@@ -2805,39 +2796,38 @@ class BitFieldRO:
 class PubSub:
     def __init__(self, client: Redis):
         self.client = client
-        self.command: list = ["PUBSUB"]
 
     async def channels(self, pattern: str | None = None) -> list[str]:
         """
         See https://redis.io/commands/pubsub-channels
         """
 
-        self.command.append("CHANNELS")
+        command: list = ["PUBSUB", "CHANNELS"]
 
         if pattern is not None:
-            self.command.append(pattern)
+            command.append(pattern)
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def numpat(self) -> int:
         """
         See https://redis.io/commands/pubsub-numpat
         """
 
-        self.command.append("NUMPAT")
+        command: list = ["PUBSUB", "NUMPAT"]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
         """
         See https://redis.io/commands/pubsub-numsub
 
-        :return: A dict with channel-(number-of-subscribers) pairs if "format_return" is True.
+        :return: A dict with channel-number_of_subscribers pairs if "format_return" is True.
         """
 
-        self.command.extend(["NUMSUB", *channels])
+        command: list = ["PUBSUB", "NUMSUB", *channels]
 
-        raw: list[str | int] = await self.client.run(command=self.command)
+        raw: list[str | int] = await self.client.run(command)
 
         return format_pubsub_numsub_return(raw) if self.client.format_return else raw
 
@@ -2845,7 +2835,6 @@ class PubSub:
 class Script:
     def __init__(self, client: Redis):
         self.client = client
-        self.command: list = ["SCRIPT"]
 
     async def exists(self, *sha1_digests: str) -> list[Literal[1, 0]] | list[bool]:
         """
@@ -2857,9 +2846,9 @@ class Script:
         if len(sha1_digests) == 0:
             raise Exception("At least one sha1 digest must be provided.")
 
-        self.command.extend(["EXISTS", *sha1_digests])
+        command: list = ["SCRIPT", "EXISTS", *sha1_digests]
 
-        raw: list[Literal[1, 0]] = await self.client.run(command=self.command)
+        raw: list[Literal[1, 0]] = await self.client.run(command=command)
 
         return format_bool_list(raw) if self.client.format_return else raw
 
@@ -2868,38 +2857,37 @@ class Script:
         See https://redis.io/commands/script-flush
         """
 
-        self.command.append("FLUSH")
+        command: list = ["SCRIPT", "FLUSH"]
 
         if mode:
-            self.command.append(mode)
+            command.append(mode)
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def load(self, script: str) -> str:
         """
         See https://redis.io/commands/script-load
         """
 
-        self.command.extend(["LOAD", script])
+        command: list = ["SCRIPT", "LOAD", script]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
 
 """
 class ACL:
     def __init__(self, client: Redis):
         self.client = client
-        self.command: list = ["ACL"]
 
     async def cat(self, category_name: str | None = None) -> list[str]:
         # See https://redis.io/commands/acl-cat
 
-        self.command.append("CAT")
+        command: list = ["ACL", "CAT"]
 
         if category_name is not None:
-            self.command.append(category_name)
+            command.append(category_name)
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def deluser(self, *usernames: str) -> int:
         # See https://redis.io/commands/acl-deluser
@@ -2907,41 +2895,41 @@ class ACL:
         if len(usernames) == 0:
             raise Exception("At least one username must be provided.")
 
-        self.command.extend(["DELUSER", *usernames])
+        command: list = ["ACL", "DELUSER", *usernames]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def genpass(self, bits: int | None = None) -> str:
         # See https://redis.io/commands/acl-genpass
 
-        self.command.append("GENPASS")
+        command: list = ["ACL", "GENPASS"]
 
         if bits is not None:
-            self.command.append(bits)
+            command.append(bits)
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     # Is it possible to format this output?
     async def getuser(self, username: str) -> list[str] | None:
         # See https://redis.io/commands/acl-getuser
 
-        self.command.extend(["GETUSER", username])
+        command: list = ["ACL", "GETUSER", username]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def list_rules(self) -> list[str]:
         # See https://redis.io/commands/acl-list
 
-        self.command.append("LIST")
+        command = ["ACL", "LIST"]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def load(self) -> str:
         # See https://redis.io/commands/acl-load
 
-        self.command.append("LOAD")
+        command = ["ACL", "LOAD"]
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 
     async def log(self, count: int | None = None, reset: bool = False) -> list[str]:
         # See https://redis.io/commands/acl-log
@@ -2949,13 +2937,13 @@ class ACL:
         if count is not None and reset:
             raise Exception("Cannot specify both "count" and "reset".")
 
-        self.command.append("LOG")
+        command: list = ["ACL", "LOG"]
 
         if count is not None:
-            self.command.append(count)
+            command.append(count)
 
         if reset:
-            self.command.append("RESET")
+            command.append("RESET")
 
-        return await self.client.run(command=self.command)
+        return await self.client.run(command=command)
 """

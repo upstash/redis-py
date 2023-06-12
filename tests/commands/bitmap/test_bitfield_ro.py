@@ -15,8 +15,8 @@ async def test_get() -> None:
 @mark.asyncio
 async def test_chained_commands() -> None:
     async with redis:
-        assert (
-            await redis.bitfield_ro("string")
+        assert await (
+            redis.bitfield_ro("string")
             .get(encoding="u8", offset=0)
             .get(encoding="u8", offset="#1")
             .execute()

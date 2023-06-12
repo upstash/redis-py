@@ -1,11 +1,15 @@
 from pytest import mark, raises
 from tests.client import redis
+from tests.execute_on_http import execute_on_http
 
 
 @mark.asyncio
 async def test() -> None:
     async with redis:
         assert await redis.geoadd("Geo", {"longitude": 13.361389, "latitude": 38.115556, "name": "Palermo"}) == 1
+
+        # Test if the key was set, and it's a Geospatial index.
+        assert await execute_on_http("GEODIST", "test_geo_index", "Palermo", "Catania") == "166274.1516"
 
 
 @mark.asyncio

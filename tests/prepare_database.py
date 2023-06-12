@@ -2,7 +2,7 @@
 Flush and fill the testing database with the necessary data.
 """
 
-from asyncio import get_event_loop
+from asyncio import run
 from aiohttp import ClientSession
 from os import environ
 
@@ -17,16 +17,14 @@ commands: list[list] = [
 
     [
         "MSET",
-        # String
+        # String.
         "string", "test",
 
         # Strings to be used when testing BITFIELD* commands.
         "string_for_bitfield_set", "test",
         "string_for_bitfield_incrby", "test",
         "string_for_bitfield_chained_commands", "test",
-        "string_for_bitfield_sat_overflow", "test",
-        "string_for_bitfield_wrap_overflow", "test",
-        "string_for_bitfield_fail_overflow", "test",
+        "string_for_bitfield_overflow", "test",
 
         # Strings to be used as source keys when testing BITOP.
         "string_as_bitop_source_1", "abcd",
@@ -38,6 +36,10 @@ commands: list[list] = [
         # Strings to be deleted when testing DELETE.
         "string_for_delete_1", "a",
         "string_for_delete_2", "a",
+
+        # Strings to be renamed when testing RENAME*.
+        "string_for_rename", "test",
+        "string_for_renamenx", "test",
 
         # Strings to be used when testing expiry-related commands.
         "string_for_expire", "a",
@@ -81,17 +83,21 @@ commands: list[list] = [
 
 
     # HyperLogLog.
-    ["PFADD", "test_hyperloglog", "element_1", "element_2"],
+    ["PFADD", "hyperloglog", "element_1", "element_2"],
+
+    # HyperLogLogs to be used when testing
+    ["PFADD", "hyperloglog_for_pfmerge_1", "1", "2", "3", "4"],
+    ["PFADD", "hyperloglog_for_pfmerge_2", "1", "2", "3"]
 ]
 
 
-async def main():
+async def main() -> None:
     async with ClientSession() as session:
         async with session.post(url=url, headers=headers, json=commands) as response:
             if response.status != 200:
-                raise Exception("Failed to prepare the testing database.")
+                raise Exception((await response.json()).get("error"))
 
             print("success")
             await session.close()
 
-get_event_loop().run_until_complete(main())
+run(main())

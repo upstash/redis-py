@@ -1,4 +1,4 @@
-# Upstash Rate Limit - python edition
+# Upstash Redis - python edition
 
 upstash-redis is a connectionless, HTTP-based Redis client for python, designed to be used in serverless and serverful environments such as:
 - AWS Lambda
@@ -18,6 +18,9 @@ The SDK is currently compatible with python 3.10 and above.
   - [Install](#install)
     - [PyPi](#PyPi)
   - [Usage](#usage)
+    - [Command groups](#command-groups)
+    - [BITFIELD and BITFIELD_RO](#bitfield-and-bitfieldro)
+    - [Custom commands](#custom-commands)
   - [Telemetry](#telemetry)
 - [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
@@ -90,6 +93,49 @@ async def main():
 run(main())
 
 ```
+
+### Command groups
+Most of the command groups, such as `PUBSUB` and `SCRIPT`, are available as an instance attribute of the `Redis` class.
+
+```python
+await redis.pubsub.channels()
+
+await redis.script.flush(mode="ASYNC")
+```
+
+
+### BITFIELD and BITFIELD_RO
+One particular case is represented by these two chained commands, which are available as functions that return an instance of 
+the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` function to run the commands.
+
+```python
+await (
+    redis.bitfield("test_key")
+    .incrby(encoding="i8", offset=100, increment=100)
+    .overflow("SAT")
+    .incrby(encoding="i8", offset=100, increment=100)
+    .execute()
+)
+
+await (
+    redis.bitfield_ro("test_key_2")
+    .get(encoding="u8", offset=0)
+    .get(encoding="u8", offset="#1")
+    .execute()
+)
+```
+
+
+### Custom commands
+If you want to run a command that hasn't been implemented, you can use the `run` function of your client instance
+and pass the command as `list`
+
+```python
+await redis.run(command=["XLEN", "test_stream"])
+```
+
+If you want to have more control over your session management or need to use multiple custom values, use
+the [execute](./upstash_redis/http/execute.py) function directly.
 
 
 # Telemetry
