@@ -10,7 +10,7 @@ class GeoMember(TypedDict):
     """
     longitude: float
     latitude: float
-    name: str
+    member: str
 
 
 # "str" allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
