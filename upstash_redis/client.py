@@ -153,7 +153,7 @@ class Redis:
 
     async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:
         """
-        See https://redis.io/commands/bitcount DONE
+        See https://redis.io/commands/bitcount
         """
 
         if number_are_not_none(start, end, number=1):
@@ -168,14 +168,14 @@ class Redis:
 
     def bitfield(self, key: str) -> "BitFieldCommands":
         """
-        See https://redis.io/commands/bitfield DONE
+        See https://redis.io/commands/bitfield
         """
 
         return BitFieldCommands(key=key, client=self)
 
     def bitfield_ro(self, key: str) -> "BitFieldRO":
         """
-        See https://redis.io/commands/bitfield_ro DONE
+        See https://redis.io/commands/bitfield_ro
         """
 
         return BitFieldRO(key=key, client=self)
@@ -187,7 +187,7 @@ class Redis:
         *srckeys: str
     ) -> int:
         """
-        See https://redis.io/commands/bitop DONE
+        See https://redis.io/commands/bitop
         """
 
         if len(srckeys) == 0:
@@ -202,7 +202,7 @@ class Redis:
 
     async def bitpos(self, key: str, bit: Literal[0, 1], start: int | None = None, end: int | None = None) -> int:
         """
-        See https://redis.io/commands/bitpos DONE
+        See https://redis.io/commands/bitpos
         """
 
         if start is None and end is not None:
@@ -220,7 +220,7 @@ class Redis:
 
     async def getbit(self, key: str, offset: int) -> int:
         """
-        See https://redis.io/commands/getbit DONE
+        See https://redis.io/commands/getbit
         """
 
         command: list = ["GETBIT", key, offset]
@@ -229,7 +229,7 @@ class Redis:
 
     async def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int:
         """
-        See https://redis.io/commands/setbit DONE
+        See https://redis.io/commands/setbit
         """
 
         command: list = ["SETBIT", key, offset, value]
@@ -238,7 +238,7 @@ class Redis:
 
     async def ping(self, message: str | None = None) -> str:
         """
-        See https://redis.io/commands/ping DONE
+        See https://redis.io/commands/ping
         """
 
         command: list = ["PING"]
@@ -250,7 +250,7 @@ class Redis:
 
     async def echo(self, message: str) -> str:
         """
-        See https://redis.io/commands/echo DONE
+        See https://redis.io/commands/echo
         """
 
         command: list = ["ECHO", message]
@@ -259,7 +259,7 @@ class Redis:
 
     async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/copy DONE
+        See https://redis.io/commands/copy
 
         :return: A bool if "format_return" is True.
         """
@@ -275,7 +275,7 @@ class Redis:
 
     async def delete(self, *keys: str) -> int:
         """
-        See https://redis.io/commands/del DONE
+        See https://redis.io/commands/del
         """
 
         if len(keys) == 0:
@@ -287,7 +287,7 @@ class Redis:
 
     async def exists(self, *keys: str) -> int:
         """
-        See https://redis.io/commands/exists DONE
+        See https://redis.io/commands/exists
         """
 
         if len(keys) == 0:
@@ -299,7 +299,7 @@ class Redis:
 
     async def expire(self, key: str, seconds: int) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/expire --> NX XX missing
+        See https://redis.io/commands/expire
 
         :return: A bool if "format_return" is True.
         """
@@ -312,7 +312,7 @@ class Redis:
 
     async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/expireat --> NX XX missing
+        See https://redis.io/commands/expireat
 
         :return: A bool if "format_return" is True.
         """
@@ -325,7 +325,7 @@ class Redis:
 
     async def keys(self, pattern: str) -> list[str]:
         """
-        See https://redis.io/commands/keys DONE
+        See https://redis.io/commands/keys
         """
 
         command: list = ["KEYS", pattern]
@@ -334,7 +334,7 @@ class Redis:
 
     async def persist(self, key: str) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/persist DONE
+        See https://redis.io/commands/persist
 
         :return: A bool if "format_return" is True.
         """
@@ -347,7 +347,7 @@ class Redis:
 
     async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/pexpire DONE
+        See https://redis.io/commands/pexpire
 
         :return: A bool if "format_return" is True.
         """
@@ -360,7 +360,7 @@ class Redis:
 
     async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/pexpireat DONE
+        See https://redis.io/commands/pexpireat
 
         :return: A bool if "format_return" is True.
         """
@@ -373,7 +373,7 @@ class Redis:
 
     async def pttl(self, key: str) -> int:
         """
-        See https://redis.io/commands/pttl DONE
+        See https://redis.io/commands/pttl
         """
 
         command: list = ["PTTL", key]
@@ -382,7 +382,7 @@ class Redis:
 
     async def randomkey(self) -> str | None:
         """
-        See https://redis.io/commands/randomkey DONE
+        See https://redis.io/commands/randomkey
         """
 
         command: list = ["RANDOMKEY"]
@@ -391,7 +391,7 @@ class Redis:
 
     async def rename(self, key: str, newkey: str) -> str:
         """
-        See https://redis.io/commands/rename DONE
+        See https://redis.io/commands/rename
         """
 
         command: list = ["RENAME", key, newkey]
@@ -400,7 +400,7 @@ class Redis:
 
     async def renamenx(self, key: str, newkey: str) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/renamenx DONE
+        See https://redis.io/commands/renamenx
 
         :return: A bool if "format_return" is True.
         """
@@ -420,7 +420,7 @@ class Redis:
         return_cursor: bool = True
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
-        See https://redis.io/commands/scan --> return_cursor?
+        See https://redis.io/commands/scan
 
         :param return_cursor: if set to False, it won't return the cursor
 
@@ -449,7 +449,7 @@ class Redis:
 
     async def touch(self, *keys: str) -> int:
         """
-        See https://redis.io/commands/touch DONE
+        See https://redis.io/commands/touch
         """
 
         if len(keys) == 0:
@@ -461,7 +461,7 @@ class Redis:
 
     async def ttl(self, key: str) -> int:
         """
-        See https://redis.io/commands/ttl DONE
+        See https://redis.io/commands/ttl
         """
 
         command: list = ["TTL", key]
@@ -470,7 +470,7 @@ class Redis:
 
     async def type(self, key: str) -> str | None:
         """
-        See https://redis.io/commands/type DONE
+        See https://redis.io/commands/type
         """
 
         command: list = ["TYPE", key]
@@ -479,7 +479,7 @@ class Redis:
 
     async def unlink(self, *keys: str) -> int:
         """
-        See https://redis.io/commands/unlink DONE
+        See https://redis.io/commands/unlink
         """
 
         if len(keys) == 0:
@@ -498,7 +498,7 @@ class Redis:
         ch: bool = False,
     ) -> int:
         """
-        See https://redis.io/commands/geoadd DONE
+        See https://redis.io/commands/geoadd
 
         :param members: a sequence of GeoMember dict types (longitude, latitude, name).
         """
@@ -533,7 +533,7 @@ class Redis:
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M"
     ) -> str | float | None:
         """
-        See https://redis.io/commands/geodist DONE
+        See https://redis.io/commands/geodist
 
         :return: A float value if "format_return" is True.
         """
@@ -546,7 +546,7 @@ class Redis:
 
     async def geohash(self, key: str, *members: str) -> list[str | None]:
         """
-        See https://redis.io/commands/geohash DONE
+        See https://redis.io/commands/geohash
         """
 
         command: list = ["GEOHASH", key, *members]
@@ -559,7 +559,7 @@ class Redis:
         *members: str
     ) -> list[list[str] | None] | list[dict[str, float] | None]:
         """
-        See https://redis.io/commands/geopos DONE
+        See https://redis.io/commands/geopos
 
         :return: A list of dicts with either None or the longitude and latitude if "format_return" is True.
         """
@@ -587,7 +587,7 @@ class Redis:
         storedist: str | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn | int:
         """
-        See https://redis.io/commands/georadius DONE
+        See https://redis.io/commands/georadius
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -650,7 +650,7 @@ class Redis:
         sort: Literal["ASC", "DESC"] | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
-        See https://redis.io/commands/georadius_ro DONE
+        See https://redis.io/commands/georadius_ro
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -701,7 +701,7 @@ class Redis:
         storedist: str | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
-        See https://redis.io/commands/georadiusbymember DONE
+        See https://redis.io/commands/georadiusbymember
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -763,7 +763,7 @@ class Redis:
         sort: Literal["ASC", "DESC"] | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
-        See https://redis.io/commands/georadiusbymember_ro DONE
+        See https://redis.io/commands/georadiusbymember_ro
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -816,7 +816,7 @@ class Redis:
         withcoord: bool = False
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
-        See https://redis.io/commands/geosearch DONE
+        See https://redis.io/commands/geosearch
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -881,7 +881,7 @@ class Redis:
         storedist: bool = False
     ) -> int:
         """
-        See https://redis.io/commands/geosearchstore DONE
+        See https://redis.io/commands/geosearchstore
         """
 
         handle_geosearch_exceptions(frommember, fromlonlat_longitude, fromlonlat_latitude, byradius, bybox_width, bybox_height, count, any)
@@ -917,7 +917,7 @@ class Redis:
 
     async def hdel(self, key: str, *fields: str) -> int:
         """
-        See https://redis.io/commands/hdel DONE
+        See https://redis.io/commands/hdel
         """
 
         if len(fields) == 0:
@@ -929,7 +929,7 @@ class Redis:
 
     async def hexists(self, key: str, field: str) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/hexists DONE
+        See https://redis.io/commands/hexists
 
         :return: A bool if "format_return" is True.
         """
@@ -942,7 +942,7 @@ class Redis:
 
     async def hget(self, key: str, field: str) -> str | None:
         """
-        See https://redis.io/commands/hget DONE
+        See https://redis.io/commands/hget
         """
 
         command: list = ["HGET", key, field]
@@ -951,7 +951,7 @@ class Redis:
 
     async def hgetall(self, key: str) -> HashReturn | FormattedHashReturn:
         """
-        See https://redis.io/commands/hgetall DONE
+        See https://redis.io/commands/hgetall
 
         :return: A dict of field-value pairs if "format_return" is True.
         """
@@ -964,7 +964,7 @@ class Redis:
 
     async def hincrby(self, key: str, field: str, increment: int) -> int:
         """
-        See https://redis.io/commands/hincrby DONE
+        See https://redis.io/commands/hincrby
         """
 
         command: list = ["HINCRBY", key, field, increment]
@@ -973,7 +973,7 @@ class Redis:
 
     async def hincrbyfloat(self, key: str, field: str, increment: float) -> str | float:
         """
-        See https://redis.io/commands/hincrbyfloat DONE
+        See https://redis.io/commands/hincrbyfloat
 
         :return: A float if "format_return" is True.
         """
@@ -986,7 +986,7 @@ class Redis:
 
     async def hkeys(self, key: str) -> list[str]:
         """
-        See https://redis.io/commands/hkeys DONE
+        See https://redis.io/commands/hkeys
         """
 
         command: list = ["HKEYS", key]
@@ -995,7 +995,7 @@ class Redis:
 
     async def hlen(self, key: str) -> int:
         """
-        See https://redis.io/commands/hlen DONE
+        See https://redis.io/commands/hlen
         """
 
         command: list = ["HLEN", key]
@@ -1004,7 +1004,7 @@ class Redis:
 
     async def hmget(self, key: str, *fields: str) -> list[str | None]:
         """
-        See https://redis.io/commands/hmget DONE
+        See https://redis.io/commands/hmget
         """
 
         if len(fields) == 0:
@@ -1016,7 +1016,7 @@ class Redis:
 
     async def hmset(self, key: str, field_value_pairs: dict) -> str:
         """
-        See https://redis.io/commands/hmset DONE
+        See https://redis.io/commands/hmset
         """
 
         command: list = ["HMSET", key]
@@ -1033,7 +1033,7 @@ class Redis:
         withvalues: bool = False
     ) -> (str | None) | (HashReturn | FormattedHashReturn):
         """
-        See https://redis.io/commands/hrandfield DONE
+        See https://redis.io/commands/hrandfield
 
         :return: A dict of field-value pairs if "count" and "withvalues" are specified and "format_return" is True.
         """
@@ -1064,7 +1064,7 @@ class Redis:
         return_cursor: bool = True
     ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
         """
-        See https://redis.io/commands/hscan --> return_cursor?
+        See https://redis.io/commands/hscan
 
         :param return_cursor: if set to False, it won't return the cursor
 
@@ -1090,7 +1090,7 @@ class Redis:
 
     async def hset(self, key: str, field_value_pairs: dict) -> int:
         """
-        See https://redis.io/commands/hset DONE
+        See https://redis.io/commands/hset
         """
 
         command: list = ["HSET", key]
@@ -1102,7 +1102,7 @@ class Redis:
 
     async def hsetnx(self, key: str, field: str, value: Any) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/hsetnx DONE
+        See https://redis.io/commands/hsetnx
 
         :return: A bool if "format_return" is True.
         """
@@ -1115,7 +1115,7 @@ class Redis:
 
     async def hstrlen(self, key: str, field: str) -> int:
         """
-        See https://redis.io/commands/hstrlen DONE
+        See https://redis.io/commands/hstrlen
         """
 
         command: list = ["HSTRLEN", key, field]
@@ -1124,7 +1124,7 @@ class Redis:
 
     async def hvals(self, key: str) -> list[str]:
         """
-        See https://redis.io/commands/hvals DONE
+        See https://redis.io/commands/hvals
         """
 
         command: list = ["HVALS", key]
@@ -1133,7 +1133,7 @@ class Redis:
 
     async def pfadd(self, key: str, *elements: Any) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/pfadd DONE
+        See https://redis.io/commands/pfadd
 
         :return: A bool if "format_return" is True.
         """
@@ -1146,7 +1146,7 @@ class Redis:
 
     async def pfcount(self, *keys: str) -> int:
         """
-        See https://redis.io/commands/pfcount DONE
+        See https://redis.io/commands/pfcount
         """
 
         if len(keys) == 0:
@@ -1158,7 +1158,7 @@ class Redis:
 
     async def pfmerge(self, destkey: str, *sourcekeys: str) -> str:
         """
-        See https://redis.io/commands/pfmerge DONE
+        See https://redis.io/commands/pfmerge
         """
 
         command: list = ["PFMERGE", destkey, *sourcekeys]
@@ -1167,7 +1167,7 @@ class Redis:
 
     async def lindex(self, key: str, index: int) -> str | None:
         """
-        See https://redis.io/commands/lindex DONE
+        See https://redis.io/commands/lindex
         """
 
         command: list = ["LINDEX", key, index]
@@ -1182,7 +1182,7 @@ class Redis:
         element: Any
     ) -> int:
         """
-        See https://redis.io/commands/linsert DONE
+        See https://redis.io/commands/linsert
         """
 
         command: list = ["LINSERT", key, position, pivot, element]
@@ -1191,7 +1191,7 @@ class Redis:
 
     async def llen(self, key: str) -> int:
         """
-        See https://redis.io/commands/llen DONE
+        See https://redis.io/commands/llen
         """
 
         command: list = ["LLEN", key]
@@ -1206,7 +1206,7 @@ class Redis:
         destination_position: Literal["LEFT", "RIGHT"]
     ) -> str | None:
         """
-        See https://redis.io/commands/lmove DONE
+        See https://redis.io/commands/lmove
         """
 
         command: list = ["LMOVE", source, destination, source_position, destination_position]
@@ -1215,7 +1215,7 @@ class Redis:
 
     async def lpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
-        See https://redis.io/commands/lpop DONE
+        See https://redis.io/commands/lpop
 
         :param count: defaults to 1 on the server side
         """
@@ -1236,7 +1236,7 @@ class Redis:
         maxlen: int | None = None
     ) -> (int | None) | list[int]:
         """
-        See https://redis.io/commands/lpos DONE
+        See https://redis.io/commands/lpos
         """
 
         command: list = ["LPOS", key, element]
@@ -1254,7 +1254,7 @@ class Redis:
 
     async def lpush(self, key: str, *elements: Any) -> int:
         """
-        See https://redis.io/commands/lpush DONE
+        See https://redis.io/commands/lpush
         """
 
         if len(elements) == 0:
@@ -1266,7 +1266,7 @@ class Redis:
 
     async def lpushx(self, key: str, *elements: Any) -> int:
         """
-        See https://redis.io/commands/lpushx DONE
+        See https://redis.io/commands/lpushx
         """
 
         if len(elements) == 0:
@@ -1278,7 +1278,7 @@ class Redis:
 
     async def lrange(self, key: str, start: int, stop: int) -> list[str]:
         """
-        See https://redis.io/commands/lrange DONE
+        See https://redis.io/commands/lrange
         """
 
         command: list = ["LRANGE", key, start, stop]
@@ -1287,7 +1287,7 @@ class Redis:
 
     async def lrem(self, key: str, count: int, element: Any) -> int:
         """
-        See https://redis.io/commands/lrem DONE
+        See https://redis.io/commands/lrem
         """
 
         command: list = ["LREM", key, count, element]
@@ -1296,7 +1296,7 @@ class Redis:
 
     async def lset(self, key: str, index: int, element: Any) -> str:
         """
-        See https://redis.io/commands/lset DONE
+        See https://redis.io/commands/lset
         """
 
         command: list = ["LSET", key, index, element]
@@ -1305,7 +1305,7 @@ class Redis:
 
     async def ltrim(self, key: str, start: int, stop: int) -> str:
         """
-        See https://redis.io/commands/ltrim DONE
+        See https://redis.io/commands/ltrim
         """
 
         command: list = ["LTRIM", key, start, stop]
@@ -1314,7 +1314,7 @@ class Redis:
 
     async def rpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
-        See https://redis.io/commands/rpop DONE
+        See https://redis.io/commands/rpop
 
         :param count: defaults to 1 on the server side
         """
@@ -1328,7 +1328,7 @@ class Redis:
 
     async def rpoplpush(self, source: str, destination: str) -> str | None:
         """
-        See https://redis.io/commands/rpoplpush DONE
+        See https://redis.io/commands/rpoplpush
         """
 
         command: list = ["RPOPLPUSH", source, destination]
@@ -1337,7 +1337,7 @@ class Redis:
 
     async def rpush(self, key: str, *elements: Any) -> int:
         """
-        See https://redis.io/commands/rpush DONE
+        See https://redis.io/commands/rpush
         """
 
         if len(elements) == 0:
@@ -1349,7 +1349,7 @@ class Redis:
 
     async def rpushx(self, key: str, *elements: Any) -> int:
         """
-        See https://redis.io/commands/rpushx DONE
+        See https://redis.io/commands/rpushx
         """
 
         if len(elements) == 0:
@@ -1361,7 +1361,7 @@ class Redis:
 
     async def publish(self, channel: str, message: str) -> int:
         """
-        See https://redis.io/commands/publish DONE
+        See https://redis.io/commands/publish
         """
 
         command: list = ["PUBLISH", channel, message]
@@ -1370,7 +1370,7 @@ class Redis:
 
     async def eval(self, script: str, keys: list[str] | None = None, args: list | None = None) -> Any:
         """
-        See https://redis.io/commands/eval DONE
+        See https://redis.io/commands/eval
 
         The number of keys is calculated automatically.
         """
@@ -1392,7 +1392,7 @@ class Redis:
         args: list | None = None
     ) -> Any:
         """
-        See https://redis.io/commands/evalsha DONE
+        See https://redis.io/commands/evalsha
 
         The number of keys is calculated automatically.
         """
@@ -1409,7 +1409,7 @@ class Redis:
 
     async def dbsize(self) -> int:
         """
-        See https://redis.io/commands/dbsize DONE
+        See https://redis.io/commands/dbsize
         """
 
         command: list = ["DBSIZE"]
@@ -1418,7 +1418,7 @@ class Redis:
 
     async def flushall(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
-        See https://redis.io/commands/flushall DONE
+        See https://redis.io/commands/flushall
         """
 
         command: list = ["FLUSHALL"]
@@ -1430,7 +1430,7 @@ class Redis:
 
     async def flushdb(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
         """
-        See https://redis.io/commands/flushdb DONE
+        See https://redis.io/commands/flushdb
         """
 
         command: list = ["FLUSHDB"]
@@ -1442,7 +1442,7 @@ class Redis:
 
     async def time(self) -> list[str] | dict[str, int]:
         """
-        See https://redis.io/commands/time DONE
+        See https://redis.io/commands/time
 
         :return: A dict with the keys "seconds" and "microseconds" if self.format_return is True.
         """
@@ -1455,7 +1455,7 @@ class Redis:
 
     async def sadd(self, key: str, *members: Any) -> int:
         """
-        See https://redis.io/commands/sadd DONE
+        See https://redis.io/commands/sadd
         """
 
         if len(members) == 0:
@@ -1467,7 +1467,7 @@ class Redis:
 
     async def scard(self, key: str) -> int:
         """
-        See https://redis.io/commands/scard DONE
+        See https://redis.io/commands/scard
         """
 
         command: list = ["SCARD", key]
@@ -1476,7 +1476,7 @@ class Redis:
 
     async def sdiff(self, *keys: str) -> list[str]:
         """
-        See https://redis.io/commands/sdiff DONE
+        See https://redis.io/commands/sdiff
         """
 
         if len(keys) == 0:
@@ -1488,7 +1488,7 @@ class Redis:
 
     async def sdiffstore(self, destination: str, *keys: str) -> int:
         """
-        See https://redis.io/commands/sdiffstore DONE
+        See https://redis.io/commands/sdiffstore
         """
 
         if len(keys) == 0:
@@ -1500,7 +1500,7 @@ class Redis:
 
     async def sinter(self, *keys: str) -> list[str]:
         """
-        See https://redis.io/commands/sinter DONE
+        See https://redis.io/commands/sinter
         """
 
         if len(keys) == 0:
@@ -1512,7 +1512,7 @@ class Redis:
 
     async def sinterstore(self, destination: str, *keys: str) -> int:
         """
-        See https://redis.io/commands/sinterstore DONE
+        See https://redis.io/commands/sinterstore
         """
 
         if len(keys) == 0:
@@ -1524,7 +1524,7 @@ class Redis:
 
     async def sismember(self, key: str, member: Any) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/sismember DONE
+        See https://redis.io/commands/sismember
 
         :return: A bool if self.format_return is True.
         """
@@ -1537,7 +1537,7 @@ class Redis:
 
     async def smembers(self, key: str) -> list[str]:
         """
-        See https://redis.io/commands/smembers DONE
+        See https://redis.io/commands/smembers
         """
 
         command: list = ["SMEMBERS", key]
@@ -1546,7 +1546,7 @@ class Redis:
 
     async def smove(self, source: str, destination: str, member: Any) -> Literal[1, 0] | bool:
         """
-        See https://redis.io/commands/smove DONE
+        See https://redis.io/commands/smove 
 
         :return: A bool if self.format_return is True.
         """
@@ -1559,7 +1559,7 @@ class Redis:
 
     async def spop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
-        See https://redis.io/commands/spop DONE
+        See https://redis.io/commands/spop 
 
         :param count: defaults to 1 on the server side
         """
@@ -1573,7 +1573,7 @@ class Redis:
 
     async def srandmember(self, key: str, count: int | None = None) -> (str | None) | list[str]:
         """
-        See https://redis.io/commands/srandmember DONE
+        See https://redis.io/commands/srandmember 
 
         :param count: defaults to 1 on the server side
         """
@@ -1587,7 +1587,7 @@ class Redis:
 
     async def srem(self, key: str, *members: Any) -> int:
         """
-        See https://redis.io/commands/srem DONE
+        See https://redis.io/commands/srem 
         """
 
         if len(members) == 0:
@@ -1606,7 +1606,7 @@ class Redis:
         return_cursor: bool = True
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
-        See https://redis.io/commands/sscan --> return_cursor?
+        See https://redis.io/commands/sscan
 
         :param return_cursor: if set to False, it won't return the cursor
 
@@ -1632,7 +1632,7 @@ class Redis:
 
     async def sunion(self, *keys: str) -> list[str]:
         """
-        See https://redis.io/commands/sunion DONE
+        See https://redis.io/commands/sunion 
         """
 
         if len(keys) == 0:
@@ -1644,7 +1644,7 @@ class Redis:
 
     async def sunionstore(self, destination: str, *keys: str) -> int:
         """
-        See https://redis.io/commands/sunionstore DONE
+        See https://redis.io/commands/sunionstore 
         """
 
         if len(keys) == 0:
@@ -1666,7 +1666,7 @@ class Redis:
         incr: bool = False
     ) -> int | (str | None | float):
         """
-        See https://redis.io/commands/zadd DONE
+        See https://redis.io/commands/zadd 
 
         :param score_member_pairs: a dict containing members and their scores.
 
@@ -1717,7 +1717,7 @@ class Redis:
 
     async def zcard(self, key: str) -> int:
         """
-        See https://redis.io/commands/zcard DONE
+        See https://redis.io/commands/zcard 
         """
 
         command: list = ["ZCARD", key]
@@ -1726,7 +1726,7 @@ class Redis:
 
     async def zcount(self, key: str, min: FloatMinMax, max: FloatMinMax) -> int:
         """
-        See https://redis.io/commands/zcount DONE
+        See https://redis.io/commands/zcount 
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
@@ -1741,7 +1741,7 @@ class Redis:
     """
     async def zdiff(self, *keys: str, withscores: bool = False) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zdiff DONE
+        See https://redis.io/commands/zdiff 
 
         The number of keys is calculated automatically.
 
@@ -1764,7 +1764,7 @@ class Redis:
 
     async def zdiffstore(self, destination: str, *keys: str) -> int:
         """
-        See https://redis.io/commands/zdiffstore DONE
+        See https://redis.io/commands/zdiffstore 
 
         The number of keys is calculated automatically.
         """
@@ -1778,7 +1778,7 @@ class Redis:
 
     async def zincrby(self, key: str, increment: float, member: str) -> str | float:
         """
-        See https://redis.io/commands/zincrby DONE
+        See https://redis.io/commands/zincrby 
 
         :return: A float if "format_return" is True.
         """
@@ -1801,7 +1801,7 @@ class Redis:
         withscores: bool = False
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zinter DONE
+        See https://redis.io/commands/zinter 
 
         The number of keys is calculated automatically.
 
@@ -1836,7 +1836,7 @@ class Redis:
         aggregate: Literal["SUM", "MIN", "MAX"] | None = None
     ) -> int:
         """
-        See https://redis.io/commands/zinterstore DONE
+        See https://redis.io/commands/zinterstore 
 
         The number of keys is calculated automatically.
         """
@@ -1856,7 +1856,7 @@ class Redis:
 
     async def zlexcount(self, key: str, min: str, max: str) -> int:
         """
-        See https://redis.io/commands/zlexcount DONE
+        See https://redis.io/commands/zlexcount 
         """
 
         if not min.startswith(('(', '[', '+', '-')) or not max.startswith(('(', '[', '+', '-')):
@@ -1870,7 +1870,7 @@ class Redis:
 
     async def zmscore(self, key: str, *members: str) -> list[str | None] | list[float | None]:
         """
-        See https://redis.io/commands/zmscore DONE
+        See https://redis.io/commands/zmscore 
 
         :return: A list of float or None values if "format_return" is True.
         """
@@ -1886,7 +1886,7 @@ class Redis:
 
     async def zpopmax(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zpopmax DONE
+        See https://redis.io/commands/zpopmax 
 
         :param count: defaults to 1 on the server side
 
@@ -1904,7 +1904,7 @@ class Redis:
 
     async def zpopmin(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zpopmin DONE
+        See https://redis.io/commands/zpopmin 
 
         :param count: defaults to 1 on the server side
 
@@ -1927,7 +1927,7 @@ class Redis:
         withscores: bool = False
     ) -> (str | None) | (SortedSetReturn | FormattedSortedSetReturn):
         """
-        See https://redis.io/commands/zrandmember DONE
+        See https://redis.io/commands/zrandmember
 
         :param count: defaults to 1 on the server side
 
@@ -1967,7 +1967,7 @@ class Redis:
         withscores: bool = False
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zrange DONE
+        See https://redis.io/commands/zrange
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
@@ -2005,7 +2005,7 @@ class Redis:
         limit_count: int | None = None
     ) -> list[str | None]:
         """
-        See https://redis.io/commands/zrangebylex DONE
+        See https://redis.io/commands/zrangebylex
         """
 
         handle_zrangebylex_exceptions(min, max, limit_offset, limit_count)
@@ -2031,7 +2031,7 @@ class Redis:
         count: int | None = None
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zrangebyscore DONE
+        See https://redis.io/commands/zrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
@@ -2067,7 +2067,7 @@ class Redis:
         limit_count: int | None = None
     ) -> int:
         """
-        See https://redis.io/commands/zrangestore DONE
+        See https://redis.io/commands/zrangestore
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
@@ -2090,7 +2090,7 @@ class Redis:
 
     async def zrank(self, key: str, member: str) -> int | None:
         """
-        See https://redis.io/commands/zrank DONE
+        See https://redis.io/commands/zrank
         """
 
         command: list = ["ZRANK", key, member]
@@ -2099,7 +2099,7 @@ class Redis:
 
     async def zrem(self, key: str, *members: str) -> int:
         """
-        See https://redis.io/commands/zrem DONE
+        See https://redis.io/commands/zrem
         """
 
         if len(members) == 0:
@@ -2125,7 +2125,7 @@ class Redis:
 
     async def zremrangebyrank(self, key: str, start: int, stop: int) -> int:
         """
-        See https://redis.io/commands/zremrangebyrank DONE
+        See https://redis.io/commands/zremrangebyrank
         """
 
         command: list = ["ZREMRANGEBYRANK", key, start, stop]
@@ -2134,7 +2134,7 @@ class Redis:
 
     async def zremrangebyscore(self, key: str, min: FloatMinMax, max: FloatMinMax) -> int:
         """
-        See https://redis.io/commands/zremrangebyscore DONE
+        See https://redis.io/commands/zremrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
@@ -2155,7 +2155,7 @@ class Redis:
         withscores: bool = False
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zrevrange DONE
+        See https://redis.io/commands/zrevrange
 
         :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
@@ -2180,7 +2180,7 @@ class Redis:
         count: int | None = None
     ) -> list[str]:
         """
-        See https://redis.io/commands/zrevrangebylex DONE
+        See https://redis.io/commands/zrevrangebylex
         """
 
         handle_zrangebylex_exceptions(min, max, offset, count)
@@ -2206,7 +2206,7 @@ class Redis:
         limit_count: int | None = None
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zrevrangebyscore DONE
+        See https://redis.io/commands/zrevrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
@@ -2232,7 +2232,7 @@ class Redis:
 
     async def zrevrank(self, key: str, member: str) -> int | None:
         """
-        See https://redis.io/commands/zrevrank DONE
+        See https://redis.io/commands/zrevrank
         """
 
         command: list = ["ZREVRANK", key, member]
@@ -2252,7 +2252,7 @@ class Redis:
             SortedSetReturn | FormattedSortedSetReturn
          ):
         """
-        See https://redis.io/commands/zscan --> return_cursor?
+        See https://redis.io/commands/zscan
 
         :param return_cursor: if set to False, it won't return the cursor
 
@@ -2278,7 +2278,7 @@ class Redis:
 
     async def zscore(self, key: str, member: str) -> str | None | float:
         """
-        See https://redis.io/commands/zscore DONE
+        See https://redis.io/commands/zscore
 
         :return: A float or None if "format_return" is True.
         """
@@ -2301,7 +2301,7 @@ class Redis:
         withscores: bool = False
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
-        See https://redis.io/commands/zunion DONE
+        See https://redis.io/commands/zunion
 
         The number of keys is calculated automatically.
 
@@ -2336,7 +2336,7 @@ class Redis:
         aggregate: Literal["SUM", "MIN", "MAX"] | None = None
     ) -> int:
         """
-        See https://redis.io/commands/zunionstore DONE
+        See https://redis.io/commands/zunionstore
 
         The number of keys is calculated automatically.
         """
@@ -2356,7 +2356,7 @@ class Redis:
 
     async def append(self, key: str, value: Any) -> int:
         """
-        See https://redis.io/commands/append DONE
+        See https://redis.io/commands/append
         """
 
         command: list = ["APPEND", key, value]
@@ -2365,7 +2365,7 @@ class Redis:
 
     async def decr(self, key: str) -> int:
         """
-        See https://redis.io/commands/decr DONE
+        See https://redis.io/commands/decr
         """
 
         command: list = ["DECR", key]
@@ -2374,7 +2374,7 @@ class Redis:
 
     async def decrby(self, key: str, decrement: int) -> int:
         """
-        See https://redis.io/commands/decrby DONE
+        See https://redis.io/commands/decrby
         """
 
         command: list = ["DECRBY", key, decrement]
@@ -2383,7 +2383,7 @@ class Redis:
 
     async def get(self, key: str) -> str | None:
         """
-        See https://redis.io/commands/get DONE
+        See https://redis.io/commands/get
         """
 
         command: list = ["GET", key]
@@ -2392,7 +2392,7 @@ class Redis:
 
     async def getdel(self, key: str) -> str | None:
         """
-        See https://redis.io/commands/getdel DONE
+        See https://redis.io/commands/getdel
         """
 
         command: list = ["GETDEL", key]
@@ -2409,7 +2409,7 @@ class Redis:
         persist: bool | None = None
     ) -> str | None:
         """
-        See https://redis.io/commands/getex DONE
+        See https://redis.io/commands/getex
         """
 
         if not number_are_not_none(ex, px, exat, pxat, persist, number=1):
@@ -2436,7 +2436,7 @@ class Redis:
 
     async def getrange(self, key: str, start: int, end: int) -> str:
         """
-        See https://redis.io/commands/getrange DONE
+        See https://redis.io/commands/getrange
         """
 
         command: list = ["GETRANGE", key, start, end]
@@ -2445,7 +2445,7 @@ class Redis:
 
     async def getset(self, key: str, value: Any) -> str | None:
         """
-        See https://redis.io/commands/getset DONE
+        See https://redis.io/commands/getset
         """
 
         command: list = ["GETSET", key, value]
@@ -2454,7 +2454,7 @@ class Redis:
 
     async def incr(self, key: str) -> int:
         """
-        See https://redis.io/commands/incr DONE
+        See https://redis.io/commands/incr
         """
 
         command: list = ["INCR", key]
@@ -2463,7 +2463,7 @@ class Redis:
 
     async def incrby(self, key: str, increment: int) -> int:
         """
-        See https://redis.io/commands/incrby DONE
+        See https://redis.io/commands/incrby
         """
 
         command: list = ["INCRBY", key, increment]
@@ -2472,7 +2472,7 @@ class Redis:
 
     async def incrbyfloat(self, key: str, increment: float) -> str | float:
         """
-        See https://redis.io/commands/incrbyfloat DONE
+        See https://redis.io/commands/incrbyfloat
 
         :return: A float if "format_return" is True.
         """
@@ -2485,7 +2485,7 @@ class Redis:
 
     async def mget(self, *keys: str) -> list[str | None]:
         """
-        See https://redis.io/commands/mget DONE
+        See https://redis.io/commands/mget
         """
 
         if len(keys) == 0:
@@ -2497,7 +2497,7 @@ class Redis:
 
     async def mset(self, key_value_pairs: dict) -> Literal["OK"]:
         """
-        See https://redis.io/commands/mset DONE
+        See https://redis.io/commands/mset
         """
 
         command: list = ["MSET"]
@@ -2509,7 +2509,7 @@ class Redis:
 
     async def msetnx(self, key_value_pairs: dict) -> Literal[1, 0]:
         """
-        See https://redis.io/commands/msetnx DONE
+        See https://redis.io/commands/msetnx
         """
 
         command: list = ["MSETNX"]
@@ -2521,7 +2521,7 @@ class Redis:
 
     async def psetex(self, key: str, milliseconds: int, value: Any) -> str:
         """
-        See https://redis.io/commands/psetex DONE
+        See https://redis.io/commands/psetex
         """
 
         command: list = ["PSETEX", key, milliseconds, value]
@@ -2542,7 +2542,7 @@ class Redis:
         keepttl: bool = False,
     ) -> str | None:
         """
-        See https://redis.io/commands/set DONE
+        See https://redis.io/commands/set
         """
 
         if nx and xx:
@@ -2591,7 +2591,7 @@ class Redis:
 
     async def setex(self, key: str, seconds: int, value: Any) -> str:
         """
-        See https://redis.io/commands/setex DONE
+        See https://redis.io/commands/setex
         """
 
         command: list = ["SETEX", key, seconds, value]
@@ -2600,7 +2600,7 @@ class Redis:
 
     async def setnx(self, key: str, value: Any) -> Literal[1, 0]:
         """
-        See https://redis.io/commands/setnx DONE
+        See https://redis.io/commands/setnx
         """
 
         command: list = ["SETNX", key, value]
@@ -2609,7 +2609,7 @@ class Redis:
 
     async def setrange(self, key: str, offset: int, value: Any) -> int:
         """
-        See https://redis.io/commands/setrange DONE
+        See https://redis.io/commands/setrange
         """
 
         command: list = ["SETRANGE", key, offset, value]
@@ -2618,7 +2618,7 @@ class Redis:
 
     async def strlen(self, key: str) -> int:
         """
-        See https://redis.io/commands/strlen DONE
+        See https://redis.io/commands/strlen
         """
 
         command: list = ["STRLEN", key]
@@ -2627,7 +2627,7 @@ class Redis:
 
     async def substr(self, key: str, start: int, end: int) -> str:
         """
-        See https://redis.io/commands/substr DONE
+        See https://redis.io/commands/substr
         """
 
         command: list = ["SUBSTR", key, start, end]
@@ -2645,7 +2645,7 @@ class BitFieldCommands:
         """
         Returns the specified bit field.
 
-        Source: https://redis.io/commands/bitfield DONE
+        Source: https://redis.io/commands/bitfield
         """
 
         _command = ["GET", encoding, offset]
@@ -2657,7 +2657,7 @@ class BitFieldCommands:
         """
         Set the specified bit field and returns its old value.
 
-        Source: https://redis.io/commands/bitfield DONE
+        Source: https://redis.io/commands/bitfield
         """
 
         _command = ["SET", encoding, offset, value]
@@ -2669,7 +2669,7 @@ class BitFieldCommands:
         """
         Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
 
-        Source: https://redis.io/commands/bitfield DONE
+        Source: https://redis.io/commands/bitfield
         """
 
         _command = ["INCRBY", encoding, offset, increment]
@@ -2686,7 +2686,7 @@ class BitFieldCommands:
         This limitation with unsigned integers is due to the fact that currently the Redis protocol is unable to
         return 64-bit unsigned integers as replies.
 
-        Source: https://redis.io/commands/bitfield DONE
+        Source: https://redis.io/commands/bitfield
         """
 
         _command = ["OVERFLOW", overflow]
@@ -2707,7 +2707,7 @@ class BitFieldRO:
         """
         Returns the specified bit field.
 
-        Source: https://redis.io/commands/bitfield_ro DONE
+        Source: https://redis.io/commands/bitfield_ro
         """
 
         _command = ["GET", encoding, offset]
@@ -2725,7 +2725,7 @@ class PubSub:
 
     async def channels(self, pattern: str | None = None) -> list[str]:
         """
-        See https://redis.io/commands/pubsub-channels DONE
+        See https://redis.io/commands/pubsub-channels
         """
 
         command: list = ["PUBSUB", "CHANNELS"]
@@ -2737,7 +2737,7 @@ class PubSub:
 
     async def numpat(self) -> int:
         """
-        See https://redis.io/commands/pubsub-numpat DONE
+        See https://redis.io/commands/pubsub-numpat
         """
 
         command: list = ["PUBSUB", "NUMPAT"]
@@ -2746,7 +2746,7 @@ class PubSub:
 
     async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
         """
-        See https://redis.io/commands/pubsub-numsub DONE
+        See https://redis.io/commands/pubsub-numsub
 
         :return: A dict with channel-number_of_subscribers pairs if "format_return" is True.
         """
@@ -2764,7 +2764,7 @@ class Script:
 
     async def exists(self, *sha1: str) -> list[Literal[1, 0]] | list[bool]:
         """
-        See https://redis.io/commands/script-exists DONE
+        See https://redis.io/commands/script-exists
 
         :return: A list of bools if "format_return" is True.
         """
@@ -2780,7 +2780,7 @@ class Script:
 
     async def flush(self, mode: Literal["ASYNC", "SYNC"]) -> str:
         """
-        See https://redis.io/commands/script-flush DONE
+        See https://redis.io/commands/script-flush
         """
 
         command: list = ["SCRIPT", "FLUSH"]
@@ -2792,7 +2792,7 @@ class Script:
 
     async def load(self, script: str) -> str:
         """
-        See https://redis.io/commands/script-load DONE
+        See https://redis.io/commands/script-load
         """
 
         command: list = ["SCRIPT", "LOAD", script]
@@ -2806,7 +2806,7 @@ class ACL:
         self.client = client
 
     async def cat(self, category: str | None = None) -> list[str]:
-        # See https://redis.io/commands/acl-cat DONE
+        # See https://redis.io/commands/acl-cat
 
         command: list = ["ACL", "CAT"]
 
@@ -2816,7 +2816,7 @@ class ACL:
         return await self.client.run(command=command)
 
     async def deluser(self, *usernames: str) -> int:
-        # See https://redis.io/commands/acl-deluser DONE
+        # See https://redis.io/commands/acl-deluser
         
         if len(usernames) == 0:
             raise Exception("At least one username must be provided.")
@@ -2826,7 +2826,7 @@ class ACL:
         return await self.client.run(command=command)
 
     async def genpass(self, bits: int | None = None) -> str:
-        # See https://redis.io/commands/acl-genpass DONE
+        # See https://redis.io/commands/acl-genpass
 
         command: list = ["ACL", "GENPASS"]
 
@@ -2837,28 +2837,28 @@ class ACL:
 
     # Is it possible to format this output?
     async def getuser(self, username: str) -> list[str] | None:
-        # See https://redis.io/commands/acl-getuser DONE
+        # See https://redis.io/commands/acl-getuser
 
         command: list = ["ACL", "GETUSER", username]
 
         return await self.client.run(command=command)
 
     async def list_rules(self) -> list[str]:
-        # See https://redis.io/commands/acl-list DONE
+        # See https://redis.io/commands/acl-list
 
         command = ["ACL", "LIST"]
 
         return await self.client.run(command=command)
 
     async def load(self) -> str:
-        # See https://redis.io/commands/acl-load DONE
+        # See https://redis.io/commands/acl-load
 
         command = ["ACL", "LOAD"]
 
         return await self.client.run(command=command)
 
     async def log(self, count: int | None = None, reset: bool = False) -> list[str]:
-        # See https://redis.io/commands/acl-log DONE
+        # See https://redis.io/commands/acl-log
 
         if count is not None and reset:
             raise Exception("Cannot specify both "count" and "reset".")
