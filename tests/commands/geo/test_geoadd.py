@@ -6,7 +6,7 @@ from tests.execute_on_http import execute_on_http
 @mark.asyncio
 async def test() -> None:
     async with redis:
-        assert await redis.geoadd("Geo", {"longitude": 13.361389, "latitude": 38.115556, "name": "Palermo"}) == 1
+        assert await redis.geoadd("Geo", {"longitude": 13.361389, "latitude": 38.115556, "member": "Palermo"}) == 1
 
         # Test if the key was set, and it's a Geospatial index.
         assert await execute_on_http("GEODIST", "test_geo_index", "Palermo", "Catania") == "166274.1516"
@@ -17,7 +17,7 @@ async def test_with_nx() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
-            {"longitude": 15.087268, "latitude": 37.502669, "name": "Catania"},
+            {"longitude": 15.087268, "latitude": 37.502669, "member": "Catania"},
             nx=True
         ) == 0
 
@@ -27,7 +27,7 @@ async def test_with_xx() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
-            {"longitude": 15.087268, "latitude": 37.502669, "name": "new_member"},
+            {"longitude": 15.087268, "latitude": 37.502669, "member": "new_member"},
             xx=True
         ) == 0
 
@@ -37,7 +37,7 @@ async def test_with_ch() -> None:
     async with redis:
         assert await redis.geoadd(
             "test_geo_index",
-            {"longitude": 43.486392, "latitude": -35.283347, "name": "random"},
+            {"longitude": 43.486392, "latitude": -35.283347, "member": "random"},
             ch=True) == 1
 
 
@@ -56,7 +56,7 @@ async def test_with_nx_and_xx() -> None:
         with raises(Exception) as exception:
             await redis.geoadd(
                 "test_geo_index",
-                {"longitude": 15.087268, "latitude": 37.502669, "name": "new_member"},
+                {"longitude": 15.087268, "latitude": 37.502669, "member": "new_member"},
                 nx=True, xx=True
             )
 

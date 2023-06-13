@@ -5,20 +5,20 @@ from pytest import raises
 def test_if_min_and_max_score_are_incorrectly_formatted() -> None:
     with raises(Exception) as exception:
         handle_zrangebylex_exceptions(
-            min_score="0",
-            max_score="1",
+            min="0",
+            max="1",
             offset=None,
             count=None,
         )
 
-    assert str(exception.value) == """"min_score" and "max_score" must either start with '(' or '[' or be '+' or '-'."""
+    assert str(exception.value) == """"min" and "max" must either start with '(' or '[' or be '+' or '-'."""
 
 
 def test_with_invalid_offset_and_count() -> None:
     with raises(Exception) as exception:
         handle_zrangebylex_exceptions(
-            min_score="(",
-            max_score="[",
+            min="(",
+            max="[",
             offset=None,
             count=1,
         )
@@ -28,8 +28,8 @@ def test_with_invalid_offset_and_count() -> None:
 
 def test_with_parenthesis_min_and_max_score() -> None:
     handle_zrangebylex_exceptions(
-        min_score="[",
-        max_score="(",
+        min="[",
+        max="(",
         offset=None,
         count=None,
     )
@@ -37,8 +37,8 @@ def test_with_parenthesis_min_and_max_score() -> None:
 
 def test_with_plus_and_minus_min_and_max_score() -> None:
     handle_zrangebylex_exceptions(
-        min_score="-",
-        max_score="+",
+        min="-",
+        max="+",
         offset=None,
         count=None,
     )
@@ -46,8 +46,8 @@ def test_with_plus_and_minus_min_and_max_score() -> None:
 
 def test_with_offset_and_count() -> None:
     handle_zrangebylex_exceptions(
-        min_score="(",
-        max_score="[",
+        min="(",
+        max="[",
         offset=0,
         count=1,
     )

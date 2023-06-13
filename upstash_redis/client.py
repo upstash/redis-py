@@ -652,8 +652,6 @@ class Redis:
         """
         See https://redis.io/commands/georadius_ro DONE
 
-        :param count_any: replacement for "ANY"
-
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
