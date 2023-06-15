@@ -12,4 +12,4 @@ async def test_evalsha():
         """
         sha1_digest = await redis.script.load(script)
 
-        assert await redis.evalsha(sha1_digest=sha1_digest, keys=[10, 20], arguments=["5"]) == 35
+        assert await redis.evalsha(sha1=sha1_digest, keys=[10, 20], args=["5"]) == 35
