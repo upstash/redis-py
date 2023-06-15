@@ -22,9 +22,9 @@ async def test_with_count() -> None:
 
 
 @mark.asyncio
-async def test_with_type() -> None:
+async def test_with_scan_type() -> None:
     async with redis:
-        assert (await redis.scan(cursor=0, type="hash"))[1] == ["hash"]
+        assert (await redis.scan(cursor=0, scan_type="hash"))[1] == ["hash"]
 
 
 @mark.asyncio

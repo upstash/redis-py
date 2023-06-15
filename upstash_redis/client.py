@@ -416,13 +416,15 @@ class Redis:
         cursor: int,
         match: str | None = None,
         count: int | None = None,
-        type: str | None = None,
+        scan_type: str | None = None,
         return_cursor: bool = True
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
         See https://redis.io/commands/scan
 
         :param return_cursor: if set to False, it won't return the cursor
+
+        :param scan_type: replacement for "TYPE"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only the list of elements will be returned if "return_cursor" is False
@@ -436,7 +438,7 @@ class Redis:
         if count is not None:
             command.extend(["COUNT", count])
 
-        if type is not None:
+        if scan_type is not None:
             command.extend(["TYPE", type])
 
         # The raw result is composed of the new cursor and the list of elements.
