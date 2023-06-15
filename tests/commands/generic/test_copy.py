@@ -14,7 +14,12 @@ async def test() -> None:
 @mark.asyncio
 async def test_with_replace() -> None:
     async with redis:
-        assert await redis.copy(source="string", destination="string_as_copy_destination", replace=True) is True
+        assert (
+            await redis.copy(
+                source="string", destination="string_as_copy_destination", replace=True
+            )
+            is True
+        )
 
         assert await execute_on_http("GET", "string_as_copy_destination") == "test"
 

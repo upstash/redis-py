@@ -8,7 +8,12 @@ async def test() -> None:
     async with redis:
         assert await redis.delete("string_for_delete_1", "string_for_delete_2") == 2
 
-        assert await execute_on_http("EXISTS", "string_for_delete_1", "string_for_delete_2") == 0
+        assert (
+            await execute_on_http(
+                "EXISTS", "string_for_delete_1", "string_for_delete_2"
+            )
+            == 0
+        )
 
 
 @mark.asyncio

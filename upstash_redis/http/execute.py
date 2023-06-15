@@ -17,7 +17,7 @@ async def execute(
     retry_interval: int,
     command: list,
     allow_telemetry: bool,
-    telemetry_data: TelemetryData | None = None
+    telemetry_data: TelemetryData | None = None,
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
@@ -30,16 +30,13 @@ async def execute(
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = [
-        element if isinstance(element, str | int | float)
-
-        else dumps(element)
-
+        element if isinstance(element, str | int | float) else dumps(element)
         for element in command
     ]
 
     for i in range(retries + 1):
         try:
-            headers: dict[str, str] = {"Authorization": f'Bearer {token}'}
+            headers: dict[str, str] = {"Authorization": f"Bearer {token}"}
 
             if allow_telemetry:
                 if telemetry_data:
@@ -47,7 +44,9 @@ async def execute(
                     if telemetry_data.get("runtime"):
                         headers["Upstash-Telemetry-Runtime"] = telemetry_data["runtime"]
                     else:
-                        headers["Upstash-Telemetry-Runtime"] = f'python@v{python_version()}'
+                        headers[
+                            "Upstash-Telemetry-Runtime"
+                        ] = f"python@v{python_version()}"
 
                     if telemetry_data.get("sdk"):
                         headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
@@ -55,7 +54,9 @@ async def execute(
                         headers["Upstash-Telemetry-Sdk"] = "upstash_redis@development"
 
                     if telemetry_data.get("platform"):
-                        headers["Upstash-Telemetry-Platform"] = telemetry_data["platform"]
+                        headers["Upstash-Telemetry-Platform"] = telemetry_data[
+                            "platform"
+                        ]
 
             if encoding:
                 headers["Upstash-Encoding"] = encoding
@@ -67,7 +68,11 @@ async def execute(
                 if body.get("error"):
                     raise UpstashException(body.get("error"))
 
-                return decode(raw=body["result"], encoding=encoding) if encoding else body["result"]
+                return (
+                    decode(raw=body["result"], encoding=encoding)
+                    if encoding
+                    else body["result"]
+                )
             break
         except Exception as exception:
             if i == retries:

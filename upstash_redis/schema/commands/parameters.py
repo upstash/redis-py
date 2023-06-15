@@ -8,6 +8,7 @@ class GeoMember(TypedDict):
     """
     Represents the initial properties of a geo member, usually used with "GEOADD".
     """
+
     longitude: float
     latitude: float
     member: str

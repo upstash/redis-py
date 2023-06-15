@@ -11,7 +11,10 @@ def test_if_min_and_max_score_are_incorrectly_formatted() -> None:
             count=None,
         )
 
-    assert str(exception.value) == """"min_score" and "max_score" must either start with '(' or '[' or be '+' or '-'."""
+    assert (
+        str(exception.value)
+        == """"min_score" and "max_score" must either start with '(' or '[' or be '+' or '-'."""
+    )
 
 
 def test_with_invalid_offset_and_count() -> None:
@@ -23,7 +26,7 @@ def test_with_invalid_offset_and_count() -> None:
             count=1,
         )
 
-    assert str(exception.value) == "Both \"offset\" and \"count\" must be specified."
+    assert str(exception.value) == 'Both "offset" and "count" must be specified.'
 
 
 def test_with_parenthesis_min_score_and_max_score() -> None:

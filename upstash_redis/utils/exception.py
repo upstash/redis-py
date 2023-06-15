@@ -17,10 +17,12 @@ def handle_georadius_write_exceptions(
     """
 
     if count_any and count is None:
-        raise Exception("\"count_any\" can only be used together with \"count\".")
+        raise Exception('"count_any" can only be used together with "count".')
 
     if (withdist or withhash or withcoord) and (store or storedist):
-        raise Exception("Cannot use \"store\" or \"storedist\" when requesting additional properties.")
+        raise Exception(
+            'Cannot use "store" or "storedist" when requesting additional properties.'
+        )
 
 
 def handle_geosearch_exceptions(
@@ -31,28 +33,34 @@ def handle_geosearch_exceptions(
     bybox_width: float | None,
     bybox_height: float | None,
     count: int | None,
-    count_any: bool
+    count_any: bool,
 ) -> None:
     """
     Handle exceptions for "GEOSEARCH*" commands.
     """
 
     if number_are_not_none(fromlonlat_longitude, fromlonlat_latitude, number=1):
-        raise Exception("Both \"fromlonlat_longitude\" and \"fromlonlat_latitude\" must be specified.")
+        raise Exception(
+            'Both "fromlonlat_longitude" and "fromlonlat_latitude" must be specified.'
+        )
 
     if number_are_not_none(bybox_width, bybox_height, number=1):
-        raise Exception("Both \"bybox_width\" and \"bybox_height\" must be specified.")
+        raise Exception('Both "bybox_width" and "bybox_height" must be specified.')
 
     if not number_are_not_none(member, fromlonlat_longitude, number=1):
-        raise Exception("""Specify either the member's name with "member",
-or the fromlonlat_longitude and fromlonlat_latitude with "fromlonlat_longitude" and "fromlonlat_latitude", but not both.""")
+        raise Exception(
+            """Specify either the member's name with "member",
+or the fromlonlat_longitude and fromlonlat_latitude with "fromlonlat_longitude" and "fromlonlat_latitude", but not both."""
+        )
 
     if not number_are_not_none(byradius, bybox_width, number=1):
-        raise Exception("""Specify either the byradius with "byradius",
-or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both.""")
+        raise Exception(
+            """Specify either the byradius with "byradius",
+or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both."""
+        )
 
     if count_any and count is None:
-        raise Exception("\"count_any\" can only be used together with \"count\".")
+        raise Exception('"count_any" can only be used together with "count".')
 
 
 def handle_non_deprecated_zrange_exceptions(
@@ -67,18 +75,19 @@ def handle_non_deprecated_zrange_exceptions(
     """
 
     if range_method == "BYLEX" and (
-        not (
-            isinstance(start, str) and isinstance(stop, str)
-        ) or not (
-            start.startswith(('(', '[', '+', '-'))
-            and stop.startswith(('(', '[', '+', '-'))
+        not (isinstance(start, str) and isinstance(stop, str))
+        or not (
+            start.startswith(("(", "[", "+", "-"))
+            and stop.startswith(("(", "[", "+", "-"))
         )
     ):
-        raise Exception(""""start" and "stop" must either start with '(' or '[' or be '+' or '-' when
-the ranging method is "BYLEX".""")
+        raise Exception(
+            """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
+the ranging method is "BYLEX"."""
+        )
 
     if number_are_not_none(offset, count, number=1):
-        raise Exception("Both \"offset\" and \"count\" must be specified.")
+        raise Exception('Both "offset" and "count" must be specified.')
 
 
 def handle_zrangebylex_exceptions(
@@ -94,10 +103,12 @@ def handle_zrangebylex_exceptions(
     :param max_score: replacement for "MAX"
     """
 
-    if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
+    if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+        ("(", "[", "+", "-")
+    ):
         raise Exception(
             "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
         )
 
     if number_are_not_none(offset, count, number=1):
-        raise Exception("Both \"offset\" and \"count\" must be specified.")
+        raise Exception('Both "offset" and "count" must be specified.')

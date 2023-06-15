@@ -12,8 +12,11 @@ def test_if_start_and_stop_are_not_strings() -> None:
             count=None,
         )
 
-    assert str(exception.value) == """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
+    assert (
+        str(exception.value)
+        == """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
 the ranging method is "BYLEX"."""
+    )
 
 
 def test_if_start_and_stop_are_incorrectly_formatted() -> None:
@@ -26,8 +29,11 @@ def test_if_start_and_stop_are_incorrectly_formatted() -> None:
             count=None,
         )
 
-    assert str(exception.value) == """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
+    assert (
+        str(exception.value)
+        == """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
 the ranging method is "BYLEX"."""
+    )
 
 
 def test_with_invalid_offset_and_count() -> None:
@@ -40,7 +46,7 @@ def test_with_invalid_offset_and_count() -> None:
             count=1,
         )
 
-    assert str(exception.value) == "Both \"offset\" and \"count\" must be specified."
+    assert str(exception.value) == 'Both "offset" and "count" must be specified.'
 
 
 def test_with_parenthesis_start_and_stop() -> None:
