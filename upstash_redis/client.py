@@ -414,7 +414,7 @@ class Redis:
     async def scan(
         self,
         cursor: int,
-        match: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
         scan_type: str | None = None,
         return_cursor: bool = True
@@ -425,6 +425,7 @@ class Redis:
         :param return_cursor: if set to False, it won't return the cursor
 
         :param scan_type: replacement for "TYPE"
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only the list of elements will be returned if "return_cursor" is False
@@ -432,8 +433,8 @@ class Redis:
 
         command: list = ["SCAN", cursor]
 
-        if match is not None:
-            command.extend(["MATCH", match])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -1073,7 +1074,7 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
         return_cursor: bool = True
     ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
@@ -1081,6 +1082,7 @@ class Redis:
         See https://redis.io/commands/hscan
 
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only a dict of field-value pairs will be returned if "return_cursor" is False and "format_return" is True.
@@ -1088,8 +1090,8 @@ class Redis:
 
         command: list = ["HSCAN", key, cursor]
 
-        if match is not None:
-            command.extend(["MATCH", match])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -1615,7 +1617,7 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
         return_cursor: bool = True
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
@@ -1623,6 +1625,7 @@ class Redis:
         See https://redis.io/commands/sscan
 
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only the list of elements will be returned if "return_cursor" is False.
@@ -1630,8 +1633,8 @@ class Redis:
 
         command: list = ["SSCAN", key, cursor]
 
-        if match is not None:
-            command.extend(["MATCH", match])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -2283,7 +2286,7 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
         return_cursor: bool = True
     ) -> (
@@ -2295,6 +2298,7 @@ class Redis:
         See https://redis.io/commands/zscan
 
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only a dict of member-score pairs will be returned if "return_cursor" is False and "format_return" is True.
@@ -2302,8 +2306,8 @@ class Redis:
 
         command: list = ["ZSCAN", key, cursor]
 
-        if match is not None:
-            command.extend(["MATCH", match])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
