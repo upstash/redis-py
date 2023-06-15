@@ -20,7 +20,4 @@ async def test_with_invalid_interval() -> None:
         with raises(Exception) as exception:
             await redis.bitcount("string", end=2)
 
-        assert str(exception.value) == "Both \"start\" and \"end\" must be specified."
-
-
-
+        assert str(exception.value) == 'Both "start" and "end" must be specified.'

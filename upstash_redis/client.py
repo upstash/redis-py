@@ -6,7 +6,7 @@ from upstash_redis.config import (
     REST_RETRIES,
     REST_RETRY_INTERVAL,
     ALLOW_TELEMETRY,
-    FORMAT_RETURN
+    FORMAT_RETURN,
 )
 from upstash_redis.utils.format import (
     format_geo_positions_return,
@@ -16,23 +16,27 @@ from upstash_redis.utils.format import (
     format_bool_list,
     format_server_time_return,
     format_sorted_set_return,
-    format_float_list
+    format_float_list,
 )
 from upstash_redis.utils.exception import (
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
-    handle_georadius_write_exceptions
+    handle_georadius_write_exceptions,
 )
 from upstash_redis.utils.comparison import number_are_not_none
-from upstash_redis.schema.commands.parameters import BitFieldOffset, GeoMember, FloatMinMax
+from upstash_redis.schema.commands.parameters import (
+    BitFieldOffset,
+    GeoMember,
+    FloatMinMax,
+)
 from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
     HashReturn,
     FormattedHashReturn,
     SortedSetReturn,
-    FormattedSortedSetReturn
+    FormattedSortedSetReturn,
 )
 from aiohttp import ClientSession
 from typing import Type, Any, Literal
@@ -49,7 +53,7 @@ class Redis:
         rest_retry_interval: int = REST_RETRY_INTERVAL,  # Seconds.
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: TelemetryData | None = None
+        telemetry_data: TelemetryData | None = None,
     ):
         """
         :param url: UPSTASH_REDIS_REST_URL in the console
@@ -95,7 +99,7 @@ class Redis:
         rest_retry_interval: int = REST_RETRY_INTERVAL,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: TelemetryData | None = None
+        telemetry_data: TelemetryData | None = None,
     ):
         """
         Load the credentials from environment.
@@ -115,7 +119,7 @@ class Redis:
             rest_retry_interval,
             format_return,
             allow_telemetry,
-            telemetry_data
+            telemetry_data,
         )
 
     async def __aenter__(self) -> ClientSession:
@@ -127,7 +131,12 @@ class Redis:
         # It needs to return the session object because it will be used in "async with" statements.
         return self._session
 
-    async def __aexit__(self, exc_type: Type[BaseException] | None, exc_val: BaseException | None, exc_tb: Any) -> None:
+    async def __aexit__(
+        self,
+        exc_type: Type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: Any,
+    ) -> None:
         """
         Exit the async context.
         """
@@ -148,16 +157,18 @@ class Redis:
             retry_interval=self.rest_retry_interval,
             command=command,
             allow_telemetry=self.allow_telemetry,
-            telemetry_data=self.telemetry_data
+            telemetry_data=self.telemetry_data,
         )
 
-    async def bitcount(self, key: str, start: int | None = None, end: int | None = None) -> int:
+    async def bitcount(
+        self, key: str, start: int | None = None, end: int | None = None
+    ) -> int:
         """
         See https://redis.io/commands/bitcount
         """
 
         if number_are_not_none(start, end, number=1):
-            raise Exception("Both \"start\" and \"end\" must be specified.")
+            raise Exception('Both "start" and "end" must be specified.')
 
         command: list = ["BITCOUNT", key]
 
@@ -181,32 +192,37 @@ class Redis:
         return BitFieldRO(key=key, client=self)
 
     async def bitop(
-        self,
-        operation: Literal["AND", "OR", "XOR", "NOT"],
-        destination_key: str,
-        *source_keys: str
+        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *srckeys: str
     ) -> int:
         """
         See https://redis.io/commands/bitop
         """
 
-        if len(source_keys) == 0:
+        if len(srckeys) == 0:
             raise Exception("At least one source key must be specified.")
 
-        if operation == "NOT" and len(source_keys) > 1:
-            raise Exception("The \"NOT \" operation takes only one source key as argument.")
+        if operation == "NOT" and len(srckeys) > 1:
+            raise Exception(
+                'The "NOT " operation takes only one source key as argument.'
+            )
 
-        command: list = ["BITOP", operation, destination_key, *source_keys]
+        command: list = ["BITOP", operation, destkey, *srckeys]
 
         return await self.run(command)
 
-    async def bitpos(self, key: str, bit: Literal[0, 1], start: int | None = None, end: int | None = None) -> int:
+    async def bitpos(
+        self,
+        key: str,
+        bit: Literal[0, 1],
+        start: int | None = None,
+        end: int | None = None,
+    ) -> int:
         """
         See https://redis.io/commands/bitpos
         """
 
         if start is None and end is not None:
-            raise Exception("\"end\" is specified, but \"start\" is missing.")
+            raise Exception('"end" is specified, but "start" is missing.')
 
         command: list = ["BITPOS", key, bit]
 
@@ -257,7 +273,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def copy(self, source: str, destination: str, replace: bool = False) -> Literal[1, 0] | bool:
+    async def copy(
+        self, source: str, destination: str, replace: bool = False
+    ) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/copy
 
@@ -358,7 +376,9 @@ class Redis:
 
         return bool(raw) if self.format_return else raw
 
-    async def pexpireat(self, key: str, unix_time_milliseconds: int) -> Literal[1, 0] | bool:
+    async def pexpireat(
+        self, key: str, unix_time_milliseconds: int
+    ) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/pexpireat
 
@@ -389,23 +409,23 @@ class Redis:
 
         return await self.run(command)
 
-    async def rename(self, key: str, new_name: str) -> str:
+    async def rename(self, key: str, newkey: str) -> str:
         """
         See https://redis.io/commands/rename
         """
 
-        command: list = ["RENAME", key, new_name]
+        command: list = ["RENAME", key, newkey]
 
         return await self.run(command)
 
-    async def renamenx(self, key: str, new_name: str) -> Literal[1, 0] | bool:
+    async def renamenx(self, key: str, newkey: str) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/renamenx
 
         :return: A bool if "format_return" is True.
         """
 
-        command: list = ["RENAMENX", key, new_name]
+        command: list = ["RENAMENX", key, newkey]
 
         raw: Literal[1, 0] = await self.run(command)
 
@@ -414,21 +434,18 @@ class Redis:
     async def scan(
         self,
         cursor: int,
-        pattern: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
         scan_type: str | None = None,
-        return_cursor: bool = True
+        return_cursor: bool = True,
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
         See https://redis.io/commands/scan
 
-        :param pattern: replacement for "MATCH"
-
-        :param count: defaults to 10 on the server side
+        :param return_cursor: if set to False, it won't return the cursor
 
         :param scan_type: replacement for "TYPE"
-
-        :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only the list of elements will be returned if "return_cursor" is False
@@ -436,8 +453,8 @@ class Redis:
 
         command: list = ["SCAN", cursor]
 
-        if pattern is not None:
-            command.extend(["MATCH", pattern])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -513,7 +530,7 @@ class Redis:
             raise Exception("At least one member must be added.")
 
         if nx and xx:
-            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
+            raise Exception('"nx" and "xx" are mutually exclusive.')
 
         command: list = ["GEOADD", key]
 
@@ -527,16 +544,16 @@ class Redis:
             command.append("CH")
 
         for member in members:
-            command.extend([member["longitude"], member["latitude"], member["name"]])
+            command.extend([member["longitude"], member["latitude"], member["member"]])
 
         return await self.run(command)
 
     async def geodist(
         self,
         key: str,
-        first_member: str,
-        second_member: str,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M"
+        member1: str,
+        member2: str,
+        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
     ) -> str | float | None:
         """
         See https://redis.io/commands/geodist
@@ -544,7 +561,7 @@ class Redis:
         :return: A float value if "format_return" is True.
         """
 
-        command: list = ["GEODIST", key, first_member, second_member, unit]
+        command: list = ["GEODIST", key, member1, member2, unit]
 
         raw: str | None = await self.run(command)
 
@@ -560,9 +577,7 @@ class Redis:
         return await self.run(command)
 
     async def geopos(
-        self,
-        key: str,
-        *members: str
+        self, key: str, *members: str
     ) -> list[list[str] | None] | list[dict[str, float] | None]:
         """
         See https://redis.io/commands/geopos
@@ -583,45 +598,36 @@ class Redis:
         latitude: float,
         radius: float,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        with_distance: bool = False,
-        with_hash: bool = False,
-        with_coordinates: bool = False,
+        withdist: bool = False,
+        withhash: bool = False,
+        withcoord: bool = False,
         count: int | None = None,
         count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
-        store_as: str | None = None,
-        store_distance_as: str | None = None
+        store: str | None = None,
+        storedist: str | None = None,
     ) -> GeoMembersReturn | FormattedGeoMembersReturn | int:
         """
         See https://redis.io/commands/georadius
 
         :param count_any: replacement for "ANY"
 
-        :param store_as: replacement for "STORE"
-        :param store_distance_as: replacement for "STORE_DIST"
-
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         handle_georadius_write_exceptions(
-            with_distance,
-            with_hash,
-            with_coordinates,
-            count,
-            count_any,
-            store_as,
-            store_distance_as
+            withdist, withhash, withcoord, count, count_any, store, storedist
         )
 
         command: list = ["GEORADIUS", key, longitude, latitude, radius, unit]
 
-        if with_distance:
+        if withdist:
             command.append("WITHDIST")
 
-        if with_hash:
+        if withhash:
             command.append("WITHHASH")
 
-        if with_coordinates:
+        if withcoord:
             command.append("WITHCOORD")
 
         if count is not None:
@@ -632,17 +638,17 @@ class Redis:
         if sort:
             command.append(sort)
 
-        if store_as:
-            command.extend(["STORE", store_as])
+        if store:
+            command.extend(["STORE", store])
 
-        if store_distance_as:
-            command.extend(["STOREDIST", store_distance_as])
+        if storedist:
+            command.extend(["STOREDIST", storedist])
 
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and (with_distance or with_hash or with_coordinates):
-            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+        if self.format_return and (withdist or withhash or withcoord):
+            return format_geo_members_return(raw, withdist, withhash, withcoord)
 
         return raw
 
@@ -653,12 +659,12 @@ class Redis:
         latitude: float,
         radius: float,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        with_distance: bool = False,
-        with_hash: bool = False,
-        with_coordinates: bool = False,
+        withdist: bool = False,
+        withhash: bool = False,
+        withcoord: bool = False,
         count: int | None = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None
+        sort: Literal["ASC", "DESC"] | None = None,
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadius_ro
@@ -669,17 +675,17 @@ class Redis:
         """
 
         if count_any and count is None:
-            raise Exception("\"count_any\" can only be used together with \"count\".")
+            raise Exception('"count_any" can only be used together with "count".')
 
         command: list = ["GEORADIUS_RO", key, longitude, latitude, radius, unit]
 
-        if with_distance:
+        if withdist:
             command.append("WITHDIST")
 
-        if with_hash:
+        if withhash:
             command.append("WITHHASH")
 
-        if with_coordinates:
+        if withcoord:
             command.append("WITHCOORD")
 
         if count is not None:
@@ -693,8 +699,8 @@ class Redis:
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and (with_distance or with_hash or with_coordinates):
-            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+        if self.format_return and (withdist or withhash or withcoord):
+            return format_geo_members_return(raw, withdist, withhash, withcoord)
 
         return raw
 
@@ -704,45 +710,36 @@ class Redis:
         member: str,
         radius: float,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        with_distance: bool = False,
-        with_hash: bool = False,
-        with_coordinates: bool = False,
+        withdist: bool = False,
+        withhash: bool = False,
+        withcoord: bool = False,
         count: int | None = None,
         count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
-        store_as: str | None = None,
-        store_distance_as: str | None = None
+        store: str | None = None,
+        storedist: str | None = None,
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadiusbymember
 
         :param count_any: replacement for "ANY"
 
-        :param store_as: replacement for "STORE"
-        :param store_distance_as: replacement for "STORE_DIST"
-
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
         handle_georadius_write_exceptions(
-            with_distance,
-            with_hash,
-            with_coordinates,
-            count,
-            count_any,
-            store_as,
-            store_distance_as
+            withdist, withhash, withcoord, count, count_any, store, storedist
         )
 
         command: list = ["GEORADIUSBYMEMBER", key, member, radius, unit]
 
-        if with_distance:
+        if withdist:
             command.append("WITHDIST")
 
-        if with_hash:
+        if withhash:
             command.append("WITHHASH")
 
-        if with_coordinates:
+        if withcoord:
             command.append("WITHCOORD")
 
         if count is not None:
@@ -753,17 +750,17 @@ class Redis:
         if sort:
             command.append(sort)
 
-        if store_as:
-            command.extend(["STORE", store_as])
+        if store:
+            command.extend(["STORE", store])
 
-        if store_distance_as:
-            command.extend(["STOREDIST", store_distance_as])
+        if storedist:
+            command.extend(["STOREDIST", storedist])
 
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and (with_distance or with_hash or with_coordinates):
-            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+        if self.format_return and (withdist or withhash or withcoord):
+            return format_geo_members_return(raw, withdist, withhash, withcoord)
 
         return raw
 
@@ -773,15 +770,15 @@ class Redis:
         member: str,
         radius: float,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        with_distance: bool = False,
-        with_hash: bool = False,
-        with_coordinates: bool = False,
+        withdist: bool = False,
+        withhash: bool = False,
+        withcoord: bool = False,
         count: int | None = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None
+        sort: Literal["ASC", "DESC"] | None = None,
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
-        See https://redis.io/commands/georadiusbymember
+        See https://redis.io/commands/georadiusbymember_ro
 
         :param count_any: replacement for "ANY"
 
@@ -789,17 +786,17 @@ class Redis:
         """
 
         if count_any and count is None:
-            raise Exception("\"count_any\" can only be used together with \"count\".")
+            raise Exception('"count_any" can only be used together with "count".')
 
         command: list = ["GEORADIUSBYMEMBER_RO", key, member, radius, unit]
 
-        if with_distance:
+        if withdist:
             command.append("WITHDIST")
 
-        if with_hash:
+        if withhash:
             command.append("WITHHASH")
 
-        if with_coordinates:
+        if withcoord:
             command.append("WITHCOORD")
 
         if count is not None:
@@ -813,8 +810,8 @@ class Redis:
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and (with_distance or with_hash or with_coordinates):
-            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+        if self.format_return and (withdist or withhash or withcoord):
+            return format_geo_members_return(raw, withdist, withhash, withcoord)
 
         return raw
 
@@ -822,52 +819,51 @@ class Redis:
         self,
         key: str,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        member: str | None = None,
-        longitude: float | None = None,
-        latitude: float | None = None,
-        radius: float | None = None,
-        width: float | None = None,
-        height: float | None = None,
+        frommember: str | None = None,
+        fromlonlat_longitude: float | None = None,
+        fromlonlat_latitude: float | None = None,
+        byradius: float | None = None,
+        bybox_width: float | None = None,
+        bybox_height: float | None = None,
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,
-        with_distance: bool = False,
-        with_hash: bool = False,
-        with_coordinates: bool = False
+        withdist: bool = False,
+        withhash: bool = False,
+        withcoord: bool = False,
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/geosearch
-
-        :param member: replacement for "FROMMEMBER"
-
-        :param longitude: replacement for "FROMLONLAT" together with "latitude"
-        :param latitude: replacement for "FROMLONLAT" together with "longitude"
-
-        :param radius: replacement for "BYRADIUS"
-
-        :param width: replacement for "BYBOX" together with "height"
-        :param height: replacement for "BYBOX" together with "width"
 
         :param count_any: replacement for "ANY"
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        handle_geosearch_exceptions(member, longitude, latitude, radius, width, height, count, count_any)
+        handle_geosearch_exceptions(
+            frommember,
+            fromlonlat_longitude,
+            fromlonlat_latitude,
+            byradius,
+            bybox_width,
+            bybox_height,
+            count,
+            count_any,
+        )
 
         command: list = ["GEOSEARCH", key]
 
-        if member is not None:
-            command.extend(["FROMMEMBER", member])
+        if frommember is not None:
+            command.extend(["FROMMEMBER", frommember])
 
-        if longitude is not None:
-            command.extend(["FROMLONLAT", longitude, latitude])
+        if fromlonlat_longitude is not None:
+            command.extend(["FROMLONLAT", fromlonlat_longitude, fromlonlat_latitude])
 
-        if radius is not None:
-            command.extend(["BYRADIUS", radius])
+        if byradius is not None:
+            command.extend(["BYRADIUS", byradius])
 
-        if width is not None:
-            command.extend(["BYBOX", width, height])
+        if bybox_width is not None:
+            command.extend(["BYBOX", bybox_width, bybox_height])
 
         command.append(unit)
 
@@ -879,72 +875,69 @@ class Redis:
             if count_any:
                 command.append("ANY")
 
-        if with_distance:
+        if withdist:
             command.append("WITHDIST")
 
-        if with_hash:
+        if withhash:
             command.append("WITHHASH")
 
-        if with_coordinates:
+        if withcoord:
             command.append("WITHCOORD")
 
         raw: GeoMembersReturn = await self.run(command)
 
         # If none of the additional properties are requested, the result will be "list[str]".
-        if self.format_return and (with_distance or with_hash or with_coordinates):
-            return format_geo_members_return(raw, with_distance, with_hash, with_coordinates)
+        if self.format_return and (withdist or withhash or withcoord):
+            return format_geo_members_return(raw, withdist, withhash, withcoord)
 
         return raw
 
     async def geosearchstore(
         self,
-        destination_key: str,
-        source_key: str,
+        destination: str,
+        source: str,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        member: str | None = None,
-        longitude: float | None = None,
-        latitude: float | None = None,
-        radius: float | None = None,
-        width: float | None = None,
-        height: float | None = None,
+        frommember: str | None = None,
+        fromlonlat_longitude: float | None = None,
+        fromlonlat_latitude: float | None = None,
+        byradius: float | None = None,
+        bybox_width: float | None = None,
+        bybox_height: float | None = None,
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
         count_any: bool = False,
-        store_distance: bool = False
+        storedist: bool = False,
     ) -> int:
         """
         See https://redis.io/commands/geosearchstore
 
-        :param member: replacement for "FROMMEMBER"
-
-        :param longitude: replacement for "FROMLONLAT" together with "latitude"
-        :param latitude: replacement for "FROMLONLAT" together with "longitude"
-
-        :param radius: replacement for "BYRADIUS"
-
-        :param width: replacement for "BYBOX" together with "height"
-        :param height: replacement for "BYBOX" together with "width"
-
         :param count_any: replacement for "ANY"
-
-        :param store_distance: replacement for "STOREDIST"
         """
 
-        handle_geosearch_exceptions(member, longitude, latitude, radius, width, height, count, count_any)
+        handle_geosearch_exceptions(
+            frommember,
+            fromlonlat_longitude,
+            fromlonlat_latitude,
+            byradius,
+            bybox_width,
+            bybox_height,
+            count,
+            count_any,
+        )
 
-        command: list = ["GEOSEARCHSTORE", destination_key, source_key]
+        command: list = ["GEOSEARCHSTORE", destination, source]
 
-        if member is not None:
-            command.extend(["FROMMEMBER", member])
+        if frommember is not None:
+            command.extend(["FROMMEMBER", frommember])
 
-        if longitude is not None:
-            command.extend(["FROMLONLAT", longitude, latitude])
+        if fromlonlat_longitude is not None:
+            command.extend(["FROMLONLAT", fromlonlat_longitude, fromlonlat_latitude])
 
-        if radius is not None:
-            command.extend(["BYRADIUS", radius])
+        if byradius is not None:
+            command.extend(["BYRADIUS", byradius])
 
-        if width is not None:
-            command.extend(["BYBOX", width, height])
+        if bybox_width is not None:
+            command.extend(["BYBOX", bybox_width, bybox_height])
 
         command.append(unit)
 
@@ -956,7 +949,7 @@ class Redis:
             if count_any:
                 command.append("ANY")
 
-        if store_distance:
+        if storedist:
             command.append("STOREDIST")
 
         return await self.run(command)
@@ -1060,41 +1053,36 @@ class Redis:
 
         return await self.run(command)
 
-    async def hmset(self, key: str, fields_and_values: dict) -> str:
+    async def hmset(self, key: str, field_value_pairs: dict) -> str:
         """
         See https://redis.io/commands/hmset
         """
 
         command: list = ["HMSET", key]
 
-        for field, value in fields_and_values.items():
+        for field, value in field_value_pairs.items():
             command.extend([field, value])
 
         return await self.run(command)
 
     async def hrandfield(
-        self,
-        key: str,
-        count: int | None = None,
-        with_values: bool = False
+        self, key: str, count: int | None = None, withvalues: bool = False
     ) -> (str | None) | (HashReturn | FormattedHashReturn):
         """
         See https://redis.io/commands/hrandfield
 
-        :param count: defaults to 1 on the server side
-
-        :return: A dict of field-value pairs if "count" and "with_values" are specified and "format_return" is True.
+        :return: A dict of field-value pairs if "count" and "withvalues" are specified and "format_return" is True.
         """
 
-        if count is None and with_values:
-            raise Exception("\"with_values\" can only be used together with \"count\"")
+        if count is None and withvalues:
+            raise Exception('"withvalues" can only be used together with "count"')
 
         command: list = ["HRANDFIELD", key]
 
         if count is not None:
             command.extend(["COUNT", count])
 
-            if with_values:
+            if withvalues:
                 command.append("WITHVALUES")
 
                 raw: HashReturn = await self.run(command)
@@ -1107,18 +1095,17 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        pattern: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
-        return_cursor: bool = True
-    ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (HashReturn | FormattedHashReturn):
+        return_cursor: bool = True,
+    ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (
+        HashReturn | FormattedHashReturn
+    ):
         """
         See https://redis.io/commands/hscan
 
-        :param pattern: replacement for "MATCH"
-
-        :param count: defaults to 10 on the server side
-
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only a dict of field-value pairs will be returned if "return_cursor" is False and "format_return" is True.
@@ -1126,8 +1113,8 @@ class Redis:
 
         command: list = ["HSCAN", key, cursor]
 
-        if pattern is not None:
-            command.extend(["MATCH", pattern])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -1136,18 +1123,20 @@ class Redis:
         raw: list[str | HashReturn] | HashReturn = await self.run(command)
 
         if return_cursor:
-            return [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
+            return (
+                [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
+            )
 
         return format_hash_return(raw[1]) if self.format_return else raw[1]
 
-    async def hset(self, key: str, fields_and_values: dict) -> int:
+    async def hset(self, key: str, field_value_pairs: dict) -> int:
         """
         See https://redis.io/commands/hset
         """
 
         command: list = ["HSET", key]
 
-        for field, value in fields_and_values.items():
+        for field, value in field_value_pairs.items():
             command.extend([field, value])
 
         return await self.run(command)
@@ -1208,12 +1197,12 @@ class Redis:
 
         return await self.run(command)
 
-    async def pfmerge(self, destination_key: str, *source_keys: str) -> str:
+    async def pfmerge(self, destkey: str, *sourcekeys: str) -> str:
         """
         See https://redis.io/commands/pfmerge
         """
 
-        command: list = ["PFMERGE", destination_key, *source_keys]
+        command: list = ["PFMERGE", destkey, *sourcekeys]
 
         return await self.run(command)
 
@@ -1227,11 +1216,7 @@ class Redis:
         return await self.run(command)
 
     async def linsert(
-        self,
-        key: str,
-        position: Literal["BEFORE", "AFTER"],
-        pivot: Any,
-        element: Any
+        self, key: str, position: Literal["BEFORE", "AFTER"], pivot: Any, element: Any
     ) -> int:
         """
         See https://redis.io/commands/linsert
@@ -1252,20 +1237,28 @@ class Redis:
 
     async def lmove(
         self,
-        source_key: str,
-        destination_key: str,
+        source: str,
+        destination: str,
         source_position: Literal["LEFT", "RIGHT"],
-        destination_position: Literal["LEFT", "RIGHT"]
+        destination_position: Literal["LEFT", "RIGHT"],
     ) -> str | None:
         """
         See https://redis.io/commands/lmove
         """
 
-        command: list = ["LMOVE", source_key, destination_key, source_position, destination_position]
+        command: list = [
+            "LMOVE",
+            source,
+            destination,
+            source_position,
+            destination_position,
+        ]
 
         return await self.run(command)
 
-    async def lpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+    async def lpop(
+        self, key: str, count: int | None = None
+    ) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/lpop
 
@@ -1283,28 +1276,24 @@ class Redis:
         self,
         key: str,
         element: Any,
-        first_return: int | None = None,
+        rank: int | None = None,
         count: int | None = None,
-        max_number_of_comparisons: int | None = None
+        maxlen: int | None = None,
     ) -> (int | None) | list[int]:
         """
         See https://redis.io/commands/lpos
-
-        :param first_return: replacement for "RANK"
-
-        :param max_number_of_comparisons: replacement for "MAXLEN"
         """
 
         command: list = ["LPOS", key, element]
 
-        if first_return is not None:
-            command.extend(["RANK", first_return])
+        if rank is not None:
+            command.extend(["RANK", rank])
 
         if count is not None:
             command.extend(["COUNT", count])
 
-        if max_number_of_comparisons is not None:
-            command.extend(["MAXLEN", max_number_of_comparisons])
+        if maxlen is not None:
+            command.extend(["MAXLEN", maxlen])
 
         return await self.run(command)
 
@@ -1368,7 +1357,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def rpop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+    async def rpop(
+        self, key: str, count: int | None = None
+    ) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/rpop
 
@@ -1382,12 +1373,12 @@ class Redis:
 
         return await self.run(command)
 
-    async def rpoplpush(self, source_key: str, destination_key: str) -> str | None:
+    async def rpoplpush(self, source: str, destination: str) -> str | None:
         """
         See https://redis.io/commands/rpoplpush
         """
 
-        command: list = ["RPOPLPUSH", source_key, destination_key]
+        command: list = ["RPOPLPUSH", source, destination]
 
         return await self.run(command)
 
@@ -1424,7 +1415,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def eval(self, script: str, keys: list[str] | None = None, arguments: list | None = None) -> Any:
+    async def eval(
+        self, script: str, keys: list[str] | None = None, args: list | None = None
+    ) -> Any:
         """
         See https://redis.io/commands/eval
 
@@ -1436,16 +1429,13 @@ class Redis:
         if keys:
             command.extend([len(keys), *keys])
 
-        if arguments:
-            command.extend(arguments)
+        if args:
+            command.extend(args)
 
         return await self.run(command)
 
     async def evalsha(
-        self,
-        sha1_digest: str,
-        keys: list[str] | None = None,
-        arguments: list | None = None
+        self, sha1: str, keys: list[str] | None = None, args: list | None = None
     ) -> Any:
         """
         See https://redis.io/commands/evalsha
@@ -1453,13 +1443,13 @@ class Redis:
         The number of keys is calculated automatically.
         """
 
-        command: list = ["EVALSHA", sha1_digest]
+        command: list = ["EVALSHA", sha1]
 
         if keys:
             command.extend([len(keys), *keys])
 
-        if arguments:
-            command.extend(arguments)
+        if args:
+            command.extend(args)
 
         return await self.run(command)
 
@@ -1542,7 +1532,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def sdiffstore(self, destination_key: str, *keys: str) -> int:
+    async def sdiffstore(self, destination: str, *keys: str) -> int:
         """
         See https://redis.io/commands/sdiffstore
         """
@@ -1550,7 +1540,7 @@ class Redis:
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["SDIFFSTORE", destination_key, *keys]
+        command: list = ["SDIFFSTORE", destination, *keys]
 
         return await self.run(command)
 
@@ -1566,7 +1556,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def sinterstore(self, destination_key: str, *keys: str) -> int:
+    async def sinterstore(self, destination: str, *keys: str) -> int:
         """
         See https://redis.io/commands/sinterstore
         """
@@ -1574,7 +1564,7 @@ class Redis:
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["SINTERSTORE", destination_key, *keys]
+        command: list = ["SINTERSTORE", destination, *keys]
 
         return await self.run(command)
 
@@ -1600,20 +1590,24 @@ class Redis:
 
         return await self.run(command)
 
-    async def smove(self, source_key: str, destination_key: str, member: Any) -> Literal[1, 0] | bool:
+    async def smove(
+        self, source: str, destination: str, member: Any
+    ) -> Literal[1, 0] | bool:
         """
         See https://redis.io/commands/smove
 
         :return: A bool if self.format_return is True.
         """
 
-        command: list = ["SMOVE", source_key, destination_key, member]
+        command: list = ["SMOVE", source, destination, member]
 
         raw: Literal[1, 0] = await self.run(command)
 
         return bool(raw) if self.format_return else raw
 
-    async def spop(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+    async def spop(
+        self, key: str, count: int | None = None
+    ) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/spop
 
@@ -1627,7 +1621,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def srandmember(self, key: str, count: int | None = None) -> (str | None) | list[str]:
+    async def srandmember(
+        self, key: str, count: int | None = None
+    ) -> (str | None) | list[str]:
         """
         See https://redis.io/commands/srandmember
 
@@ -1657,18 +1653,15 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        pattern: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
-        return_cursor: bool = True
+        return_cursor: bool = True,
     ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
         """
         See https://redis.io/commands/sscan
 
-        :param pattern: replacement for "MATCH"
-
-        :param count: defaults to 10 on the server side
-
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only the list of elements will be returned if "return_cursor" is False.
@@ -1676,8 +1669,8 @@ class Redis:
 
         command: list = ["SSCAN", key, cursor]
 
-        if pattern is not None:
-            command.extend(["MATCH", pattern])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -1702,7 +1695,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def sunionstore(self, destination_key: str, *keys: str) -> int:
+    async def sunionstore(self, destination: str, *keys: str) -> int:
         """
         See https://redis.io/commands/sunionstore
         """
@@ -1710,38 +1703,38 @@ class Redis:
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["SUNIONSTORE", destination_key, *keys]
+        command: list = ["SUNIONSTORE", destination, *keys]
 
         return await self.run(command)
 
     async def zadd(
         self,
         key: str,
-        sorted_set_members: dict,
+        score_member_pairs: dict,
         nx: bool = False,
         xx: bool = False,
         gt: bool = False,
         lt: bool = False,
         ch: bool = False,
-        incr: bool = False
+        incr: bool = False,
     ) -> int | (str | None | float):
         """
         See https://redis.io/commands/zadd
 
-        :param sorted_set_members: a dict containing their names and scores.
+        :param score_member_pairs: a dict containing members and their scores.
 
         :return: A float representing the number of elements added or None if "incr" is False
         and "format_return" is True.
         """
 
         if nx and xx:
-            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
+            raise Exception('"nx" and "xx" are mutually exclusive.')
 
         if gt and lt:
-            raise Exception("\"gt\" and \"lt\" are mutually exclusive.")
+            raise Exception('"gt" and "lt" are mutually exclusive.')
 
         if nx and (gt or lt):
-            raise Exception("\"nx\" and \"gt\" or \"lt\" are mutually exclusive.")
+            raise Exception('"nx" and "gt" or "lt" are mutually exclusive.')
 
         command: list = ["ZADD", key]
 
@@ -1763,14 +1756,14 @@ class Redis:
         if incr:
             command.append("INCR")
 
-            for name, score in sorted_set_members.items():
+            for name, score in score_member_pairs.items():
                 command.extend([score, name])
 
             raw: (str | None) = await self.run(command)
 
             return float(raw) if self.format_return and raw is not None else raw
 
-        for name, score in sorted_set_members.items():
+        for name, score in score_member_pairs.items():
             command.extend([score, name])
 
         return await self.run(command)
@@ -1784,9 +1777,14 @@ class Redis:
 
         return await self.run(command)
 
-    async def zcount(self, key: str, min_score: FloatMinMax, max_score: FloatMinMax) -> int:
+    async def zcount(
+        self, key: str, min_score: FloatMinMax, max_score: FloatMinMax
+    ) -> int:
         """
         See https://redis.io/commands/zcount
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
@@ -1799,7 +1797,10 @@ class Redis:
     This has actually 3 return scenarios, but, 
     whether "with_scores" is True or not, its raw return type will be list[str].
     """
-    async def zdiff(self, *keys: str, with_scores: bool = False) -> SortedSetReturn | FormattedSortedSetReturn:
+
+    async def zdiff(
+        self, *keys: str, withscores: bool = False
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zdiff
 
@@ -1813,7 +1814,7 @@ class Redis:
 
         command: list = ["ZDIFF", len(keys), *keys]
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -1822,7 +1823,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def zdiffstore(self, destination_key: str, *keys: str) -> int:
+    async def zdiffstore(self, destination: str, *keys: str) -> int:
         """
         See https://redis.io/commands/zdiffstore
 
@@ -1832,7 +1833,7 @@ class Redis:
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["ZDIFFSTORE", destination_key, len(keys), *keys]
+        command: list = ["ZDIFFSTORE", destination, len(keys), *keys]
 
         return await self.run(command)
 
@@ -1853,21 +1854,20 @@ class Redis:
     This has actually 3 return scenarios, but, 
     whether "with_scores" is True or not, its raw return type will be list[str].
     """
+
     async def zinter(
         self,
         *keys: str,
-        multiplication_factors: list[float] | None = None,
+        weights: list[float] | None = None,
         aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
-        with_scores: bool = False
+        withscores: bool = False,
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zinter
 
         The number of keys is calculated automatically.
 
-        :param multiplication_factors: replacement for "WEIGHTS"
-
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -1875,13 +1875,13 @@ class Redis:
 
         command: list = ["ZINTER", len(keys), *keys]
 
-        if multiplication_factors:
-            command.extend(["WEIGHTS", *multiplication_factors])
+        if weights:
+            command.extend(["WEIGHTS", *weights])
 
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -1892,26 +1892,24 @@ class Redis:
 
     async def zinterstore(
         self,
-        destination_key: str,
+        destination: str,
         *keys: str,
-        multiplication_factors: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None
+        weights: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
     ) -> int:
         """
         See https://redis.io/commands/zinterstore
 
         The number of keys is calculated automatically.
-
-        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["ZINTERSTORE", destination_key, len(keys), *keys]
+        command: list = ["ZINTERSTORE", destination, len(keys), *keys]
 
-        if multiplication_factors:
-            command.extend(["WEIGHTS", *multiplication_factors])
+        if weights:
+            command.extend(["WEIGHTS", *weights])
 
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
@@ -1921,9 +1919,14 @@ class Redis:
     async def zlexcount(self, key: str, min_score: str, max_score: str) -> int:
         """
         See https://redis.io/commands/zlexcount
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
+        if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+            ("(", "[", "+", "-")
+        ):
             raise Exception(
                 "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
@@ -1932,7 +1935,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def zmscore(self, key: str, *members: str) -> list[str | None] | list[float | None]:
+    async def zmscore(
+        self, key: str, *members: str
+    ) -> list[str | None] | list[float | None]:
         """
         See https://redis.io/commands/zmscore
 
@@ -1948,7 +1953,9 @@ class Redis:
 
         return format_float_list(raw) if self.format_return else raw
 
-    async def zpopmax(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
+    async def zpopmax(
+        self, key: str, count: int | None = None
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zpopmax
 
@@ -1966,7 +1973,9 @@ class Redis:
 
         return format_sorted_set_return(raw) if self.format_return else raw
 
-    async def zpopmin(self, key: str, count: int | None = None) -> SortedSetReturn | FormattedSortedSetReturn:
+    async def zpopmin(
+        self, key: str, count: int | None = None
+    ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zpopmin
 
@@ -1985,28 +1994,25 @@ class Redis:
         return format_sorted_set_return(raw) if self.format_return else raw
 
     async def zrandmember(
-        self,
-        key: str,
-        count: int | None = None,
-        with_scores: bool = False
+        self, key: str, count: int | None = None, withscores: bool = False
     ) -> (str | None) | (SortedSetReturn | FormattedSortedSetReturn):
         """
         See https://redis.io/commands/zrandmember
 
         :param count: defaults to 1 on the server side
 
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
-        if count is None and with_scores:
-            raise Exception("\"with_scores\" can only be used with \"count\".")
+        if count is None and withscores:
+            raise Exception('"withscores" can only be used with "count".')
 
         command: list = ["ZRANDMEMBER", key]
 
         if count is not None:
             command.append(count)
 
-            if with_scores:
+            if withscores:
                 command.append("WITHSCORES")
 
                 raw: SortedSetReturn = await self.run(command)
@@ -2019,6 +2025,7 @@ class Redis:
     This has actually 3 return scenarios, but, 
     whether "with_scores" is True or not, its raw return type will be list[str].
     """
+
     async def zrange(
         self,
         key: str,
@@ -2026,9 +2033,9 @@ class Redis:
         stop: FloatMinMax,
         range_method: Literal["BYSCORE", "BYLEX"] | None = None,
         rev: bool = False,
-        offset: int | None = None,
-        count: int | None = None,
-        with_scores: bool = False
+        limit_offset: int | None = None,
+        limit_count: int | None = None,
+        withscores: bool = False,
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zrange
@@ -2038,7 +2045,9 @@ class Redis:
         :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
-        handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
+        handle_non_deprecated_zrange_exceptions(
+            range_method, start, stop, limit_offset, limit_count
+        )
 
         command: list = ["ZRANGE", key, start, stop]
 
@@ -2048,10 +2057,10 @@ class Redis:
         if rev:
             command.append("REV")
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -2065,52 +2074,59 @@ class Redis:
         key: str,
         min_score: str,
         max_score: str,
-        offset: int | None = None,
-        count: int | None = None
+        limit_offset: int | None = None,
+        limit_count: int | None = None,
     ) -> list[str | None]:
         """
         See https://redis.io/commands/zrangebylex
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min_score, max_score, offset, count)
+        handle_zrangebylex_exceptions(min_score, max_score, limit_offset, limit_count)
 
         command: list = ["ZRANGEBYLEX", key, min_score, max_score]
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
         return await self.run(command)
 
     """
     This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its raw return type will be list[str].
+    whether "withscores" is True or not, its raw return type will be list[str].
     """
+
     async def zrangebyscore(
         self,
         key: str,
         min_score: FloatMinMax,
         max_score: FloatMinMax,
-        with_scores: bool = False,
+        withscores: bool = False,
         offset: int | None = None,
-        count: int | None = None
+        count: int | None = None,
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
+
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if number_are_not_none(offset, count, number=1):
-            raise Exception("Both \"offset\" and \"count\" must be specified.")
+            raise Exception('Both "offset" and "count" must be specified.')
 
         command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
 
         if offset is not None:
             command.extend(["LIMIT", offset, count])
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -2121,27 +2137,29 @@ class Redis:
 
     async def zrangestore(
         self,
-        destination_key: str,
-        source_key: str,
-        start: FloatMinMax,
-        stop: FloatMinMax,
+        dst: str,
+        src: str,
+        min_score: FloatMinMax,
+        max_score: FloatMinMax,
         range_method: Literal["BYSCORE", "BYLEX"] | None = None,
         rev: bool = False,
-        offset: int | None = None,
-        count: int | None = None
+        limit_offset: int | None = None,
+        limit_count: int | None = None,
     ) -> int:
         """
         See https://redis.io/commands/zrangestore
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
-        :param start: replacement for "min" to match "ZRANGE"
-        :param stop: replacement for "max" to match "ZRANGE"
+        If you need to use "-inf" and "+inf", please write them as strings.
         """
 
-        handle_non_deprecated_zrange_exceptions(range_method, start, stop, offset, count)
+        handle_non_deprecated_zrange_exceptions(
+            range_method, min_score, max_score, limit_offset, limit_count
+        )
 
-        command: list = ["ZRANGESTORE", destination_key, source_key, start, stop]
+        command: list = ["ZRANGESTORE", dst, src, min_score, max_score]
 
         if range_method:
             command.append(range_method)
@@ -2149,8 +2167,8 @@ class Redis:
         if rev:
             command.append("REV")
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
         return await self.run(command)
 
@@ -2178,9 +2196,14 @@ class Redis:
     async def zremrangebylex(self, key: str, min_score: str, max_score: str) -> int:
         """
         See https://redis.io/commands/zremrangebylex
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
+        if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+            ("(", "[", "+", "-")
+        ):
             raise Exception(
                 "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
@@ -2198,9 +2221,14 @@ class Redis:
 
         return await self.run(command)
 
-    async def zremrangebyscore(self, key: str, min_score: FloatMinMax, max_score: FloatMinMax) -> int:
+    async def zremrangebyscore(
+        self, key: str, min_score: FloatMinMax, max_score: FloatMinMax
+    ) -> int:
         """
-        See https://redis.io/commands/zremrangebyscore
+        See https://redis.io/commands/zremrangebyscore\
+        
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
@@ -2213,22 +2241,19 @@ class Redis:
     This has actually 3 return scenarios, but,
     whether "with_scores" is True or not, its raw return type will be list[str].
     """
+
     async def zrevrange(
-        self,
-        key: str,
-        start: int,
-        stop: int,
-        with_scores: bool = False
+        self, key: str, start: int, stop: int, withscores: bool = False
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zrevrange
 
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         command: list = ["ZREVRANGE", key, start, stop]
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -2243,10 +2268,13 @@ class Redis:
         max_score: str,
         min_score: str,
         offset: int | None = None,
-        count: int | None = None
+        count: int | None = None,
     ) -> list[str]:
         """
         See https://redis.io/commands/zrevrangebylex
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
         handle_zrangebylex_exceptions(min_score, max_score, offset, count)
@@ -2260,34 +2288,38 @@ class Redis:
 
     """
     This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its raw return type will be list[str].
+    whether "withscores" is True or not, its raw return type will be list[str].
     """
+
     async def zrevrangebyscore(
         self,
         key: str,
         max_score: FloatMinMax,
         min_score: FloatMinMax,
-        with_scores: bool = False,
-        offset: int | None = None,
-        count: int | None = None
+        withscores: bool = False,
+        limit_offset: int | None = None,
+        limit_count: int | None = None,
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zrevrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
+
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
-        if number_are_not_none(offset, count, number=1):
-            raise Exception("Both \"offset\" and \"count\" must be specified.")
+        if number_are_not_none(limit_offset, limit_count, number=1):
+            raise Exception('Both "limit_offset" and "limit_count" must be specified.')
 
         command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -2309,22 +2341,17 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        pattern: str | None = None,
+        match_pattern: str | None = None,
         count: int | None = None,
-        return_cursor: bool = True
-    ) -> (
-            list[str | SortedSetReturn] | list[int | FormattedSortedSetReturn]
-         ) | (
-            SortedSetReturn | FormattedSortedSetReturn
-         ):
+        return_cursor: bool = True,
+    ) -> (list[str | SortedSetReturn] | list[int | FormattedSortedSetReturn]) | (
+        SortedSetReturn | FormattedSortedSetReturn
+    ):
         """
         See https://redis.io/commands/zscan
 
-        :param pattern: replacement for "MATCH"
-
-        :param count: defaults to 10 on the server side
-
         :param return_cursor: if set to False, it won't return the cursor
+        :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
         Only a dict of member-score pairs will be returned if "return_cursor" is False and "format_return" is True.
@@ -2332,8 +2359,8 @@ class Redis:
 
         command: list = ["ZSCAN", key, cursor]
 
-        if pattern is not None:
-            command.extend(["MATCH", pattern])
+        if match_pattern is not None:
+            command.extend(["MATCH", match_pattern])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -2341,7 +2368,11 @@ class Redis:
         raw: list[int | SortedSetReturn] = await self.run(command)
 
         if return_cursor:
-            return [int(raw[0]), format_sorted_set_return(raw[1])] if self.format_return else raw
+            return (
+                [int(raw[0]), format_sorted_set_return(raw[1])]
+                if self.format_return
+                else raw
+            )
 
         # The raw result is composed of the new cursor and the list of elements.
         return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
@@ -2361,23 +2392,22 @@ class Redis:
 
     """
     This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its raw return type will be list[str].
+    whether "withscores" is True or not, its raw return type will be list[str].
     """
+
     async def zunion(
         self,
         *keys: str,
-        multiplication_factors: list[float] | None = None,
+        weights: list[float] | None = None,
         aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
-        with_scores: bool = False
+        withscores: bool = False,
     ) -> SortedSetReturn | FormattedSortedSetReturn:
         """
         See https://redis.io/commands/zunion
 
         The number of keys is calculated automatically.
 
-        :param multiplication_factors: replacement for "WEIGHTS"
-
-        :return: A dict of member-score pairs if "with_scores" and "format_return" are True.
+        :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -2385,13 +2415,13 @@ class Redis:
 
         command: list = ["ZUNION", len(keys), *keys]
 
-        if multiplication_factors:
-            command.extend(["WEIGHTS", *multiplication_factors])
+        if weights:
+            command.extend(["WEIGHTS", *weights])
 
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
 
-        if with_scores:
+        if withscores:
             command.append("WITHSCORES")
 
             raw: SortedSetReturn = await self.run(command)
@@ -2402,26 +2432,24 @@ class Redis:
 
     async def zunionstore(
         self,
-        destination_key: str,
+        destination: str,
         *keys: str,
-        multiplication_factors: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None
+        weights: list[float] | None = None,
+        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
     ) -> int:
         """
         See https://redis.io/commands/zunionstore
 
         The number of keys is calculated automatically.
-
-        :param multiplication_factors: replacement for "WEIGHTS"
         """
 
         if len(keys) == 0:
             raise Exception("At least one key must be specified.")
 
-        command: list = ["ZUNIONSTORE", destination_key, len(keys), *keys]
+        command: list = ["ZUNIONSTORE", destination, len(keys), *keys]
 
-        if multiplication_factors:
-            command.extend(["WEIGHTS", *multiplication_factors])
+        if weights:
+            command.extend(["WEIGHTS", *weights])
 
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
@@ -2476,32 +2504,32 @@ class Redis:
     async def getex(
         self,
         key: str,
-        seconds: int | None = None,
-        milliseconds: int | None = None,
-        unix_time_seconds: int | None = None,
-        unix_time_milliseconds: int | None = None,
-        persist: bool | None = None
+        ex: int | None = None,
+        px: int | None = None,
+        exat: int | None = None,
+        pxat: int | None = None,
+        persist: bool | None = None,
     ) -> str | None:
         """
         See https://redis.io/commands/getex
         """
 
-        if not number_are_not_none(seconds, milliseconds, unix_time_seconds, unix_time_milliseconds, persist, number=1):
+        if not number_are_not_none(ex, px, exat, pxat, persist, number=1):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         command: list = ["GETEX", key]
 
-        if seconds is not None:
-            command.extend(["EX", seconds])
+        if ex is not None:
+            command.extend(["EX", ex])
 
-        if milliseconds is not None:
-            command.extend(["PX", milliseconds])
+        if px is not None:
+            command.extend(["PX", px])
 
-        if unix_time_seconds is not None:
-            command.extend(["EXAT", unix_time_seconds])
+        if exat is not None:
+            command.extend(["EXAT", exat])
 
-        if unix_time_milliseconds is not None:
-            command.extend(["PXAT", unix_time_milliseconds])
+        if pxat is not None:
+            command.extend(["PXAT", pxat])
 
         if persist is not None:
             command.append("PERSIST")
@@ -2569,26 +2597,26 @@ class Redis:
 
         return await self.run(command)
 
-    async def mset(self, keys_and_values: dict) -> Literal["OK"]:
+    async def mset(self, key_value_pairs: dict) -> Literal["OK"]:
         """
         See https://redis.io/commands/mset
         """
 
         command: list = ["MSET"]
 
-        for key, value in keys_and_values.items():
+        for key, value in key_value_pairs.items():
             command.extend([key, value])
 
         return await self.run(command)
 
-    async def msetnx(self, keys_and_values: dict) -> Literal[1, 0]:
+    async def msetnx(self, key_value_pairs: dict) -> Literal[1, 0]:
         """
         See https://redis.io/commands/msetnx
         """
 
         command: list = ["MSETNX"]
 
-        for key, value in keys_and_values.items():
+        for key, value in key_value_pairs.items():
             command.extend([key, value])
 
         return await self.run(command)
@@ -2609,31 +2637,24 @@ class Redis:
         nx: bool = False,
         xx: bool = False,
         get: bool = False,
-        seconds: int | None = None,
-        milliseconds: int | None = None,
-        unix_time_seconds: int | None = None,
-        unix_time_milliseconds: int | None = None,
-        keep_ttl: bool = False,
+        ex: int | None = None,
+        px: int | None = None,
+        exat: int | None = None,
+        pxat: int | None = None,
+        keepttl: bool = False,
     ) -> str | None:
         """
         See https://redis.io/commands/set
         """
 
         if nx and xx:
-            raise Exception("\"nx\" and \"xx\" are mutually exclusive.")
+            raise Exception('"nx" and "xx" are mutually exclusive.')
 
-        if not number_are_not_none(
-            seconds,
-            milliseconds,
-            unix_time_seconds,
-            unix_time_milliseconds,
-            keep_ttl,
-            number=1
-        ):
+        if not number_are_not_none(ex, px, exat, pxat, keepttl, number=1):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         if nx and get:
-            raise Exception("\"nx\" and \"get\" are mutually exclusive.")
+            raise Exception('"nx" and "get" are mutually exclusive.')
 
         command: list = ["SET", key, value]
 
@@ -2646,19 +2667,19 @@ class Redis:
         if get:
             command.append("GET")
 
-        if seconds is not None:
-            command.extend(["EX", seconds])
+        if ex is not None:
+            command.extend(["EX", ex])
 
-        if milliseconds is not None:
-            command.extend(["PX", milliseconds])
+        if px is not None:
+            command.extend(["PX", px])
 
-        if unix_time_seconds is not None:
-            command.extend(["EXAT", unix_time_seconds])
+        if exat is not None:
+            command.extend(["EXAT", exat])
 
-        if unix_time_milliseconds is not None:
-            command.extend(["PXAT", unix_time_milliseconds])
+        if pxat is not None:
+            command.extend(["PXAT", pxat])
 
-        if keep_ttl:
+        if keepttl:
             command.append("KEEPTTL")
 
         return await self.run(command)
@@ -2781,7 +2802,7 @@ class BitFieldRO:
         """
         Returns the specified bit field.
 
-        Source: https://redis.io/commands/bitfield
+        Source: https://redis.io/commands/bitfield_ro
         """
 
         _command = ["GET", encoding, offset]
@@ -2836,17 +2857,17 @@ class Script:
     def __init__(self, client: Redis):
         self.client = client
 
-    async def exists(self, *sha1_digests: str) -> list[Literal[1, 0]] | list[bool]:
+    async def exists(self, *sha1: str) -> list[Literal[1, 0]] | list[bool]:
         """
         See https://redis.io/commands/script-exists
 
         :return: A list of bools if "format_return" is True.
         """
 
-        if len(sha1_digests) == 0:
-            raise Exception("At least one sha1 digest must be provided.")
+        if len(sha1) == 0:
+            raise Exception("At least one sha1 digests must be provided.")
 
-        command: list = ["SCRIPT", "EXISTS", *sha1_digests]
+        command: list = ["SCRIPT", "EXISTS", *sha1]
 
         raw: list[Literal[1, 0]] = await self.client.run(command=command)
 
@@ -2879,13 +2900,13 @@ class ACL:
     def __init__(self, client: Redis):
         self.client = client
 
-    async def cat(self, category_name: str | None = None) -> list[str]:
+    async def cat(self, category: str | None = None) -> list[str]:
         # See https://redis.io/commands/acl-cat
 
         command: list = ["ACL", "CAT"]
 
-        if category_name is not None:
-            command.append(category_name)
+        if category is not None:
+            command.append(category)
 
         return await self.client.run(command=command)
 

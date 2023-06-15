@@ -14,13 +14,12 @@ def _list_to_dict(raw: list) -> dict:
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
 
-    return {
-        raw[iterator]: raw[iterator + 1]
-        for iterator in range(0, len(raw), 2)
-    }
+    return {raw[iterator]: raw[iterator + 1] for iterator in range(0, len(raw), 2)}
 
 
-def format_geo_positions_return(raw: list[list[str] | None]) -> list[dict[str, float] | None]:
+def format_geo_positions_return(
+    raw: list[list[str] | None],
+) -> list[dict[str, float] | None]:
     """
     Format the raw output returned by "GEOPOS".
     """
@@ -30,8 +29,9 @@ def format_geo_positions_return(raw: list[list[str] | None]) -> list[dict[str, f
             "longitude": float(member[0]),
             "latitude": float(member[1])
             # If the member doesn't exist, GEOPOS will return nil.
-        } if isinstance(member, list) else None
-
+        }
+        if isinstance(member, list)
+        else None
         for member in raw
     ]
 
@@ -40,7 +40,7 @@ def format_geo_members_return(
     raw: GeoMembersReturn,
     with_distance: bool | None,
     with_hash: bool | None,
-    with_coordinates: bool | None
+    with_coordinates: bool | None,
 ) -> FormattedGeoMembersReturn:
     """
     Format the raw output given by some Geo commands, usually the ones that return properties of members,
@@ -63,9 +63,7 @@ def format_geo_members_return(
 
     for member in raw:
         # TODO better type with TypedDict
-        formatted_member: dict[str, str | float | int] = {
-            "member": member[0]
-        }
+        formatted_member: dict[str, str | float | int] = {"member": member[0]}
 
         if with_distance:
             formatted_member["distance"] = float(member[1])
@@ -127,10 +125,7 @@ def format_server_time_return(raw: list[str]) -> dict[str, int]:
     Format the raw output returned by "TIME".
     """
 
-    return {
-        "seconds": int(raw[0]),
-        "microseconds": int(raw[1])
-    }
+    return {"seconds": int(raw[0]), "microseconds": int(raw[1])}
 
 
 def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
@@ -147,10 +142,4 @@ def format_float_list(raw: list[str | None]) -> list[float | None]:
     Format a list of strings representing floats or None values.
     """
 
-    return [
-        float(value) if value is not None
-
-        else None
-
-        for value in raw
-    ]
+    return [float(value) if value is not None else None for value in raw]

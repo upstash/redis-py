@@ -11,7 +11,7 @@ async def test_eval():
             local arg_val = tonumber(ARGV[1])
             return key1_val + key2_val + arg_val
         """
-        assert await redis.eval(script=script, keys=["10", "20"], arguments=["5"]) == 35
+        assert await redis.eval(script=script, keys=["10", "20"], args=["5"]) == 35
 
 
 @mark.asyncio
@@ -26,6 +26,4 @@ async def test_eval_with_list_return():
         res = keys
         res.extend(arguments)
 
-        assert await redis.eval(script=script, keys=keys, arguments=arguments) == res
-
-
+        assert await redis.eval(script=script, keys=keys, args=arguments) == res

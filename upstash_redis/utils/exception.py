@@ -4,55 +4,63 @@ from typing import Literal
 
 
 def handle_georadius_write_exceptions(
-    with_distance: bool = False,
-    with_hash: bool = False,
-    with_coordinates: bool = False,
+    withdist: bool = False,
+    withhash: bool = False,
+    withcoord: bool = False,
     count: int | None = None,
     count_any: bool = False,
-    store_as: str | None = None,
-    store_dist_as: str | None = None,
+    store: str | None = None,
+    storedist: str | None = None,
 ) -> None:
     """
     Handle exceptions for "GEORADIUS*" write commands.
     """
 
     if count_any and count is None:
-        raise Exception("\"count_any\" can only be used together with \"count\".")
+        raise Exception('"count_any" can only be used together with "count".')
 
-    if (with_distance or with_hash or with_coordinates) and (store_as or store_dist_as):
-        raise Exception("Cannot use \"store_as\" or \"store_dist_as\" when requesting additional properties.")
+    if (withdist or withhash or withcoord) and (store or storedist):
+        raise Exception(
+            'Cannot use "store" or "storedist" when requesting additional properties.'
+        )
 
 
 def handle_geosearch_exceptions(
     member: str | None,
-    longitude: float | None,
-    latitude: float | None,
-    radius: float | None,
-    width: float | None,
-    height: float | None,
+    fromlonlat_longitude: float | None,
+    fromlonlat_latitude: float | None,
+    byradius: float | None,
+    bybox_width: float | None,
+    bybox_height: float | None,
     count: int | None,
-    count_any: bool
+    count_any: bool,
 ) -> None:
     """
     Handle exceptions for "GEOSEARCH*" commands.
     """
 
-    if number_are_not_none(longitude, latitude, number=1):
-        raise Exception("Both \"longitude\" and \"latitude\" must be specified.")
+    if number_are_not_none(fromlonlat_longitude, fromlonlat_latitude, number=1):
+        raise Exception(
+            'Both "fromlonlat_longitude" and "fromlonlat_latitude" must be specified.'
+        )
 
-    if number_are_not_none(width, height, number=1):
-        raise Exception("Both \"width\" and \"height\" must be specified.")
+    if number_are_not_none(bybox_width, bybox_height, number=1):
+        raise Exception('Both "bybox_width" and "bybox_height" must be specified.')
 
-    if not number_are_not_none(member, longitude, number=1):
-        raise Exception("""Specify either the member's name with "member",
-or the longitude and latitude with "longitude" and "latitude", but not both.""")
+    if not number_are_not_none(member, fromlonlat_longitude, number=1):
+        raise Exception(
+            """Specify either the member's name with "member",
+or the fromlonlat_longitude and fromlonlat_latitude with "fromlonlat_longitude" and "fromlonlat_latitude", but not both."""
+        )
 
-    if not number_are_not_none(radius, width, number=1):
-        raise Exception("""Specify either the radius with "radius",
-or the width and height with "width" and "height", but not both.""")
+    if not number_are_not_none(byradius, bybox_width, number=1):
+        raise Exception(
+            """Specify either the byradius with "byradius",
+or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both."""
+        )
 
     if count_any and count is None:
-        raise Exception("\"count_any\" can only be used together with \"count\".")
+        raise Exception('"count_any" can only be used together with "count".')
 
 
 def handle_non_deprecated_zrange_exceptions(
@@ -67,18 +75,19 @@ def handle_non_deprecated_zrange_exceptions(
     """
 
     if range_method == "BYLEX" and (
-        not (
-            isinstance(start, str) and isinstance(stop, str)
-        ) or not (
-            start.startswith(('(', '[', '+', '-'))
-            and stop.startswith(('(', '[', '+', '-'))
+        not (isinstance(start, str) and isinstance(stop, str))
+        or not (
+            start.startswith(("(", "[", "+", "-"))
+            and stop.startswith(("(", "[", "+", "-"))
         )
     ):
-        raise Exception(""""start" and "stop" must either start with '(' or '[' or be '+' or '-' when
-the ranging method is "BYLEX".""")
+        raise Exception(
+            """"start" and "stop" must either start with '(' or '[' or be '+' or '-' when
+the ranging method is "BYLEX"."""
+        )
 
     if number_are_not_none(offset, count, number=1):
-        raise Exception("Both \"offset\" and \"count\" must be specified.")
+        raise Exception('Both "offset" and "count" must be specified.')
 
 
 def handle_zrangebylex_exceptions(
@@ -89,12 +98,17 @@ def handle_zrangebylex_exceptions(
 ) -> None:
     """
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.
+
+    :param min_score: replacement for "MIN"
+    :param max_score: replacement for "MAX"
     """
 
-    if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
+    if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+        ("(", "[", "+", "-")
+    ):
         raise Exception(
             "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
         )
 
     if number_are_not_none(offset, count, number=1):
-        raise Exception("Both \"offset\" and \"count\" must be specified.")
+        raise Exception('Both "offset" and "count" must be specified.')

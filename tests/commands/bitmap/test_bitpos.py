@@ -22,4 +22,4 @@ async def test_with_start_and_not_end() -> None:
         with raises(Exception) as exception:
             await redis.bitpos("string", bit=0, end=2)
 
-        assert str(exception.value) == "\"end\" is specified, but \"start\" is missing."
+        assert str(exception.value) == '"end" is specified, but "start" is missing.'

@@ -1,6 +1,7 @@
 from pytest import mark
 from tests.client import redis
 
+
 @mark.asyncio
 async def test_evalsha():
     async with redis:
@@ -12,4 +13,4 @@ async def test_evalsha():
         """
         sha1_digest = await redis.script.load(script)
 
-        assert await redis.evalsha(sha1_digest=sha1_digest, keys=[10, 20], arguments=["5"]) == 35
+        assert await redis.evalsha(sha1=sha1_digest, keys=[10, 20], args=["5"]) == 35

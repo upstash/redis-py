@@ -12,7 +12,7 @@ async def test() -> None:
 @mark.asyncio
 async def test_with_match() -> None:
     async with redis:
-        assert await redis.scan(cursor=0, pattern="hash") == [0, ["hash"]]
+        assert await redis.scan(cursor=0, match_pattern="hash") == [0, ["hash"]]
 
 
 @mark.asyncio
@@ -22,7 +22,7 @@ async def test_with_count() -> None:
 
 
 @mark.asyncio
-async def test_with_type() -> None:
+async def test_with_scan_type() -> None:
     async with redis:
         assert (await redis.scan(cursor=0, scan_type="hash"))[1] == ["hash"]
 

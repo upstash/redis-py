@@ -9,23 +9,23 @@ def test_with_distance_and_hash_and_coordinates() -> None:
         ],
         with_distance=True,
         with_hash=True,
-        with_coordinates=True
+        with_coordinates=True,
     ) == [
-               {
-                   "member": "a",
-                   "distance": 2.51,
-                   "hash": 100,
-                   "longitude": 3.12,
-                   "latitude": 4.23
-               },
-               {
-                   "member": "b",
-                   "distance": 5.6,
-                   "hash": 200,
-                   "longitude": 7.1,
-                   "latitude": 8.2
-               },
-           ]
+        {
+            "member": "a",
+            "distance": 2.51,
+            "hash": 100,
+            "longitude": 3.12,
+            "latitude": 4.23,
+        },
+        {
+            "member": "b",
+            "distance": 5.6,
+            "hash": 200,
+            "longitude": 7.1,
+            "latitude": 8.2,
+        },
+    ]
 
 
 def test_with_distance() -> None:
@@ -36,16 +36,10 @@ def test_with_distance() -> None:
         ],
         with_distance=True,
         with_hash=False,
-        with_coordinates=False
+        with_coordinates=False,
     ) == [
-        {
-            "member": "a",
-            "distance": 2.51
-        },
-        {
-            "member": "b",
-            "distance": 5.6
-        },
+        {"member": "a", "distance": 2.51},
+        {"member": "b", "distance": 5.6},
     ]
 
 
@@ -57,16 +51,10 @@ def test_with_hash() -> None:
         ],
         with_distance=False,
         with_hash=True,
-        with_coordinates=False
+        with_coordinates=False,
     ) == [
-        {
-            "member": "a",
-            "hash": 100
-        },
-        {
-            "member": "b",
-            "hash": 200
-        },
+        {"member": "a", "hash": 100},
+        {"member": "b", "hash": 200},
     ]
 
 
@@ -78,18 +66,10 @@ def test_with_coordinates() -> None:
         ],
         with_distance=False,
         with_hash=False,
-        with_coordinates=True
+        with_coordinates=True,
     ) == [
-        {
-            "member": "a",
-            "longitude": 3.12,
-            "latitude": 4.23
-        },
-        {
-            "member": "b",
-            "longitude": 7.1,
-            "latitude": 8.2
-        },
+        {"member": "a", "longitude": 3.12, "latitude": 4.23},
+        {"member": "b", "longitude": 7.1, "latitude": 8.2},
     ]
 
 
@@ -101,18 +81,10 @@ def test_with_distance_and_hash() -> None:
         ],
         with_distance=True,
         with_hash=True,
-        with_coordinates=False
+        with_coordinates=False,
     ) == [
-        {
-            "member": "a",
-            "distance": 2.51,
-            "hash": 100
-        },
-        {
-            "member": "b",
-            "distance": 5.6,
-            "hash": 200
-        },
+        {"member": "a", "distance": 2.51, "hash": 100},
+        {"member": "b", "distance": 5.6, "hash": 200},
     ]
 
 
@@ -124,20 +96,10 @@ def test_with_distance_and_coordinates() -> None:
         ],
         with_distance=True,
         with_hash=False,
-        with_coordinates=True
+        with_coordinates=True,
     ) == [
-        {
-            "member": "a",
-            "distance": 2.51,
-            "longitude": 3.12,
-            "latitude": 4.23
-        },
-        {
-            "member": "b",
-            "distance": 5.6,
-            "longitude": 7.1,
-            "latitude": 8.2
-        },
+        {"member": "a", "distance": 2.51, "longitude": 3.12, "latitude": 4.23},
+        {"member": "b", "distance": 5.6, "longitude": 7.1, "latitude": 8.2},
     ]
 
 
@@ -149,18 +111,8 @@ def test_with_hash_and_coordinates() -> None:
         ],
         with_distance=False,
         with_hash=True,
-        with_coordinates=True
+        with_coordinates=True,
     ) == [
-        {
-            "member": "a",
-            "hash": 100,
-            "longitude": 3.12,
-            "latitude": 4.23
-        },
-        {
-            "member": "b",
-            "hash": 200,
-            "longitude": 7.1,
-            "latitude": 8.2
-        },
+        {"member": "a", "hash": 100, "longitude": 3.12, "latitude": 4.23},
+        {"member": "b", "hash": 200, "longitude": 7.1, "latitude": 8.2},
     ]

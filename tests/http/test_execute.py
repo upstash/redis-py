@@ -9,16 +9,19 @@ from pytest import raises, mark
 async def test_without_encoding() -> None:
     session = ClientSession()
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding=False,
-        command=["SET", "a", "b"],
-        allow_telemetry=False
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding=False,
+            command=["SET", "a", "b"],
+            allow_telemetry=False,
+        )
+        == "OK"
+    )
 
     await session.close()
 
@@ -27,16 +30,19 @@ async def test_without_encoding() -> None:
 async def test_with_encoding() -> None:
     session = ClientSession()
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding="base64",
-        command=["SET", "a", "b"],
-        allow_telemetry=False
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding="base64",
+            command=["SET", "a", "b"],
+            allow_telemetry=False,
+        )
+        == "OK"
+    )
 
     await session.close()
 
@@ -45,16 +51,19 @@ async def test_with_encoding() -> None:
 async def test_with_encoding_and_object() -> None:
     session = ClientSession()
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding="base64",
-        command=["SET", "a", {"b": "c"}],
-        allow_telemetry=False
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding="base64",
+            command=["SET", "a", {"b": "c"}],
+            allow_telemetry=False,
+        )
+        == "OK"
+    )
 
     await session.close()
 
@@ -73,7 +82,7 @@ async def test_with_invalid_command() -> None:
             encoding="base64",
             # We give one parameter to "SET" instead of two.
             command=["SET", "a"],
-            allow_telemetry=False
+            allow_telemetry=False,
         )
 
     await session.close()
@@ -83,16 +92,19 @@ async def test_with_invalid_command() -> None:
 async def test_with_default_telemetry() -> None:
     session = ClientSession()
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding=False,
-        command=["SET", "a", "b"],
-        allow_telemetry=True
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding=False,
+            command=["SET", "a", "b"],
+            allow_telemetry=True,
+        )
+        == "OK"
+    )
 
     await session.close()
 
@@ -101,32 +113,36 @@ async def test_with_default_telemetry() -> None:
 async def test_with_custom_telemetry() -> None:
     session = ClientSession()
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding=False,
-        command=["SET", "a", "b"],
-        allow_telemetry=True,
-        telemetry_data={
-            "runtime": "python@3.11.2",
-            "sdk": "upstash_redis@development",
-            "platform": "local(testing)"
-        }
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding=False,
+            command=["SET", "a", "b"],
+            allow_telemetry=True,
+            telemetry_data={
+                "runtime": "python@3.11.2",
+                "sdk": "upstash_redis@development",
+                "platform": "local(testing)",
+            },
+        )
+        == "OK"
+    )
 
-    assert await execute(
-        session=session,
-        url=environ["UPSTASH_REDIS_REST_URL"],
-        token=environ["UPSTASH_REDIS_REST_TOKEN"],
-        retries=0,
-        retry_interval=0,
-        encoding=False,
-        command=["SET", "a", "b"],
-        allow_telemetry=True,
-        telemetry_data={
-            "sdk": "upstash_redis@development"
-        }
-    ) == "OK"
+    assert (
+        await execute(
+            session=session,
+            url=environ["UPSTASH_REDIS_REST_URL"],
+            token=environ["UPSTASH_REDIS_REST_TOKEN"],
+            retries=0,
+            retry_interval=0,
+            encoding=False,
+            command=["SET", "a", "b"],
+            allow_telemetry=True,
+            telemetry_data={"sdk": "upstash_redis@development"},
+        )
+        == "OK"
+    )

@@ -18,7 +18,10 @@ def decode(raw: RESTResult, encoding: str) -> RESTResult:
         elif isinstance(raw, list):
             return [
                 # Decode recursively.
-                decode(element, encoding) for element in raw
+                decode(element, encoding)
+                for element in raw
             ]
         else:
-            raise UpstashException(f'Error decoding data for result type {str(type(raw))}')
+            raise UpstashException(
+                f"Error decoding data for result type {str(type(raw))}"
+            )

@@ -8,10 +8,7 @@ It is a TypeVar mainly because of two reasons:
  - the "decode" function, which should return the same data type that was passed via the "raw" parameter.
  - the "execute" function's return is not an Union.
 """
-RESTResult = TypeVar(
-    "RESTResult",
-    str, int, list, None, Literal[0, 1], Literal["OK"]
-)
+RESTResult = TypeVar("RESTResult", str, int, list, None, Literal[0, 1], Literal["OK"])
 
 """
 The type of encoding that will be passed as a header to the REST API. 
