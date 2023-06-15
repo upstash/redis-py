@@ -1884,7 +1884,7 @@ class Redis:
 
         if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
             raise Exception(
-                "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
+                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
 
         command: list = ["ZLEXCOUNT", key, min_score, max_score]
