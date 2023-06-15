@@ -1,3 +1,3 @@
-from upstash_redis.aio.client import Redis as asyncRedis
+from upstash_redis.asyncio.client import Redis as AsyncRedis
 
-__all__ = ["asyncRedis"]
+__all__ = ["AsyncRedis"]
