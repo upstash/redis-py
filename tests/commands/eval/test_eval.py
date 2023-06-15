@@ -27,5 +27,3 @@ async def test_eval_with_list_return():
         res.extend(arguments)
 
         assert await redis.eval(script=script, keys=keys, args=arguments) == res
-
-

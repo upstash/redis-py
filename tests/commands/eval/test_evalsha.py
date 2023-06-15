@@ -1,6 +1,7 @@
 from pytest import mark
 from tests.client import redis
 
+
 @mark.asyncio
 async def test_evalsha():
     async with redis:
