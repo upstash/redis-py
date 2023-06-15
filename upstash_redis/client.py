@@ -581,13 +581,15 @@ class Redis:
         withhash: bool = False,
         withcoord: bool = False,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
         store: str | None = None,
         storedist: str | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn | int:
         """
         See https://redis.io/commands/georadius
+
+        :param count_any: replacement for "ANY"
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -597,7 +599,7 @@ class Redis:
             withhash,
             withcoord,
             count,
-            any,
+            count_any,
             store,
             storedist
         )
@@ -615,7 +617,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if sort:
@@ -646,17 +648,19 @@ class Redis:
         withhash: bool = False,
         withcoord: bool = False,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadius_ro
 
+        :param count_any: replacement for "ANY"
+
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        if any and count is None:
-            raise Exception("\"any\" can only be used together with \"count\".")
+        if count_any and count is None:
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUS_RO", key, longitude, latitude, radius, unit]
 
@@ -671,7 +675,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if sort:
@@ -695,13 +699,15 @@ class Redis:
         withhash: bool = False,
         withcoord: bool = False,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None,
         store: str | None = None,
         storedist: str | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadiusbymember
+
+        :param count_any: replacement for "ANY"
 
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
@@ -711,7 +717,7 @@ class Redis:
             withhash,
             withcoord,
             count,
-            any,
+            count_any,
             store,
             storedist
         )
@@ -729,7 +735,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if sort:
@@ -759,17 +765,19 @@ class Redis:
         withhash: bool = False,
         withcoord: bool = False,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         sort: Literal["ASC", "DESC"] | None = None
     ) -> GeoMembersReturn | FormattedGeoMembersReturn:
         """
         See https://redis.io/commands/georadiusbymember_ro
 
+        :param count_any: replacement for "ANY"
+
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        if any and count is None:
-            raise Exception("\"any\" can only be used together with \"count\".")
+        if count_any and count is None:
+            raise Exception("\"count_any\" can only be used together with \"count\".")
 
         command: list = ["GEORADIUSBYMEMBER_RO", key, member, radius, unit]
 
@@ -784,7 +792,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if sort:
@@ -810,7 +818,7 @@ class Redis:
         bybox_height: float | None = None,
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False
@@ -818,10 +826,12 @@ class Redis:
         """
         See https://redis.io/commands/geosearch
 
+        :param count_any: replacement for "ANY"
+
         :return: A list of dicts with the requested properties if "format_return" is True.
         """
 
-        handle_geosearch_exceptions(frommember, fromlonlat_longitude, fromlonlat_latitude, byradius, bybox_width, bybox_height, count, any)
+        handle_geosearch_exceptions(frommember, fromlonlat_longitude, fromlonlat_latitude, byradius, bybox_width, bybox_height, count, count_any)
 
         command: list = ["GEOSEARCH", key]
 
@@ -844,7 +854,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if withdist:
@@ -877,14 +887,16 @@ class Redis:
         bybox_height: float | None = None,
         sort: Literal["ASC", "DESC"] | None = None,
         count: int | None = None,
-        any: bool = False,
+        count_any: bool = False,
         storedist: bool = False
     ) -> int:
         """
         See https://redis.io/commands/geosearchstore
+
+        :param count_any: replacement for "ANY"
         """
 
-        handle_geosearch_exceptions(frommember, fromlonlat_longitude, fromlonlat_latitude, byradius, bybox_width, bybox_height, count, any)
+        handle_geosearch_exceptions(frommember, fromlonlat_longitude, fromlonlat_latitude, byradius, bybox_width, bybox_height, count, count_any)
 
         command: list = ["GEOSEARCHSTORE", destination, source]
 
@@ -907,7 +919,7 @@ class Redis:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if any:
+            if count_any:
                 command.append("ANY")
 
         if storedist:

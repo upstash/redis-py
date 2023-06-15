@@ -12,7 +12,7 @@ def test_with_invalid_longitude_and_latitude() -> None:
             bybox_width=None,
             bybox_height=None,
             count=None,
-            any=False
+            count_any=False
         )
 
     assert str(exception.value) == "Both \"fromlonlat_longitude\" and \"fromlonlat_latitude\" must be specified."
@@ -28,7 +28,7 @@ def test_with_neither_member_nor_longitude_and_latitude() -> None:
             bybox_width=None,
             bybox_height=None,
             count=None,
-            any=False
+            count_any=False
         )
 
     assert str(exception.value) == """Specify either the member's name with "member",
@@ -45,7 +45,7 @@ def test_with_both_member_and_longitude_and_latitude() -> None:
             bybox_width=None,
             bybox_height=None,
             count=None,
-            any=True
+            count_any=True
         )
 
     assert str(exception.value) == """Specify either the member's name with "member",
@@ -62,7 +62,7 @@ def test_with_invalid_width_and_height() -> None:
             bybox_width=2,
             bybox_height=None,
             count=None,
-            any=False
+            count_any=False
         )
 
     assert str(exception.value) == "Both \"bybox_width\" and \"bybox_height\" must be specified."
@@ -78,7 +78,7 @@ def test_with_neither_radius_nor_width_and_height() -> None:
             bybox_width=None,
             bybox_height=None,
             count=None,
-            any=False
+            count_any=False
         )
 
     assert str(exception.value) == """Specify either the byradius with "byradius",
@@ -95,14 +95,14 @@ def test_with_both_radius_and_width_and_height() -> None:
             bybox_width=2,
             bybox_height=3,
             count=None,
-            any=False
+            count_any=False
         )
 
     assert str(exception.value) == """Specify either the byradius with "byradius",
 or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both."""
 
 
-def test_with_invalid_any() -> None:
+def count_test_with_invalid_any() -> None:
     with raises(Exception) as exception:
         handle_geosearch_exceptions(
             member="member",
@@ -112,10 +112,10 @@ def test_with_invalid_any() -> None:
             bybox_width=None,
             bybox_height=None,
             count=None,
-            any=True
+            count_any=True
         )
 
-    assert str(exception.value) == "\"any\" can only be used together with \"count\"."
+    assert str(exception.value) == "\"count_any\" can only be used together with \"count\"."
 
 
 def test_with_member_and_radius() -> None:
@@ -127,7 +127,7 @@ def test_with_member_and_radius() -> None:
         bybox_width=None,
         bybox_height=None,
         count=None,
-        any=False
+        count_any=False
     )
 
 
@@ -140,11 +140,11 @@ def test_with_coordinates_and_width_and_height():
         bybox_width=2.3,
         bybox_height=3.4,
         count=None,
-        any=False
+        count_any=False
     )
 
 
-def test_with_count_and_any():
+def count_test_with_count_and_any():
     handle_geosearch_exceptions(
         member="member",
         fromlonlat_longitude=None,
@@ -153,5 +153,5 @@ def test_with_count_and_any():
         bybox_width=None,
         bybox_height=None,
         count=10,
-        any=True
+        count_any=True
     )

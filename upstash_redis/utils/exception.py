@@ -8,7 +8,7 @@ def handle_georadius_write_exceptions(
     withhash: bool = False,
     withcoord: bool = False,
     count: int | None = None,
-    any: bool = False,
+    count_any: bool = False,
     store: str | None = None,
     storedist: str | None = None,
 ) -> None:
@@ -16,8 +16,8 @@ def handle_georadius_write_exceptions(
     Handle exceptions for "GEORADIUS*" write commands.
     """
 
-    if any and count is None:
-        raise Exception("\"any\" can only be used together with \"count\".")
+    if count_any and count is None:
+        raise Exception("\"count_any\" can only be used together with \"count\".")
 
     if (withdist or withhash or withcoord) and (store or storedist):
         raise Exception("Cannot use \"store\" or \"storedist\" when requesting additional properties.")
@@ -31,7 +31,7 @@ def handle_geosearch_exceptions(
     bybox_width: float | None,
     bybox_height: float | None,
     count: int | None,
-    any: bool
+    count_any: bool
 ) -> None:
     """
     Handle exceptions for "GEOSEARCH*" commands.
@@ -51,8 +51,8 @@ or the fromlonlat_longitude and fromlonlat_latitude with "fromlonlat_longitude" 
         raise Exception("""Specify either the byradius with "byradius",
 or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both.""")
 
-    if any and count is None:
-        raise Exception("\"any\" can only be used together with \"count\".")
+    if count_any and count is None:
+        raise Exception("\"count_any\" can only be used together with \"count\".")
 
 
 def handle_non_deprecated_zrange_exceptions(

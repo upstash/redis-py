@@ -84,7 +84,7 @@ async def test_with_any() -> None:
             radius=200,
             unit="KM",
             count=1,
-            any=True
+            count_any=True
         ) == [
             "Palermo"
         ]
@@ -143,7 +143,7 @@ async def test_with_invalid_parameters() -> None:
                 radius=200,
                 unit="KM",
                 count=None,
-                any=True
+                count_any=True
             )
 
-        assert str(exception.value) == "\"any\" can only be used together with \"count\"."
+        assert str(exception.value) == "\"count_any\" can only be used together with \"count\"."
