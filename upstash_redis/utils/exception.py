@@ -82,18 +82,21 @@ the ranging method is "BYLEX".""")
 
 
 def handle_zrangebylex_exceptions(
-    min: str,
-    max: str,
+    min_score: str,
+    max_score: str,
     offset: int | None,
     count: int | None,
 ) -> None:
     """
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.
+
+    :param min_score: replacement for "MIN"
+    :param max_score: replacement for "MAX"
     """
 
-    if not min.startswith(('(', '[', '+', '-')) or not max.startswith(('(', '[', '+', '-')):
+    if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
         raise Exception(
-            "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
+            "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
         )
 
     if number_are_not_none(offset, count, number=1):

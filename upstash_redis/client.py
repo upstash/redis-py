@@ -439,7 +439,7 @@ class Redis:
             command.extend(["COUNT", count])
 
         if scan_type is not None:
-            command.extend(["TYPE", type])
+            command.extend(["TYPE", scan_type])
 
         # The raw result is composed of the new cursor and the list of elements.
         raw: list[str | list[str]] = await self.run(command)
@@ -1738,14 +1738,17 @@ class Redis:
 
         return await self.run(command)
 
-    async def zcount(self, key: str, min: FloatMinMax, max: FloatMinMax) -> int:
+    async def zcount(self, key: str, min_score: FloatMinMax, max_score: FloatMinMax) -> int:
         """
         See https://redis.io/commands/zcount 
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
 
-        command: list = ["ZCOUNT", key, min, max]
+        command: list = ["ZCOUNT", key, min_score, max_score]
 
         return await self.run(command)
 
@@ -1868,17 +1871,20 @@ class Redis:
 
         return await self.run(command)
 
-    async def zlexcount(self, key: str, min: str, max: str) -> int:
+    async def zlexcount(self, key: str, min_score: str, max_score: str) -> int:
         """
         See https://redis.io/commands/zlexcount 
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        if not min.startswith(('(', '[', '+', '-')) or not max.startswith(('(', '[', '+', '-')):
+        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
             raise Exception(
                 "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
             )
 
-        command: list = ["ZLEXCOUNT", key, min, max]
+        command: list = ["ZLEXCOUNT", key, min_score, max_score]
 
         return await self.run(command)
 
@@ -2013,18 +2019,21 @@ class Redis:
     async def zrangebylex(
         self,
         key: str,
-        min: str,
-        max: str,
+        min_score: str,
+        max_score: str,
         limit_offset: int | None = None,
         limit_count: int | None = None
     ) -> list[str | None]:
         """
         See https://redis.io/commands/zrangebylex
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min, max, limit_offset, limit_count)
+        handle_zrangebylex_exceptions(min_score, max_score, limit_offset, limit_count)
 
-        command: list = ["ZRANGEBYLEX", key, min, max]
+        command: list = ["ZRANGEBYLEX", key, min_score, max_score]
 
         if limit_offset is not None:
             command.extend(["LIMIT", limit_offset, limit_count])
@@ -2038,8 +2047,8 @@ class Redis:
     async def zrangebyscore(
         self,
         key: str,
-        min: FloatMinMax,
-        max: FloatMinMax,
+        min_score: FloatMinMax,
+        max_score: FloatMinMax,
         withscores: bool = False,
         offset: int | None = None,
         count: int | None = None
@@ -2049,13 +2058,16 @@ class Redis:
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
+
         :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if number_are_not_none(offset, count, number=1):
             raise Exception("Both \"offset\" and \"count\" must be specified.")
 
-        command: list = ["ZRANGEBYSCORE", key, min, max]
+        command: list = ["ZRANGEBYSCORE", key, min_score, max_score]
 
         if offset is not None:
             command.extend(["LIMIT", offset, count])
@@ -2073,8 +2085,8 @@ class Redis:
         self,
         dst: str,
         src: str,
-        min: FloatMinMax,
-        max: FloatMinMax,
+        min_score: FloatMinMax,
+        max_score: FloatMinMax,
         range_method: Literal["BYSCORE", "BYLEX"] | None = None,
         rev: bool = False,
         limit_offset: int | None = None,
@@ -2082,14 +2094,16 @@ class Redis:
     ) -> int:
         """
         See https://redis.io/commands/zrangestore
+        
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
-
         """
 
-        handle_non_deprecated_zrange_exceptions(range_method, min, max, limit_offset, limit_count)
+        handle_non_deprecated_zrange_exceptions(range_method, min_score, max_score, limit_offset, limit_count)
 
-        command: list = ["ZRANGESTORE", dst, src, min, max]
+        command: list = ["ZRANGESTORE", dst, src, min_score, max_score]
 
         if range_method:
             command.append(range_method)
@@ -2123,17 +2137,20 @@ class Redis:
 
         return await self.run(command)
 
-    async def zremrangebylex(self, key: str, min: str, max: str) -> int:
+    async def zremrangebylex(self, key: str, min_score: str, max_score: str) -> int:
         """
         See https://redis.io/commands/zremrangebylex
+        
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        if not min.startswith(('(', '[', '+', '-')) or not max.startswith(('(', '[', '+', '-')):
+        if not min_score.startswith(('(', '[', '+', '-')) or not max_score.startswith(('(', '[', '+', '-')):
             raise Exception(
-                "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
+                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
             )
 
-        command: list = ["ZREMRANGEBYLEX", key, min, max]
+        command: list = ["ZREMRANGEBYLEX", key, min_score, max_score]
 
         return await self.run(command)
 
@@ -2146,14 +2163,17 @@ class Redis:
 
         return await self.run(command)
 
-    async def zremrangebyscore(self, key: str, min: FloatMinMax, max: FloatMinMax) -> int:
+    async def zremrangebyscore(self, key: str, min_score: FloatMinMax, max_score: FloatMinMax) -> int:
         """
-        See https://redis.io/commands/zremrangebyscore
+        See https://redis.io/commands/zremrangebyscore\
+        
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
 
-        command: list = ["ZREMRANGEBYSCORE", key, min, max]
+        command: list = ["ZREMRANGEBYSCORE", key, min_score, max_score]
 
         return await self.run(command)
 
@@ -2188,18 +2208,21 @@ class Redis:
     async def zrevrangebylex(
         self,
         key: str,
-        max: str,
-        min: str,
+        max_score: str,
+        min_score: str,
         offset: int | None = None,
         count: int | None = None
     ) -> list[str]:
         """
         See https://redis.io/commands/zrevrangebylex
+
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min, max, offset, count)
+        handle_zrangebylex_exceptions(min_score, max_score, offset, count)
 
-        command: list = ["ZREVRANGEBYLEX", key, max, min]
+        command: list = ["ZREVRANGEBYLEX", key, max_score, min_score]
 
         if offset is not None:
             command.extend(["LIMIT", offset, count])
@@ -2213,8 +2236,8 @@ class Redis:
     async def zrevrangebyscore(
         self,
         key: str,
-        max: FloatMinMax,
-        min: FloatMinMax,
+        max_score: FloatMinMax,
+        min_score: FloatMinMax,
         withscores: bool = False,
         limit_offset: int | None = None,
         limit_count: int | None = None
@@ -2224,13 +2247,16 @@ class Redis:
 
         If you need to use "-inf" and "+inf", please write them as strings.
 
+        :param min_score: replacement for "MIN"
+        :param max_score: replacement for "MAX"
+
         :return: A dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if number_are_not_none(limit_offset, limit_count, number=1):
             raise Exception("Both \"limit_offset\" and \"limit_count\" must be specified.")
 
-        command: list = ["ZREVRANGEBYSCORE", key, max, min]
+        command: list = ["ZREVRANGEBYSCORE", key, max_score, min_score]
 
         if limit_offset is not None:
             command.extend(["LIMIT", limit_offset, limit_count])
