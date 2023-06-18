@@ -1426,8 +1426,10 @@ class Redis:
 
         command: list = ["EVAL", script]
 
-        if keys:
+        if keys is not None:
             command.extend([len(keys), *keys])
+        else:
+            command.append(0)
 
         if args:
             command.extend(args)
@@ -1445,8 +1447,10 @@ class Redis:
 
         command: list = ["EVALSHA", sha1]
 
-        if keys:
+        if keys is not None:
             command.extend([len(keys), *keys])
+        else:
+            command.append(0)
 
         if args:
             command.extend(args)
