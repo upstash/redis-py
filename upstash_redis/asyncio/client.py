@@ -39,7 +39,7 @@ from upstash_redis.schema.commands.returns import (
     FormattedSortedSetReturn,
 )
 from aiohttp import ClientSession
-from typing import Type, Any, Literal
+from typing import Type, Any, Literal, Union
 from os import environ
 
 
@@ -53,7 +53,7 @@ class Redis:
         rest_retry_interval: int = REST_RETRY_INTERVAL,  # Seconds.
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: TelemetryData | None = None,
+        telemetry_data: Union[TelemetryData, None] = None,
     ):
         """
         :param url: UPSTASH_REDIS_REST_URL in the console
@@ -99,7 +99,7 @@ class Redis:
         rest_retry_interval: int = REST_RETRY_INTERVAL,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: TelemetryData | None = None,
+        telemetry_data: Union[TelemetryData, None] = None,
     ):
         """
         Load the credentials from environment.
@@ -133,8 +133,8 @@ class Redis:
 
     async def __aexit__(
         self,
-        exc_type: Type[BaseException] | None,
-        exc_val: BaseException | None,
+        exc_type: Union[Type[BaseException], None],
+        exc_val: Union[BaseException, None],
         exc_tb: Any,
     ) -> None:
         """
@@ -161,7 +161,7 @@ class Redis:
         )
 
     async def bitcount(
-        self, key: str, start: int | None = None, end: int | None = None
+        self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
     ) -> int:
         """
         See https://redis.io/commands/bitcount
@@ -214,8 +214,8 @@ class Redis:
         self,
         key: str,
         bit: Literal[0, 1],
-        start: int | None = None,
-        end: int | None = None,
+        start: Union[int, None] = None,
+        end: Union[int, None] = None,
     ) -> int:
         """
         See https://redis.io/commands/bitpos
@@ -252,7 +252,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def ping(self, message: str | None = None) -> str:
+    async def ping(self, message: Union[str, None] = None) -> str:
         """
         See https://redis.io/commands/ping
         """
@@ -275,7 +275,7 @@ class Redis:
 
     async def copy(
         self, source: str, destination: str, replace: bool = False
-    ) -> Literal[1, 0] | bool:
+    ) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/copy
 
@@ -315,7 +315,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def expire(self, key: str, seconds: int) -> Literal[1, 0] | bool:
+    async def expire(self, key: str, seconds: int) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/expire
 
@@ -328,7 +328,9 @@ class Redis:
 
         return bool(raw) if self.format_return else raw
 
-    async def expireat(self, key: str, unix_time_seconds: int) -> Literal[1, 0] | bool:
+    async def expireat(
+        self, key: str, unix_time_seconds: int
+    ) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/expireat
 
@@ -350,7 +352,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def persist(self, key: str) -> Literal[1, 0] | bool:
+    async def persist(self, key: str) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/persist
 
@@ -363,7 +365,7 @@ class Redis:
 
         return bool(raw) if self.format_return else raw
 
-    async def pexpire(self, key: str, milliseconds: int) -> Literal[1, 0] | bool:
+    async def pexpire(self, key: str, milliseconds: int) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/pexpire
 
@@ -378,7 +380,7 @@ class Redis:
 
     async def pexpireat(
         self, key: str, unix_time_milliseconds: int
-    ) -> Literal[1, 0] | bool:
+    ) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/pexpireat
 
@@ -400,7 +402,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def randomkey(self) -> str | None:
+    async def randomkey(self) -> Union[str, None]:
         """
         See https://redis.io/commands/randomkey
         """
@@ -418,7 +420,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def renamenx(self, key: str, newkey: str) -> Literal[1, 0] | bool:
+    async def renamenx(self, key: str, newkey: str) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/renamenx
 
@@ -434,11 +436,13 @@ class Redis:
     async def scan(
         self,
         cursor: int,
-        match_pattern: str | None = None,
-        count: int | None = None,
-        scan_type: str | None = None,
+        match_pattern: Union[str, None] = None,
+        count: Union[int, None] = None,
+        scan_type: Union[str, None] = None,
         return_cursor: bool = True,
-    ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
+    ) -> Union[
+        (Union[list[Union[str, list[str]]], list[Union[int, list[str]]]]), list[str]
+    ]:
         """
         See https://redis.io/commands/scan
 
@@ -463,7 +467,7 @@ class Redis:
             command.extend(["TYPE", scan_type])
 
         # The raw result is composed of the new cursor and the list of elements.
-        raw: list[str | list[str]] = await self.run(command)
+        raw: list[Union[str, list[str]]] = await self.run(command)
 
         if return_cursor:
             return [int(raw[0]), raw[1]] if self.format_return else raw
@@ -491,7 +495,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def type(self, key: str) -> str | None:
+    async def type(self, key: str) -> Union[str, None]:
         """
         See https://redis.io/commands/type
         """
@@ -554,7 +558,7 @@ class Redis:
         member1: str,
         member2: str,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
-    ) -> str | float | None:
+    ) -> Union[str, float, None]:
         """
         See https://redis.io/commands/geodist
 
@@ -563,11 +567,11 @@ class Redis:
 
         command: list = ["GEODIST", key, member1, member2, unit]
 
-        raw: str | None = await self.run(command)
+        raw: Union[str, None] = await self.run(command)
 
         return float(raw) if self.format_return else raw
 
-    async def geohash(self, key: str, *members: str) -> list[str | None]:
+    async def geohash(self, key: str, *members: str) -> list[Union[str, None]]:
         """
         See https://redis.io/commands/geohash
         """
@@ -578,7 +582,7 @@ class Redis:
 
     async def geopos(
         self, key: str, *members: str
-    ) -> list[list[str] | None] | list[dict[str, float] | None]:
+    ) -> Union[list[Union[list[str], None]], list[Union[dict[str, float], None]]]:
         """
         See https://redis.io/commands/geopos
 
@@ -587,7 +591,7 @@ class Redis:
 
         command: list = ["GEOPOS", key, *members]
 
-        raw: list[list[str] | None] = await self.run(command)
+        raw: list[Union[list[str], None]] = await self.run(command)
 
         return format_geo_positions_return(raw) if self.format_return else raw
 
@@ -601,12 +605,12 @@ class Redis:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: int | None = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None,
-        store: str | None = None,
-        storedist: str | None = None,
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn | int:
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+        store: Union[str, None] = None,
+        storedist: Union[str, None] = None,
+    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn, int]:
         """
         See https://redis.io/commands/georadius
 
@@ -662,10 +666,10 @@ class Redis:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: int | None = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None,
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
         """
         See https://redis.io/commands/georadius_ro
 
@@ -713,12 +717,12 @@ class Redis:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: int | None = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None,
-        store: str | None = None,
-        storedist: str | None = None,
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+        store: Union[str, None] = None,
+        storedist: Union[str, None] = None,
+    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
         """
         See https://redis.io/commands/georadiusbymember
 
@@ -773,10 +777,10 @@ class Redis:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: int | None = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
-        sort: Literal["ASC", "DESC"] | None = None,
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
         """
         See https://redis.io/commands/georadiusbymember_ro
 
@@ -819,19 +823,19 @@ class Redis:
         self,
         key: str,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        frommember: str | None = None,
-        fromlonlat_longitude: float | None = None,
-        fromlonlat_latitude: float | None = None,
-        byradius: float | None = None,
-        bybox_width: float | None = None,
-        bybox_height: float | None = None,
-        sort: Literal["ASC", "DESC"] | None = None,
-        count: int | None = None,
+        frommember: Union[str, None] = None,
+        fromlonlat_longitude: Union[float, None] = None,
+        fromlonlat_latitude: Union[float, None] = None,
+        byradius: Union[float, None] = None,
+        bybox_width: Union[float, None] = None,
+        bybox_height: Union[float, None] = None,
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-    ) -> GeoMembersReturn | FormattedGeoMembersReturn:
+    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
         """
         See https://redis.io/commands/geosearch
 
@@ -897,14 +901,14 @@ class Redis:
         destination: str,
         source: str,
         unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        frommember: str | None = None,
-        fromlonlat_longitude: float | None = None,
-        fromlonlat_latitude: float | None = None,
-        byradius: float | None = None,
-        bybox_width: float | None = None,
-        bybox_height: float | None = None,
-        sort: Literal["ASC", "DESC"] | None = None,
-        count: int | None = None,
+        frommember: Union[str, None] = None,
+        fromlonlat_longitude: Union[float, None] = None,
+        fromlonlat_latitude: Union[float, None] = None,
+        byradius: Union[float, None] = None,
+        bybox_width: Union[float, None] = None,
+        bybox_height: Union[float, None] = None,
+        sort: Union[Literal["ASC", "DESC"], None] = None,
+        count: Union[int, None] = None,
         count_any: bool = False,
         storedist: bool = False,
     ) -> int:
@@ -966,7 +970,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def hexists(self, key: str, field: str) -> Literal[1, 0] | bool:
+    async def hexists(self, key: str, field: str) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/hexists
 
@@ -979,7 +983,7 @@ class Redis:
 
         return bool(raw) if self.format_return else raw
 
-    async def hget(self, key: str, field: str) -> str | None:
+    async def hget(self, key: str, field: str) -> Union[str, None]:
         """
         See https://redis.io/commands/hget
         """
@@ -988,7 +992,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def hgetall(self, key: str) -> HashReturn | FormattedHashReturn:
+    async def hgetall(self, key: str) -> Union[HashReturn, FormattedHashReturn]:
         """
         See https://redis.io/commands/hgetall
 
@@ -1010,7 +1014,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def hincrbyfloat(self, key: str, field: str, increment: float) -> str | float:
+    async def hincrbyfloat(
+        self, key: str, field: str, increment: float
+    ) -> Union[str, float]:
         """
         See https://redis.io/commands/hincrbyfloat
 
@@ -1041,7 +1047,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def hmget(self, key: str, *fields: str) -> list[str | None]:
+    async def hmget(self, key: str, *fields: str) -> list[Union[str, None]]:
         """
         See https://redis.io/commands/hmget
         """
@@ -1066,8 +1072,8 @@ class Redis:
         return await self.run(command)
 
     async def hrandfield(
-        self, key: str, count: int | None = None, withvalues: bool = False
-    ) -> (str | None) | (HashReturn | FormattedHashReturn):
+        self, key: str, count: Union[int, None] = None, withvalues: bool = False
+    ) -> Union[(Union[str, None]), Union[HashReturn, FormattedHashReturn]]:
         """
         See https://redis.io/commands/hrandfield
 
@@ -1095,12 +1101,13 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match_pattern: str | None = None,
-        count: int | None = None,
+        match_pattern: Union[str, None] = None,
+        count: Union[int, None] = None,
         return_cursor: bool = True,
-    ) -> (list[str | HashReturn] | list[int | FormattedHashReturn]) | (
-        HashReturn | FormattedHashReturn
-    ):
+    ) -> Union[
+        (Union[list[Union[str, HashReturn]], list[Union[int, FormattedHashReturn]]]),
+        (Union[HashReturn, FormattedHashReturn]),
+    ]:
         """
         See https://redis.io/commands/hscan
 
@@ -1120,7 +1127,7 @@ class Redis:
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the list of elements.
-        raw: list[str | HashReturn] | HashReturn = await self.run(command)
+        raw: Union[list[Union[str, HashReturn]], HashReturn] = await self.run(command)
 
         if return_cursor:
             return (
@@ -1141,7 +1148,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def hsetnx(self, key: str, field: str, value: Any) -> Literal[1, 0] | bool:
+    async def hsetnx(
+        self, key: str, field: str, value: Any
+    ) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/hsetnx
 
@@ -1172,7 +1181,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def pfadd(self, key: str, *elements: Any) -> Literal[1, 0] | bool:
+    async def pfadd(self, key: str, *elements: Any) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/pfadd
 
@@ -1206,7 +1215,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def lindex(self, key: str, index: int) -> str | None:
+    async def lindex(self, key: str, index: int) -> Union[str, None]:
         """
         See https://redis.io/commands/lindex
         """
@@ -1241,7 +1250,7 @@ class Redis:
         destination: str,
         source_position: Literal["LEFT", "RIGHT"],
         destination_position: Literal["LEFT", "RIGHT"],
-    ) -> str | None:
+    ) -> Union[str, None]:
         """
         See https://redis.io/commands/lmove
         """
@@ -1257,8 +1266,8 @@ class Redis:
         return await self.run(command)
 
     async def lpop(
-        self, key: str, count: int | None = None
-    ) -> (str | None) | list[str]:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[(Union[str, None]), list[str]]:
         """
         See https://redis.io/commands/lpop
 
@@ -1276,10 +1285,10 @@ class Redis:
         self,
         key: str,
         element: Any,
-        rank: int | None = None,
-        count: int | None = None,
-        maxlen: int | None = None,
-    ) -> (int | None) | list[int]:
+        rank: Union[int, None] = None,
+        count: Union[int, None] = None,
+        maxlen: Union[int, None] = None,
+    ) -> Union[(Union[int, None]), list[int]]:
         """
         See https://redis.io/commands/lpos
         """
@@ -1358,8 +1367,8 @@ class Redis:
         return await self.run(command)
 
     async def rpop(
-        self, key: str, count: int | None = None
-    ) -> (str | None) | list[str]:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[(Union[str, None]), list[str]]:
         """
         See https://redis.io/commands/rpop
 
@@ -1373,7 +1382,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def rpoplpush(self, source: str, destination: str) -> str | None:
+    async def rpoplpush(self, source: str, destination: str) -> Union[str, None]:
         """
         See https://redis.io/commands/rpoplpush
         """
@@ -1416,7 +1425,10 @@ class Redis:
         return await self.run(command)
 
     async def eval(
-        self, script: str, keys: list[str] | None = None, args: list | None = None
+        self,
+        script: str,
+        keys: Union[list[str], None] = None,
+        args: Union[list, None] = None,
     ) -> Any:
         """
         See https://redis.io/commands/eval
@@ -1437,7 +1449,10 @@ class Redis:
         return await self.run(command)
 
     async def evalsha(
-        self, sha1: str, keys: list[str] | None = None, args: list | None = None
+        self,
+        sha1: str,
+        keys: Union[list[str], None] = None,
+        args: Union[list, None] = None,
     ) -> Any:
         """
         See https://redis.io/commands/evalsha
@@ -1466,7 +1481,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def flushall(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
+    async def flushall(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> str:
         """
         See https://redis.io/commands/flushall
         """
@@ -1478,7 +1493,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def flushdb(self, mode: Literal["ASYNC", "SYNC"] | None = None) -> str:
+    async def flushdb(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> str:
         """
         See https://redis.io/commands/flushdb
         """
@@ -1490,7 +1505,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def time(self) -> list[str] | dict[str, int]:
+    async def time(self) -> Union[list[str], dict[str, int]]:
         """
         See https://redis.io/commands/time
 
@@ -1572,7 +1587,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def sismember(self, key: str, member: Any) -> Literal[1, 0] | bool:
+    async def sismember(self, key: str, member: Any) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/sismember
 
@@ -1596,7 +1611,7 @@ class Redis:
 
     async def smove(
         self, source: str, destination: str, member: Any
-    ) -> Literal[1, 0] | bool:
+    ) -> Union[Literal[1, 0], bool]:
         """
         See https://redis.io/commands/smove
 
@@ -1610,8 +1625,8 @@ class Redis:
         return bool(raw) if self.format_return else raw
 
     async def spop(
-        self, key: str, count: int | None = None
-    ) -> (str | None) | list[str]:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[(Union[str, None]), list[str]]:
         """
         See https://redis.io/commands/spop
 
@@ -1626,8 +1641,8 @@ class Redis:
         return await self.run(command)
 
     async def srandmember(
-        self, key: str, count: int | None = None
-    ) -> (str | None) | list[str]:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[(Union[str, None]), list[str]]:
         """
         See https://redis.io/commands/srandmember
 
@@ -1657,10 +1672,12 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match_pattern: str | None = None,
-        count: int | None = None,
+        match_pattern: Union[str, None] = None,
+        count: Union[int, None] = None,
         return_cursor: bool = True,
-    ) -> (list[str | list[str]] | list[int | list[str]]) | list[str]:
+    ) -> Union[
+        (Union[list[Union[str, list[str]]], list[Union[int, list[str]]]]), list[str]
+    ]:
         """
         See https://redis.io/commands/sscan
 
@@ -1680,7 +1697,7 @@ class Redis:
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the list of elements.
-        raw: list[str | list[str]] = await self.run(command)
+        raw: list[Union[str, list[str]]] = await self.run(command)
 
         if return_cursor:
             return [int(raw[0]), raw[1]] if self.format_return else raw
@@ -1721,7 +1738,7 @@ class Redis:
         lt: bool = False,
         ch: bool = False,
         incr: bool = False,
-    ) -> int | (str | None | float):
+    ) -> Union[int, (Union[str, None, float])]:
         """
         See https://redis.io/commands/zadd
 
@@ -1763,7 +1780,7 @@ class Redis:
             for name, score in score_member_pairs.items():
                 command.extend([score, name])
 
-            raw: (str | None) = await self.run(command)
+            raw: (Union[str, None]) = await self.run(command)
 
             return float(raw) if self.format_return and raw is not None else raw
 
@@ -1804,7 +1821,7 @@ class Redis:
 
     async def zdiff(
         self, *keys: str, withscores: bool = False
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zdiff
 
@@ -1841,7 +1858,9 @@ class Redis:
 
         return await self.run(command)
 
-    async def zincrby(self, key: str, increment: float, member: str) -> str | float:
+    async def zincrby(
+        self, key: str, increment: float, member: str
+    ) -> Union[str, float]:
         """
         See https://redis.io/commands/zincrby
 
@@ -1862,10 +1881,10 @@ class Redis:
     async def zinter(
         self,
         *keys: str,
-        weights: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        weights: Union[list[float], None] = None,
+        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zinter
 
@@ -1898,8 +1917,8 @@ class Redis:
         self,
         destination: str,
         *keys: str,
-        weights: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        weights: Union[list[float], None] = None,
+        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int:
         """
         See https://redis.io/commands/zinterstore
@@ -1941,7 +1960,7 @@ class Redis:
 
     async def zmscore(
         self, key: str, *members: str
-    ) -> list[str | None] | list[float | None]:
+    ) -> Union[list[Union[str, None]], list[Union[float, None]]]:
         """
         See https://redis.io/commands/zmscore
 
@@ -1953,13 +1972,13 @@ class Redis:
 
         command: list = ["ZMSCORE", key, *members]
 
-        raw: list[str | None] = await self.run(command)
+        raw: list[Union[str, None]] = await self.run(command)
 
         return format_float_list(raw) if self.format_return else raw
 
     async def zpopmax(
-        self, key: str, count: int | None = None
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zpopmax
 
@@ -1978,8 +1997,8 @@ class Redis:
         return format_sorted_set_return(raw) if self.format_return else raw
 
     async def zpopmin(
-        self, key: str, count: int | None = None
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        self, key: str, count: Union[int, None] = None
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zpopmin
 
@@ -1998,8 +2017,8 @@ class Redis:
         return format_sorted_set_return(raw) if self.format_return else raw
 
     async def zrandmember(
-        self, key: str, count: int | None = None, withscores: bool = False
-    ) -> (str | None) | (SortedSetReturn | FormattedSortedSetReturn):
+        self, key: str, count: Union[int, None] = None, withscores: bool = False
+    ) -> Union[(Union[str, None]), (Union[SortedSetReturn, FormattedSortedSetReturn])]:
         """
         See https://redis.io/commands/zrandmember
 
@@ -2035,12 +2054,12 @@ class Redis:
         key: str,
         start: FloatMinMax,
         stop: FloatMinMax,
-        range_method: Literal["BYSCORE", "BYLEX"] | None = None,
+        range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        limit_offset: int | None = None,
-        limit_count: int | None = None,
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
         withscores: bool = False,
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zrange
 
@@ -2078,9 +2097,9 @@ class Redis:
         key: str,
         min_score: str,
         max_score: str,
-        limit_offset: int | None = None,
-        limit_count: int | None = None,
-    ) -> list[str | None]:
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
+    ) -> list[Union[str, None]]:
         """
         See https://redis.io/commands/zrangebylex
 
@@ -2108,9 +2127,9 @@ class Redis:
         min_score: FloatMinMax,
         max_score: FloatMinMax,
         withscores: bool = False,
-        offset: int | None = None,
-        count: int | None = None,
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zrangebyscore
 
@@ -2145,10 +2164,10 @@ class Redis:
         src: str,
         min_score: FloatMinMax,
         max_score: FloatMinMax,
-        range_method: Literal["BYSCORE", "BYLEX"] | None = None,
+        range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        limit_offset: int | None = None,
-        limit_count: int | None = None,
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
     ) -> int:
         """
         See https://redis.io/commands/zrangestore
@@ -2176,7 +2195,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def zrank(self, key: str, member: str) -> int | None:
+    async def zrank(self, key: str, member: str) -> Union[int, None]:
         """
         See https://redis.io/commands/zrank
         """
@@ -2248,7 +2267,7 @@ class Redis:
 
     async def zrevrange(
         self, key: str, start: int, stop: int, withscores: bool = False
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zrevrange
 
@@ -2271,8 +2290,8 @@ class Redis:
         key: str,
         max_score: str,
         min_score: str,
-        offset: int | None = None,
-        count: int | None = None,
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
     ) -> list[str]:
         """
         See https://redis.io/commands/zrevrangebylex
@@ -2301,9 +2320,9 @@ class Redis:
         max_score: FloatMinMax,
         min_score: FloatMinMax,
         withscores: bool = False,
-        limit_offset: int | None = None,
-        limit_count: int | None = None,
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zrevrangebyscore
 
@@ -2332,7 +2351,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def zrevrank(self, key: str, member: str) -> int | None:
+    async def zrevrank(self, key: str, member: str) -> Union[int, None]:
         """
         See https://redis.io/commands/zrevrank
         """
@@ -2345,12 +2364,18 @@ class Redis:
         self,
         key: str,
         cursor: int,
-        match_pattern: str | None = None,
-        count: int | None = None,
+        match_pattern: Union[str, None] = None,
+        count: Union[int, None] = None,
         return_cursor: bool = True,
-    ) -> (list[str | SortedSetReturn] | list[int | FormattedSortedSetReturn]) | (
-        SortedSetReturn | FormattedSortedSetReturn
-    ):
+    ) -> Union[
+        (
+            Union[
+                list[Union[str, SortedSetReturn]],
+                list[Union[int, FormattedSortedSetReturn]],
+            ]
+        ),
+        (Union[SortedSetReturn, FormattedSortedSetReturn]),
+    ]:
         """
         See https://redis.io/commands/zscan
 
@@ -2369,7 +2394,7 @@ class Redis:
         if count is not None:
             command.extend(["COUNT", count])
 
-        raw: list[int | SortedSetReturn] = await self.run(command)
+        raw: list[Union[int, SortedSetReturn]] = await self.run(command)
 
         if return_cursor:
             return (
@@ -2381,7 +2406,7 @@ class Redis:
         # The raw result is composed of the new cursor and the list of elements.
         return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
 
-    async def zscore(self, key: str, member: str) -> str | None | float:
+    async def zscore(self, key: str, member: str) -> Union[str, None, float]:
         """
         See https://redis.io/commands/zscore
 
@@ -2390,7 +2415,7 @@ class Redis:
 
         command: list = ["ZSCORE", key, member]
 
-        raw: str | None = await self.run(command)
+        raw: Union[str, None] = await self.run(command)
 
         return float(raw) if self.format_return and raw is not None else raw
 
@@ -2402,10 +2427,10 @@ class Redis:
     async def zunion(
         self,
         *keys: str,
-        weights: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        weights: Union[list[float], None] = None,
+        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> SortedSetReturn | FormattedSortedSetReturn:
+    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
         """
         See https://redis.io/commands/zunion
 
@@ -2438,8 +2463,8 @@ class Redis:
         self,
         destination: str,
         *keys: str,
-        weights: list[float] | None = None,
-        aggregate: Literal["SUM", "MIN", "MAX"] | None = None,
+        weights: Union[list[float], None] = None,
+        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int:
         """
         See https://redis.io/commands/zunionstore
@@ -2487,7 +2512,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def get(self, key: str) -> str | None:
+    async def get(self, key: str) -> Union[str, None]:
         """
         See https://redis.io/commands/get
         """
@@ -2496,7 +2521,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def getdel(self, key: str) -> str | None:
+    async def getdel(self, key: str) -> Union[str, None]:
         """
         See https://redis.io/commands/getdel
         """
@@ -2508,12 +2533,12 @@ class Redis:
     async def getex(
         self,
         key: str,
-        ex: int | None = None,
-        px: int | None = None,
-        exat: int | None = None,
-        pxat: int | None = None,
-        persist: bool | None = None,
-    ) -> str | None:
+        ex: Union[int, None] = None,
+        px: Union[int, None] = None,
+        exat: Union[int, None] = None,
+        pxat: Union[int, None] = None,
+        persist: Union[bool, None] = None,
+    ) -> Union[str, None]:
         """
         See https://redis.io/commands/getex
         """
@@ -2549,7 +2574,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def getset(self, key: str, value: Any) -> str | None:
+    async def getset(self, key: str, value: Any) -> Union[str, None]:
         """
         See https://redis.io/commands/getset
         """
@@ -2576,7 +2601,7 @@ class Redis:
 
         return await self.run(command)
 
-    async def incrbyfloat(self, key: str, increment: float) -> str | float:
+    async def incrbyfloat(self, key: str, increment: float) -> Union[str, float]:
         """
         See https://redis.io/commands/incrbyfloat
 
@@ -2589,7 +2614,7 @@ class Redis:
 
         return float(raw) if self.format_return else raw
 
-    async def mget(self, *keys: str) -> list[str | None]:
+    async def mget(self, *keys: str) -> list[Union[str, None]]:
         """
         See https://redis.io/commands/mget
         """
@@ -2641,12 +2666,12 @@ class Redis:
         nx: bool = False,
         xx: bool = False,
         get: bool = False,
-        ex: int | None = None,
-        px: int | None = None,
-        exat: int | None = None,
-        pxat: int | None = None,
+        ex: Union[int, None] = None,
+        px: Union[int, None] = None,
+        exat: Union[int, None] = None,
+        pxat: Union[int, None] = None,
         keepttl: bool = False,
-    ) -> str | None:
+    ) -> Union[str, None]:
         """
         See https://redis.io/commands/set
         """
@@ -2822,7 +2847,7 @@ class PubSub:
     def __init__(self, client: Redis):
         self.client = client
 
-    async def channels(self, pattern: str | None = None) -> list[str]:
+    async def channels(self, pattern: Union[str, None] = None) -> list[str]:
         """
         See https://redis.io/commands/pubsub-channels
         """
@@ -2843,7 +2868,9 @@ class PubSub:
 
         return await self.client.run(command=command)
 
-    async def numsub(self, *channels: str) -> list[str | int] | dict[str, int]:
+    async def numsub(
+        self, *channels: str
+    ) -> Union[list[Union[str, int]], dict[str, int]]:
         """
         See https://redis.io/commands/pubsub-numsub
 
@@ -2852,7 +2879,7 @@ class PubSub:
 
         command: list = ["PUBSUB", "NUMSUB", *channels]
 
-        raw: list[str | int] = await self.client.run(command)
+        raw: list[Union[str, int]] = await self.client.run(command)
 
         return format_pubsub_numsub_return(raw) if self.client.format_return else raw
 
@@ -2861,7 +2888,7 @@ class Script:
     def __init__(self, client: Redis):
         self.client = client
 
-    async def exists(self, *sha1: str) -> list[Literal[1, 0]] | list[bool]:
+    async def exists(self, *sha1: str) -> Union[list[Literal[1, 0]], list[bool]]:
         """
         See https://redis.io/commands/script-exists
 
@@ -2904,7 +2931,7 @@ class ACL:
     def __init__(self, client: Redis):
         self.client = client
 
-    async def cat(self, category: str | None = None) -> list[str]:
+    async def cat(self, category: Union[str, None] = None) -> list[str]:
         # See https://redis.io/commands/acl-cat
 
         command: list = ["ACL", "CAT"]
@@ -2924,7 +2951,7 @@ class ACL:
 
         return await self.client.run(command=command)
 
-    async def genpass(self, bits: int | None = None) -> str:
+    async def genpass(self, bits: Union[int, None] = None) -> str:
         # See https://redis.io/commands/acl-genpass
 
         command: list = ["ACL", "GENPASS"]
@@ -2935,7 +2962,7 @@ class ACL:
         return await self.client.run(command=command)
 
     # Is it possible to format this output?
-    async def getuser(self, username: str) -> list[str] | None:
+    async def getuser(self, username: str) -> Union[list[str], None]:
         # See https://redis.io/commands/acl-getuser
 
         command: list = ["ACL", "GETUSER", username]
@@ -2956,7 +2983,7 @@ class ACL:
 
         return await self.client.run(command=command)
 
-    async def log(self, count: int | None = None, reset: bool = False) -> list[str]:
+    async def log(self, count: Union[int, None] = None, reset: bool = False) -> list[str]:
         # See https://redis.io/commands/acl-log
 
         if count is not None and reset:

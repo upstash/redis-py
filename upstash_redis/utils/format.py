@@ -6,7 +6,7 @@ from upstash_redis.schema.commands.returns import (
     SortedSetReturn,
     FormattedSortedSetReturn,
 )
-from typing import Literal
+from typing import Literal, Union
 
 
 def _list_to_dict(raw: list) -> dict:
@@ -18,18 +18,14 @@ def _list_to_dict(raw: list) -> dict:
 
 
 def format_geo_positions_return(
-    raw: list[list[str] | None],
-) -> list[dict[str, float] | None]:
+    raw: list[Union[list[str], None]],
+) -> list[Union[dict[str, float], None]]:
     """
     Format the raw output returned by "GEOPOS".
     """
 
     return [
-        {
-            "longitude": float(member[0]),
-            "latitude": float(member[1])
-            # If the member doesn't exist, GEOPOS will return nil.
-        }
+        {"longitude": float(member[0]), "latitude": float(member[1])}
         if isinstance(member, list)
         else None
         for member in raw
@@ -38,9 +34,9 @@ def format_geo_positions_return(
 
 def format_geo_members_return(
     raw: GeoMembersReturn,
-    with_distance: bool | None,
-    with_hash: bool | None,
-    with_coordinates: bool | None,
+    with_distance: Union[bool, None],
+    with_hash: Union[bool, None],
+    with_coordinates: Union[bool, None],
 ) -> FormattedGeoMembersReturn:
     """
     Format the raw output given by some Geo commands, usually the ones that return properties of members,
@@ -62,8 +58,7 @@ def format_geo_members_return(
     result: FormattedGeoMembersReturn = []
 
     for member in raw:
-        # TODO better type with TypedDict
-        formatted_member: dict[str, str | float | int] = {"member": member[0]}
+        formatted_member: dict[str, Union[str, float, int]] = {"member": member[0]}
 
         if with_distance:
             formatted_member["distance"] = float(member[1])
@@ -104,7 +99,7 @@ def format_hash_return(raw: HashReturn) -> FormattedHashReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_pubsub_numsub_return(raw: list[str | int]) -> dict[str, int]:
+def format_pubsub_numsub_return(raw: list[Union[str, int]]) -> dict[str, int]:
     """
     Format the raw output returned by "PUBSUB NUMSUB".
     """
@@ -137,7 +132,7 @@ def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_float_list(raw: list[str | None]) -> list[float | None]:
+def format_float_list(raw: list[Union[str, None]]) -> list[Union[float, None]]:
     """
     Format a list of strings representing floats or None values.
     """

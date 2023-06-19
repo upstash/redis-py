@@ -6,6 +6,7 @@ from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
 from platform import python_version
+from typing import Union
 
 
 async def execute(
@@ -17,7 +18,7 @@ async def execute(
     retry_interval: int,
     command: list,
     allow_telemetry: bool,
-    telemetry_data: TelemetryData | None = None,
+    telemetry_data: Union[TelemetryData, None] = None,
 ) -> RESTResult:
     """
     Execute the given command over the REST API.
@@ -30,7 +31,7 @@ async def execute(
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = [
-        element if isinstance(element, str | int | float) else dumps(element)
+        element if isinstance(element, Union[str, int, float]) else dumps(element)
         for element in command
     ]
 

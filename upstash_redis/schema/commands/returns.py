@@ -1,3 +1,5 @@
+from typing import Union
+
 """
 The raw output returned by some Geo commands, usually the ones that return properties of members.
 
@@ -6,14 +8,14 @@ If no additional properties are requested, the output is a list of strings, each
 If coordinates are requested, each member's properties will be represented by a list (the result itself being a list),
 where the coordinates themselves will be another one.
 """
-GeoMembersReturn = list[str | list[str | list[str]]]
+GeoMembersReturn = list[Union[str, list[Union[str, list[str]]]]]
 
 """
 The output resulted by formatting "GeoMembersReturn".
 
 Note that this might differ from the "GeoMember" type that represents the initial properties of a geo member.
 """
-FormattedGeoMembersReturn = list[dict[str, str | float | int]]
+FormattedGeoMembersReturn = list[dict[str, Union[str, float, int]]]
 
 
 # The raw output returned by the Hash commands that return the field-value pairs of a hash.

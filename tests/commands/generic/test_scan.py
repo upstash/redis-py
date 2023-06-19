@@ -1,11 +1,12 @@
 from pytest import mark
 from tests.client import redis
+from typing import Union
 
 
 @mark.asyncio
 async def test() -> None:
     async with redis:
-        result: list[int | list[str]] = await redis.scan(cursor=0)
+        result: list[Union[int, list[str]]] = await redis.scan(cursor=0)
         assert isinstance(result[0], int) and isinstance(result[1], list)
 
 
@@ -38,7 +39,7 @@ async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:
-        result: list[int | list[str]] = await redis.scan(cursor=0)
+        result: list[Union[int, list[str]]] = await redis.scan(cursor=0)
         assert isinstance(result[0], str) and isinstance(result[1], list)
 
     redis.format_return = True

@@ -1,4 +1,4 @@
-from typing import TypedDict, Literal, TypeVar, Any
+from typing import TypedDict, Literal, TypeVar, Any, Union
 
 
 """
@@ -14,7 +14,7 @@ RESTResult = TypeVar("RESTResult", str, int, list, None, Literal[0, 1], Literal[
 The type of encoding that will be passed as a header to the REST API. 
 If set to False, no encoding will be used.
 """
-RESTEncoding = Literal["base64"] | Literal[False]
+RESTEncoding = Union[Literal["base64"], Literal[False]]
 
 
 class RESTResponse(TypedDict):
