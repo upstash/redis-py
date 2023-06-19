@@ -1,7 +1,7 @@
-from typing import TypedDict
+from typing import TypedDict, Union
 
 # "str" allows for "#" syntax.
-BitFieldOffset = int | str
+BitFieldOffset = Union[int, str]
 
 
 class GeoMember(TypedDict):
@@ -15,4 +15,4 @@ class GeoMember(TypedDict):
 
 
 # "str" allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
-FloatMinMax = float | str
+FloatMinMax = Union[float, str]

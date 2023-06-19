@@ -1,11 +1,12 @@
 from upstash_redis.schema.http import RESTResult, RESTResponse
 from aiohttp import ClientSession
 from os import environ
+from typing import Dict
 
 url: str = environ["UPSTASH_REDIS_REST_URL"]
 token: str = environ["UPSTASH_REDIS_REST_TOKEN"]
 
-headers: dict[str, str] = {"Authorization": f"Bearer {token}"}
+headers: Dict[str, str] = {"Authorization": f"Bearer {token}"}
 
 
 async def execute_on_http(*command_elements: str) -> RESTResult:

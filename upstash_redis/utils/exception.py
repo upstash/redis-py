@@ -1,16 +1,16 @@
 from upstash_redis.schema.commands.parameters import FloatMinMax
 from upstash_redis.utils.comparison import number_are_not_none
-from typing import Literal
+from typing import Literal, Union
 
 
 def handle_georadius_write_exceptions(
     withdist: bool = False,
     withhash: bool = False,
     withcoord: bool = False,
-    count: int | None = None,
+    count: Union[int, None] = None,
     count_any: bool = False,
-    store: str | None = None,
-    storedist: str | None = None,
+    store: Union[str, None] = None,
+    storedist: Union[str, None] = None,
 ) -> None:
     """
     Handle exceptions for "GEORADIUS*" write commands.
@@ -26,13 +26,13 @@ def handle_georadius_write_exceptions(
 
 
 def handle_geosearch_exceptions(
-    member: str | None,
-    fromlonlat_longitude: float | None,
-    fromlonlat_latitude: float | None,
-    byradius: float | None,
-    bybox_width: float | None,
-    bybox_height: float | None,
-    count: int | None,
+    member: Union[str, None],
+    fromlonlat_longitude: Union[float, None],
+    fromlonlat_latitude: Union[float, None],
+    byradius: Union[float, None],
+    bybox_width: Union[float, None],
+    bybox_height: Union[float, None],
+    count: Union[int, None],
     count_any: bool,
 ) -> None:
     """
@@ -64,11 +64,11 @@ or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but n
 
 
 def handle_non_deprecated_zrange_exceptions(
-    range_method: Literal["BYLEX", "BYSCORE"] | None,
+    range_method: Union[Literal["BYLEX", "BYSCORE"], None],
     start: FloatMinMax,
     stop: FloatMinMax,
-    offset: int | None,
-    count: int | None,
+    offset: Union[int, None],
+    count: Union[int, None],
 ) -> None:
     """
     Handle exceptions for non-deprecated "ZRANGE*" commands.
@@ -93,8 +93,8 @@ the ranging method is "BYLEX"."""
 def handle_zrangebylex_exceptions(
     min_score: str,
     max_score: str,
-    offset: int | None,
-    count: int | None,
+    offset: Union[int, None],
+    count: Union[int, None],
 ) -> None:
     """
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.
