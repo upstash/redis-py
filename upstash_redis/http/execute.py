@@ -6,7 +6,7 @@ from asyncio import sleep
 from aiohttp import ClientSession
 from json import dumps
 from platform import python_version
-from typing import Union
+from typing import Union, List, Dict
 
 
 async def execute(
@@ -16,7 +16,7 @@ async def execute(
     encoding: RESTEncoding,
     retries: int,
     retry_interval: int,
-    command: list,
+    command: List,
     allow_telemetry: bool,
     telemetry_data: Union[TelemetryData, None] = None,
 ) -> RESTResult:
@@ -31,13 +31,13 @@ async def execute(
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = [
-        element if isinstance(element, Union[str, int, float]) else dumps(element)
+        element if (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)) else dumps(element)
         for element in command
     ]
 
     for i in range(retries + 1):
         try:
-            headers: dict[str, str] = {"Authorization": f"Bearer {token}"}
+            headers: Dict[str, str] = {"Authorization": f"Bearer {token}"}
 
             if allow_telemetry:
                 if telemetry_data:

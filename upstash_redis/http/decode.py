@@ -1,6 +1,7 @@
 from upstash_redis.schema.http import RESTResult
 from upstash_redis.utils.base import base64_to_string
 from upstash_redis.exception import UpstashException
+from typing import List
 
 
 def decode(raw: RESTResult, encoding: str) -> RESTResult:
@@ -15,7 +16,7 @@ def decode(raw: RESTResult, encoding: str) -> RESTResult:
         elif isinstance(raw, int) or raw is None:
             return raw
 
-        elif isinstance(raw, list):
+        elif isinstance(raw, List):
             return [
                 # Decode recursively.
                 decode(element, encoding)

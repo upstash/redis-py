@@ -6,10 +6,10 @@ from upstash_redis.schema.commands.returns import (
     SortedSetReturn,
     FormattedSortedSetReturn,
 )
-from typing import Literal, Union
+from typing import Literal, Union, List, Dict
 
 
-def _list_to_dict(raw: list) -> dict:
+def _list_to_dict(raw: List) -> Dict:
     """
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
@@ -18,15 +18,15 @@ def _list_to_dict(raw: list) -> dict:
 
 
 def format_geo_positions_return(
-    raw: list[Union[list[str], None]],
-) -> list[Union[dict[str, float], None]]:
+    raw: List[Union[List[str], None]],
+) -> List[Union[Dict[str, float], None]]:
     """
     Format the raw output returned by "GEOPOS".
     """
 
     return [
         {"longitude": float(member[0]), "latitude": float(member[1])}
-        if isinstance(member, list)
+        if isinstance(member, List)
         else None
         for member in raw
     ]
@@ -58,7 +58,7 @@ def format_geo_members_return(
     result: FormattedGeoMembersReturn = []
 
     for member in raw:
-        formatted_member: dict[str, Union[str, float, int]] = {"member": member[0]}
+        formatted_member: Dict[str, Union[str, float, int]] = {"member": member[0]}
 
         if with_distance:
             formatted_member["distance"] = float(member[1])
@@ -99,7 +99,7 @@ def format_hash_return(raw: HashReturn) -> FormattedHashReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_pubsub_numsub_return(raw: list[Union[str, int]]) -> dict[str, int]:
+def format_pubsub_numsub_return(raw: List[Union[str, int]]) -> Dict[str, int]:
     """
     Format the raw output returned by "PUBSUB NUMSUB".
     """
@@ -107,7 +107,7 @@ def format_pubsub_numsub_return(raw: list[Union[str, int]]) -> dict[str, int]:
     return _list_to_dict(raw=raw)
 
 
-def format_bool_list(raw: list[Literal[0, 1]]) -> list[bool]:
+def format_bool_list(raw: List[Literal[0, 1]]) -> List[bool]:
     """
     Format a list of boolean integers.
     """
@@ -115,7 +115,7 @@ def format_bool_list(raw: list[Literal[0, 1]]) -> list[bool]:
     return [bool(value) for value in raw]
 
 
-def format_server_time_return(raw: list[str]) -> dict[str, int]:
+def format_server_time_return(raw: List[str]) -> Dict[str, int]:
     """
     Format the raw output returned by "TIME".
     """
@@ -132,7 +132,7 @@ def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
     return _list_to_dict(raw=raw)
 
 
-def format_float_list(raw: list[Union[str, None]]) -> list[Union[float, None]]:
+def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
     """
     Format a list of strings representing floats or None values.
     """
