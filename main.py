@@ -12,7 +12,7 @@ async def main():
         a = await aredis.set(key, val)
         print("set:", a)
 
-a = redis.geopo("ad", "asd")
+a = redis.bitfield("asd").get("asd", "asd").execute()
 
 
 
