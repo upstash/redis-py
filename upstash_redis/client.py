@@ -5,26 +5,13 @@ from aiohttp import ClientSession
 from upstash_redis.commands.commands import BasicKeyCommands
 from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
 from upstash_redis.http.execute import async_execute
+
 from upstash_redis.schema.http import RESTEncoding, RESTResult
 from upstash_redis.schema.telemetry import TelemetryData
-
-def parse_set(res) -> bool:
-    print("parse_set is in action:", res)
-    return "asd" + res
-
-def parse_get(res) -> str:
-    print("PARSE_GET is in action:", res)
-    return "asd" + res
+from upstash_redis.utils.format import FormattedResponse
 
 
-class AbstractRedis:
-    RESPONSE_CALLBACKS = {
-        "set": parse_set,
-        "get": parse_get,
-    }
-
-
-class Redis(AbstractRedis, BasicKeyCommands):
+class Redis(FormattedResponse, BasicKeyCommands):
     
     def __init__(
         self,
@@ -59,7 +46,7 @@ class Redis(AbstractRedis, BasicKeyCommands):
         self.rest_retry_interval = rest_retry_interval
 
         self.telemetry_data = telemetry_data
-        self.response_callbacks = self.__class__.RESPONSE_CALLBACKS
+        self.FORMATTERS = self.__class__.FORMATTERS
 
 
 
@@ -115,7 +102,7 @@ class Redis(AbstractRedis, BasicKeyCommands):
 
         await self._session.close()
 
-    async def run(self, command: List, main_command: str) -> int:
+    async def run(self, command: List) -> int:
         """
         Specify the http options and execute the command.
         """
@@ -132,8 +119,13 @@ class Redis(AbstractRedis, BasicKeyCommands):
             telemetry_data=self.telemetry_data,
         )
 
-        if main_command in self.RESPONSE_CALLBACKS:
-            return self.RESPONSE_CALLBACKS[main_command](res)
+        main_command = command[0]
+        if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
+            main_command = f"{main_command} {command[1]}"
+
+        if self.format_return and (main_command in self.FORMATTERS) :
+            return self.FORMATTERS[main_command](res)
+
         return res
         
 

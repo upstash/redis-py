@@ -164,9 +164,7 @@ class BasicKeyCommands(CommandsProtocol):
         if replace:
             command.append("REPLACE")
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def delete(self, *keys: str) -> ResponseType:
         """
@@ -201,13 +199,11 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["EXPIRE", key, seconds]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def expireat(
         self, key: str, unix_time_seconds: int
-    ) -> Union[Literal[1, 0], bool]:
+    ) -> ResponseType:
         """
         See https://redis.io/commands/expireat
 
@@ -216,9 +212,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["EXPIREAT", key, unix_time_seconds]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def keys(self, pattern: str) -> ResponseType:
         """
@@ -238,9 +232,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["PERSIST", key]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def pexpire(self, key: str, milliseconds: int) -> ResponseType:
         """
@@ -251,9 +243,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["PEXPIRE", key, milliseconds]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def pexpireat(
         self, key: str, unix_time_milliseconds: int
@@ -266,9 +256,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def pttl(self, key: str) -> ResponseType:
         """
@@ -279,7 +267,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return self.run(command)
 
-    async def randomkey(self) -> ResponseType:
+    def randomkey(self) -> ResponseType:
         """
         See https://redis.io/commands/randomkey
         """
@@ -288,7 +276,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return self.run(command)
 
-    async def rename(self, key: str, newkey: str) -> ResponseType:
+    def rename(self, key: str, newkey: str) -> ResponseType:
         """
         See https://redis.io/commands/rename
         """
@@ -306,9 +294,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["RENAMENX", key, newkey]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def scan(
         self,
@@ -316,7 +302,6 @@ class BasicKeyCommands(CommandsProtocol):
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
         scan_type: Union[str, None] = None,
-        return_cursor: bool = True,
     ) -> ResponseType:
         """
         See https://redis.io/commands/scan
@@ -342,14 +327,10 @@ class BasicKeyCommands(CommandsProtocol):
             command.extend(["TYPE", scan_type])
 
         # The raw result is composed of the new cursor and the List of elements.
-        raw: List[Union[str, List[str]]] = self.run(command)
+        return self.run(command)
 
-        if return_cursor:
-            return [int(raw[0]), raw[1]] if self.format_return else raw
 
-        return raw[1]
-
-    async def touch(self, *keys: str) -> ResponseType:
+    def touch(self, *keys: str) -> ResponseType:
         """
         See https://redis.io/commands/touch
         """
@@ -361,7 +342,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return self.run(command)
 
-    async def ttl(self, key: str) -> ResponseType:
+    def ttl(self, key: str) -> ResponseType:
         """
         See https://redis.io/commands/ttl
         """
@@ -442,9 +423,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["GEODIST", key, member1, member2, unit]
 
-        raw: Union[str, None] = self.run(command)
-
-        return float(raw) if self.format_return else raw
+        return self.run(command)        
 
     def geohash(self, key: str, *members: str) -> ResponseType:
         """
@@ -466,9 +445,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["GEOPOS", key, *members]
 
-        raw: List[Union[List[str], None]] = self.run(command)
-
-        return format_geo_positions_return(raw) if self.format_return else raw
+        return self.run(command)
 
     def georadius(
         self,
@@ -771,7 +748,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return raw
 
-    async def geosearchstore(
+    def geosearchstore(
         self,
         destination: str,
         source: str,
@@ -876,9 +853,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["HGETALL", key]
 
-        raw: HashReturn = self.run(command)
-
-        return format_hash_return(raw) if self.format_return else raw
+        return self.run(command)
 
     def hincrby(self, key: str, field: str, increment: int) -> ResponseType:
         """
@@ -900,9 +875,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["HINCRBYFLOAT", key, field, increment]
 
-        raw: str = self.run(command)
-
-        return float(raw) if self.format_return else raw
+        return self.run(command)
 
     def hkeys(self, key: str) -> ResponseType:
         """
@@ -978,7 +951,6 @@ class BasicKeyCommands(CommandsProtocol):
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
     ) -> ResponseType:
         """
         See https://redis.io/commands/hscan
@@ -999,14 +971,7 @@ class BasicKeyCommands(CommandsProtocol):
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the List of elements.
-        raw: Union[List[Union[str, HashReturn]], HashReturn] = self.run(command)
-
-        if return_cursor:
-            return (
-                [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
-            )
-
-        return format_hash_return(raw[1]) if self.format_return else raw[1]
+        return self.run(command)
 
     def hset(self, key: str, field_value_pairs: Dict) -> ResponseType:
         """
@@ -1031,9 +996,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["HSETNX", key, field, value]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def hstrlen(self, key: str, field: str) -> ResponseType:
         """
@@ -1062,9 +1025,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["PFADD", key, *elements]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def pfcount(self, *keys: str) -> ResponseType:
         """
@@ -1116,7 +1077,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return self.run(command)
 
-    async def lmove(
+    def lmove(
         self,
         source: str,
         destination: str,
@@ -1137,7 +1098,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         return self.run(command)
 
-    async def lpop(
+    def lpop(
         self, key: str, count: Union[int, None] = None
     ) -> ResponseType:
         """
@@ -1386,9 +1347,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["TIME"]
 
-        raw: List[str] = self.run(command)
-
-        return format_server_time_return(raw) if self.format_return else raw
+        return self.run(command)
 
     def sadd(self, key: str, *members: Any) -> ResponseType:
         """
@@ -1468,9 +1427,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["SISMEMBER", key, member]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def smembers(self, key: str) -> ResponseType:
         """
@@ -1492,9 +1449,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["SMOVE", source, destination, member]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def spop(
         self, key: str, count: Union[int, None] = None
@@ -1546,7 +1501,6 @@ class BasicKeyCommands(CommandsProtocol):
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
     ) -> ResponseType:
         """
         See https://redis.io/commands/sscan
@@ -1567,12 +1521,7 @@ class BasicKeyCommands(CommandsProtocol):
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the List of elements.
-        raw: List[Union[str, List[str]]] = self.run(command)
-
-        if return_cursor:
-            return [int(raw[0]), raw[1]] if self.format_return else raw
-
-        return raw[1]
+        return self.run(command)
 
     def sunion(self, *keys: str) -> ResponseType:
         """
@@ -1739,9 +1688,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["ZINCRBY", key, increment, member]
 
-        raw: str = self.run(command)
-
-        return float(raw) if self.format_return else raw
+        return self.run(command)
 
     """
     This has actually 3 return scenarios, but, 
@@ -1842,9 +1789,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["ZMSCORE", key, *members]
 
-        raw: List[Union[str, None]] = self.run(command)
-
-        return format_float_list(raw) if self.format_return else raw
+        return self.run(command)
 
     def zpopmax(
         self, key: str, count: Union[int, None] = None
@@ -1862,9 +1807,7 @@ class BasicKeyCommands(CommandsProtocol):
         if count is not None:
             command.append(count)
 
-        raw: SortedSetReturn = self.run(command)
-
-        return format_sorted_set_return(raw) if self.format_return else raw
+        return self.run(command)
 
     def zpopmin(
         self, key: str, count: Union[int, None] = None
@@ -1882,9 +1825,7 @@ class BasicKeyCommands(CommandsProtocol):
         if count is not None:
             command.append(count)
 
-        raw: SortedSetReturn = self.run(command)
-
-        return format_sorted_set_return(raw) if self.format_return else raw
+        return self.run(command)
 
     def zrandmember(
         self, key: str, count: Union[int, None] = None, withscores: bool = False
@@ -2236,12 +2177,10 @@ class BasicKeyCommands(CommandsProtocol):
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
     ) -> ResponseType:
         """
         See https://redis.io/commands/zscan
 
-        :param return_cursor: if set to False, it won't return the cursor
         :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
@@ -2256,17 +2195,8 @@ class BasicKeyCommands(CommandsProtocol):
         if count is not None:
             command.extend(["COUNT", count])
 
-        raw: List[Union[int, SortedSetReturn]] = self.run(command)
-
-        if return_cursor:
-            return (
-                [int(raw[0]), format_sorted_set_return(raw[1])]
-                if self.format_return
-                else raw
-            )
-
         # The raw result is composed of the new cursor and the List of elements.
-        return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
+        return self.run(command)
 
     def zscore(self, key: str, member: str) -> ResponseType:
         """
@@ -2277,9 +2207,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["ZSCORE", key, member]
 
-        raw: Union[str, None] = self.run(command)
-
-        return float(raw) if self.format_return and raw is not None else raw
+        return self.run(command)
 
     """
     This has actually 3 return scenarios, but,
@@ -2472,9 +2400,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["INCRBYFLOAT", key, increment]
 
-        raw: str = self.run(command)
-
-        return float(raw) if self.format_return else raw
+        return self.run(command)
 
     def mget(self, *keys: str) -> ResponseType:
         """
@@ -2619,6 +2545,20 @@ class BasicKeyCommands(CommandsProtocol):
         command: List = ["SUBSTR", key, start, end]
 
         return self.run(command)
+    
+    def pubsub(self) -> "PubSub":
+        """
+        See https://redis.io/commands/pubsub
+        """
+
+        return PubSub(client=self)
+
+    def script(self) -> "Script":
+        """
+        See https://redis.io/commands/script
+        """
+
+        return Script(client=self)
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -2741,10 +2681,7 @@ class PubSub:
 
         command: List = ["PUBSUB", "NUMSUB", *channels]
 
-        raw: List[Union[str, int]] = self.client.run(command)
-
-        return format_pubsub_numsub_return(raw) if self.client.format_return else raw
-
+        return self.client.run(command)
 
 class Script:
     def __init__(self, client: BasicKeyCommands):
@@ -2762,9 +2699,7 @@ class Script:
 
         command: List = ["SCRIPT", "EXISTS", *sha1]
 
-        raw: List[Literal[1, 0]] = self.client.run(command=command)
-
-        return format_bool_list(raw) if self.client.format_return else raw
+        return self.client.run(command=command)
 
     def flush(self, mode: Literal["ASYNC", "SYNC"]) -> ResponseType:
         """
@@ -2861,25 +2796,3 @@ class ACL:
 
         return await self.client.run(command=command)
 """
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-AsyncBasicKeyCommands = BasicKeyCommands

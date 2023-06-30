@@ -138,3 +138,77 @@ def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
     """
 
     return [float(value) if value is not None else None for value in raw]
+
+
+
+def to_bool(raw):
+    return bool(raw)
+
+def to_float(raw):
+    return float(raw)
+
+def scan_formatter(raw):
+    return [int(raw[0]), raw[1]]
+
+def hscan_formatter(raw):
+    return [int(raw[0]), format_hash_return(raw[1])]
+
+def sscan_formatter(raw): ## same with scan_formatter
+    return [int(raw[0]), raw[1]]
+
+def zscan_formatter(raw): ## same with scan_formatter
+    return [int(raw[0]), format_sorted_set_return(raw[1])] 
+
+def zscore_formatter(raw): ## same with scan_formatter
+    return float(raw) if raw is not None else raw
+
+class FormattedResponse:
+    FORMATTERS = {
+        "COPY": to_bool,
+        "EXPIRE": to_bool,
+        "EXPIREAT": to_bool,
+        "PERSIST": to_bool,
+        "PEXPIRE": to_bool,
+        "PEXPIREAT": to_bool,
+        "RENAMENX": to_bool,
+        "SCAN": scan_formatter,
+        "GEODIST": to_float,
+        "GEOPOS": format_geo_positions_return,
+        "GEORADIUS": "ASDASDASDASDASDASDASD",
+        "GEORADIUS_RO": "ASDASDASDASDASDASDASD",
+        "GEORADIUSBYMEMBER": "ASDASDASDASDASDASDASD",
+        "GEORADIUSBYMEMBER_RO": "ASDASDASDASDASDASDASD",
+        "GEOSEARCH": "ASDASDASDASDASDASDASD",
+        "HEXIST": to_bool, # missing test
+        "HGETALL": format_hash_return, # missing test
+        "HINCRBYFLOAT": to_float, # missing test
+        "HRANDFIELD": "ASDASDASDASDASDASDASD",
+        "HSCAN": hscan_formatter, # missing test
+        "HSETNX": to_bool, # missing test
+        "PFADD": to_bool,
+        "TIME": format_server_time_return, # missing test
+        "SISMEMBER": to_bool, # missing test
+        "SMOVE": to_bool, # missing test
+        "SSCAN": sscan_formatter, # missing test
+        "ZADD": "ASDASDASDASDASDASDASD",
+        "ZDIFF": "ASDASDASDASDASDASDASD",
+        "ZINCRBY": to_float, # missing test
+        "ZINTER": "ASDASDASDASDASDASDASD",
+        "ZMSCORE": format_float_list, # missing test
+        "ZPOPMAX": format_sorted_set_return, # missing test
+        "ZPOPMIN": format_sorted_set_return, # missing test
+        "ZRANDMEMBER": "ASDASDASDASDASDASDASD",
+        "ZRANGE": "ASDASDASDASDASDASDASD",
+        "ZRANGEBYSCORE": "ASDASDASDASDASDASDASD",
+        "ZREVRANGE": "ASDASDASDASDASDASDASD",
+        "ZREVRANGEBYSCORE": "ASDASDASDASDASDASDASD",
+        "ZSCAN": zscan_formatter, # missing test
+        "ZSCORE": zscore_formatter, # missing test
+        "ZUNION": "ASDASDASDASDASDASDASD",
+        "INCRBYFLOAT": to_float, # missing test
+        "PUBSUB NUMSUB": _list_to_dict,
+        "SCRIPT EXISTS": format_bool_list, # missing test
+
+    }
+
+    # TODO: Check return_cursor stuff.

@@ -439,10 +439,7 @@ class Commands:
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
         scan_type: Union[str, None] = None,
-        return_cursor: bool = True,
-    ) -> Union[
-        (Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]), List[str]
-    ]:
+    ) -> Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]:
         """
         See https://redis.io/commands/scan
 
@@ -469,10 +466,7 @@ class Commands:
         # The raw result is composed of the new cursor and the List of elements.
         raw: List[Union[str, List[str]]] = await self.run(command)
 
-        if return_cursor:
-            return [int(raw[0]), raw[1]] if self.format_return else raw
-
-        return raw[1]
+        return [int(raw[0]), raw[1]] if self.format_return else raw
 
     async def touch(self, *keys: str) -> int:
         """
@@ -1103,11 +1097,7 @@ class Commands:
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
-    ) -> Union[
-        (Union[List[Union[str, HashReturn]], List[Union[int, FormattedHashReturn]]]),
-        (Union[HashReturn, FormattedHashReturn]),
-    ]:
+    ) -> Union[List[Union[str, HashReturn]], List[Union[int, FormattedHashReturn]]]:
         """
         See https://redis.io/commands/hscan
 
@@ -1129,12 +1119,8 @@ class Commands:
         # The raw result is composed of the new cursor and the List of elements.
         raw: Union[List[Union[str, HashReturn]], HashReturn] = await self.run(command)
 
-        if return_cursor:
-            return (
-                [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
-            )
+        return [int(raw[0]), format_hash_return(raw[1])] if self.format_return else raw
 
-        return format_hash_return(raw[1]) if self.format_return else raw[1]
 
     async def hset(self, key: str, field_value_pairs: Dict) -> int:
         """
@@ -1674,10 +1660,7 @@ class Commands:
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
-    ) -> Union[
-        (Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]), List[str]
-    ]:
+    ) -> Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]:
         """
         See https://redis.io/commands/sscan
 
@@ -1699,10 +1682,8 @@ class Commands:
         # The raw result is composed of the new cursor and the List of elements.
         raw: List[Union[str, List[str]]] = await self.run(command)
 
-        if return_cursor:
-            return [int(raw[0]), raw[1]] if self.format_return else raw
+        return [int(raw[0]), raw[1]] if self.format_return else raw
 
-        return raw[1]
 
     async def sunion(self, *keys: str) -> List[str]:
         """
@@ -2366,16 +2347,7 @@ class Commands:
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-        return_cursor: bool = True,
-    ) -> Union[
-        (
-            Union[
-                List[Union[str, SortedSetReturn]],
-                List[Union[int, FormattedSortedSetReturn]],
-            ]
-        ),
-        (Union[SortedSetReturn, FormattedSortedSetReturn]),
-    ]:
+    ) -> Union[List[Union[str, SortedSetReturn]],List[Union[int, FormattedSortedSetReturn]]]:
         """
         See https://redis.io/commands/zscan
 
@@ -2396,15 +2368,8 @@ class Commands:
 
         raw: List[Union[int, SortedSetReturn]] = await self.run(command)
 
-        if return_cursor:
-            return (
-                [int(raw[0]), format_sorted_set_return(raw[1])]
-                if self.format_return
-                else raw
-            )
+        return [int(raw[0]), format_sorted_set_return(raw[1])] if self.format_return else raw
 
-        # The raw result is composed of the new cursor and the List of elements.
-        return format_sorted_set_return(raw[1]) if self.format_return else raw[1]
 
     async def zscore(self, key: str, member: str) -> Union[str, None, float]:
         """
@@ -2757,8 +2722,21 @@ class Commands:
         command: List = ["SUBSTR", key, start, end]
 
         return await self.run(command)
+    
+    def pubsub(self) -> "PubSub":
+        """
+        See https://redis.io/commands/pubsub
+        """
 
+        return PubSub(client=self)
+    
+    def script(self) -> "Script":
+        """
+        See https://redis.io/commands/script
+        """
 
+        return Script(client=self)
+    
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):

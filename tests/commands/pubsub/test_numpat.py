@@ -6,4 +6,4 @@ from tests.client import redis
 @mark.asyncio
 async def test() -> None:
     async with redis:
-        assert await redis.pubsub.numpat() == 0
+        assert await redis.pubsub().numpat() == 0

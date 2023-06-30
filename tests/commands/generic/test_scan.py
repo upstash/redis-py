@@ -6,7 +6,7 @@ from typing import Union, List
 @mark.asyncio
 async def test() -> None:
     async with redis:
-        result: List[Union[int, List[str]]] = await redis.scan(cursor=0)
+        result = await redis.scan(cursor=0)
         assert isinstance(result[0], int) and isinstance(result[1], List)
 
 
@@ -27,19 +27,12 @@ async def test_with_scan_type() -> None:
     async with redis:
         assert (await redis.scan(cursor=0, scan_type="hash"))[1] == ["hash"]
 
-
-@mark.asyncio
-async def test_without_returning_cursor() -> None:
-    async with redis:
-        assert isinstance(await redis.scan(cursor=0, return_cursor=False), List)
-
-
 @mark.asyncio
 async def test_without_formatting() -> None:
     redis.format_return = False
 
     async with redis:
-        result: List[Union[int, List[str]]] = await redis.scan(cursor=0)
+        result = await redis.scan(cursor=0)
         assert isinstance(result[0], str) and isinstance(result[1], List)
 
     redis.format_return = True
