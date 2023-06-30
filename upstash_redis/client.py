@@ -4,11 +4,13 @@ from typing import Any, List, Type, Union
 from aiohttp import ClientSession
 from upstash_redis.commands.commands import BasicKeyCommands
 from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
-from upstash_redis.http.execute import async_execute
+from upstash_redis.http.execute import async_execute, sync_execute
 
 from upstash_redis.schema.http import RESTEncoding, RESTResult
 from upstash_redis.schema.telemetry import TelemetryData
 from upstash_redis.utils.format import FormattedResponse
+
+from asyncio import run
 
 
 class Redis(FormattedResponse, BasicKeyCommands):
@@ -81,43 +83,22 @@ class Redis(FormattedResponse, BasicKeyCommands):
             telemetry_data,
         )
 
-    async def __aenter__(self) -> ClientSession:
-        """
-        Enter the async context.
-        """
-
-        self._session: ClientSession = ClientSession()
-        # It needs to return the session object because it will be used in "async with" statements.
-        return self._session
-
-    async def __aexit__(
-        self,
-        exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
-        exc_tb: Any,
-    ) -> None:
-        """
-        Exit the async context.
-        """
-
-        await self._session.close()
-
-    async def run(self, command: List) -> int:
+    def run(self, command: List) -> int:
         """
         Specify the http options and execute the command.
         """
 
-        res = await async_execute(
-            session=self._session,
-            url=self.url,
-            token=self.token,
-            encoding=self.rest_encoding,
-            retries=self.rest_retries,
-            retry_interval=self.rest_retry_interval,
-            command=command,
-            allow_telemetry=self.allow_telemetry,
-            telemetry_data=self.telemetry_data,
-        )
+        res = sync_execute(
+                    url=self.url,
+                    token=self.token,
+                    encoding=self.rest_encoding,
+                    retries=self.rest_retries,
+                    retry_interval=self.rest_retry_interval,
+                    command=command,
+                    allow_telemetry=self.allow_telemetry,
+                    telemetry_data=self.telemetry_data,
+                )
+                
 
         main_command = command[0]
         if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
