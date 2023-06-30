@@ -124,7 +124,7 @@ class Redis(FormattedResponse, AsyncBasicKeyCommands):
             main_command = f"{main_command} {command[1]}"
 
         if self.format_return and (main_command in self.FORMATTERS) :
-            return self.FORMATTERS[main_command](res)
+            return self.FORMATTERS[main_command](res, command)
 
         return res
         

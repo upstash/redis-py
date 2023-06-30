@@ -1,16 +1,6 @@
 
 from upstash_redis.typing import CommandsProtocol, ResponseType
 
-from upstash_redis.utils.format import (
-    format_geo_positions_return,
-    format_geo_members_return,
-    format_hash_return,
-    format_pubsub_numsub_return,
-    format_bool_list,
-    format_server_time_return,
-    format_sorted_set_return,
-    format_float_list,
-)
 from upstash_redis.utils.exception import (
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
@@ -37,6 +27,9 @@ from os import environ
 
 
 class BasicKeyCommands(CommandsProtocol):
+    def run(self, command):
+        ...
+
     def bitcount(
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
     ) -> ResponseType:
@@ -500,13 +493,8 @@ class BasicKeyCommands(CommandsProtocol):
         if storedist:
             command.extend(["STOREDIST", storedist])
 
-        raw: GeoMembersReturn = self.run(command)
-
         # If none of the additional properties are requested, the result will be "List[str]".
-        if self.format_return and (withdist or withhash or withcoord):
-            return format_geo_members_return(raw, withdist, withhash, withcoord)
-
-        return raw
+        return self.run(command)
 
     def georadius_ro(
         self,
@@ -552,13 +540,9 @@ class BasicKeyCommands(CommandsProtocol):
         if sort:
             command.append(sort)
 
-        raw: GeoMembersReturn = self.run(command)
-
         # If none of the additional properties are requested, the result will be "List[str]".
-        if self.format_return and (withdist or withhash or withcoord):
-            return format_geo_members_return(raw, withdist, withhash, withcoord)
+        return self.run(command)
 
-        return raw
 
     def georadiusbymember(
         self,
@@ -612,13 +596,8 @@ class BasicKeyCommands(CommandsProtocol):
         if storedist:
             command.extend(["STOREDIST", storedist])
 
-        raw: GeoMembersReturn = self.run(command)
-
         # If none of the additional properties are requested, the result will be "List[str]".
-        if self.format_return and (withdist or withhash or withcoord):
-            return format_geo_members_return(raw, withdist, withhash, withcoord)
-
-        return raw
+        return self.run(command)
 
     def georadiusbymember_ro(
         self,
@@ -663,13 +642,8 @@ class BasicKeyCommands(CommandsProtocol):
         if sort:
             command.append(sort)
 
-        raw: GeoMembersReturn = self.run(command)
-
         # If none of the additional properties are requested, the result will be "List[str]".
-        if self.format_return and (withdist or withhash or withcoord):
-            return format_geo_members_return(raw, withdist, withhash, withcoord)
-
-        return raw
+        return self.run(command)
 
     def geosearch(
         self,
@@ -740,13 +714,8 @@ class BasicKeyCommands(CommandsProtocol):
         if withcoord:
             command.append("WITHCOORD")
 
-        raw: GeoMembersReturn = self.run(command)
-
         # If none of the additional properties are requested, the result will be "List[str]".
-        if self.format_return and (withdist or withhash or withcoord):
-            return format_geo_members_return(raw, withdist, withhash, withcoord)
-
-        return raw
+        return self.run(command)
 
     def geosearchstore(
         self,
@@ -831,9 +800,7 @@ class BasicKeyCommands(CommandsProtocol):
 
         command: List = ["HEXISTS", key, field]
 
-        raw: Literal[1, 0] = self.run(command)
-
-        return bool(raw) if self.format_return else raw
+        return self.run(command)
 
     def hget(self, key: str, field: str) -> ResponseType:
         """
@@ -938,10 +905,6 @@ class BasicKeyCommands(CommandsProtocol):
 
             if withvalues:
                 command.append("WITHVALUES")
-
-                raw: HashReturn = self.run(command)
-
-                return format_hash_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -1596,13 +1559,6 @@ class BasicKeyCommands(CommandsProtocol):
         if incr:
             command.append("INCR")
 
-            for name, score in score_member_pairs.items():
-                command.extend([score, name])
-
-            raw: (Union[str, None]) = self.run(command)
-
-            return float(raw) if self.format_return and raw is not None else raw
-
         for name, score in score_member_pairs.items():
             command.extend([score, name])
 
@@ -1656,10 +1612,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -1723,10 +1675,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -1849,10 +1797,6 @@ class BasicKeyCommands(CommandsProtocol):
             if withscores:
                 command.append("WITHSCORES")
 
-                raw: SortedSetReturn = self.run(command)
-
-                return format_sorted_set_return(raw) if self.format_return else raw
-
         return self.run(command)
 
     """
@@ -1896,10 +1840,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -1962,10 +1902,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -2090,10 +2026,6 @@ class BasicKeyCommands(CommandsProtocol):
         if withscores:
             command.append("WITHSCORES")
 
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
-
         return self.run(command)
 
     def zrevrangebylex(
@@ -2155,10 +2087,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 
@@ -2242,10 +2170,6 @@ class BasicKeyCommands(CommandsProtocol):
 
         if withscores:
             command.append("WITHSCORES")
-
-            raw: SortedSetReturn = self.run(command)
-
-            return format_sorted_set_return(raw) if self.format_return else raw
 
         return self.run(command)
 

@@ -9,7 +9,7 @@ from upstash_redis.schema.commands.returns import (
 from typing import Literal, Union, List, Dict
 
 
-def _list_to_dict(raw: List) -> Dict:
+def _list_to_dict(raw: List, command=None) -> Dict:
     """
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
@@ -19,6 +19,7 @@ def _list_to_dict(raw: List) -> Dict:
 
 def format_geo_positions_return(
     raw: List[Union[List[str], None]],
+    command = None
 ) -> List[Union[Dict[str, float], None]]:
     """
     Format the raw output returned by "GEOPOS".
@@ -141,27 +142,106 @@ def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
 
 
 
-def to_bool(raw):
-    return bool(raw)
+def to_bool(res, command):
+    return bool(res)
 
-def to_float(raw):
-    return float(raw)
+def to_float(res, command):
+    return float(res)
 
-def scan_formatter(raw):
-    return [int(raw[0]), raw[1]]
+def scan_formatter(res, command):
+    return [int(res[0]), res[1]]
 
-def hscan_formatter(raw):
-    return [int(raw[0]), format_hash_return(raw[1])]
+def hscan_formatter(res, command):
+    return [int(res[0]), format_hash_return(res[1])]
 
-def sscan_formatter(raw): ## same with scan_formatter
-    return [int(raw[0]), raw[1]]
+def sscan_formatter(res, command): ## same with scan_formatter
+    return [int(res[0]), res[1]]
 
-def zscan_formatter(raw): ## same with scan_formatter
-    return [int(raw[0]), format_sorted_set_return(raw[1])] 
+def zscan_formatter(res, command): ## same with scan_formatter
+    return [int(res[0]), format_sorted_set_return(res[1])] 
 
-def zscore_formatter(raw): ## same with scan_formatter
-    return float(raw) if raw is not None else raw
+def zscore_formatter(res, command):
+    return float(res) if res is not None else res
 
+def georadius_formatter(res, command):
+    withdist = "WITHDIST" in command 
+    withhash = "WITHHASH" in command
+    withcoord = "WITHCOORD" in command
+    if withdist or withhash or withcoord:
+        return format_geo_members_return(res, withdist, withhash, withcoord)
+
+    return res
+
+def hrandfield_formatter(res, command):
+    withvalues = "WITHVALUES" in command
+    if withvalues:
+        return format_hash_return(res)
+
+    return res
+
+def zadd_formatter(res, command):
+    incr = "INCR" in command
+    if incr:
+        return float(res) if res is not None else res
+
+    return res
+
+def zdiff_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zinter_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zrandmember_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zrange_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zrangebyscore_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zrevrange_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zrevrangebyscore_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+
+def zunion_formatter(res, command):
+    withscores = "WITHSCORES" in command
+    if withscores:
+        return format_sorted_set_return(res)
+    
+    return res
+    
 class FormattedResponse:
     FORMATTERS = {
         "COPY": to_bool,
@@ -174,15 +254,15 @@ class FormattedResponse:
         "SCAN": scan_formatter,
         "GEODIST": to_float,
         "GEOPOS": format_geo_positions_return,
-        "GEORADIUS": "ASDASDASDASDASDASDASD",
-        "GEORADIUS_RO": "ASDASDASDASDASDASDASD",
-        "GEORADIUSBYMEMBER": "ASDASDASDASDASDASDASD",
-        "GEORADIUSBYMEMBER_RO": "ASDASDASDASDASDASDASD",
-        "GEOSEARCH": "ASDASDASDASDASDASDASD",
+        "GEORADIUS": georadius_formatter,
+        "GEORADIUS_RO": georadius_formatter, # same with the georadius, missing tests
+        "GEORADIUSBYMEMBER": georadius_formatter, # same with the georadius, missing tests
+        "GEORADIUSBYMEMBER_RO": georadius_formatter, # same with the georadius, missing tests
+        "GEOSEARCH": georadius_formatter, # same with the georadius, missing tests
         "HEXIST": to_bool, # missing test
         "HGETALL": format_hash_return, # missing test
         "HINCRBYFLOAT": to_float, # missing test
-        "HRANDFIELD": "ASDASDASDASDASDASDASD",
+        "HRANDFIELD": hrandfield_formatter, # missing test
         "HSCAN": hscan_formatter, # missing test
         "HSETNX": to_bool, # missing test
         "PFADD": to_bool,
@@ -190,21 +270,21 @@ class FormattedResponse:
         "SISMEMBER": to_bool, # missing test
         "SMOVE": to_bool, # missing test
         "SSCAN": sscan_formatter, # missing test
-        "ZADD": "ASDASDASDASDASDASDASD",
-        "ZDIFF": "ASDASDASDASDASDASDASD",
+        "ZADD": zadd_formatter, # missing test
+        "ZDIFF": zdiff_formatter, # missing test
         "ZINCRBY": to_float, # missing test
-        "ZINTER": "ASDASDASDASDASDASDASD",
+        "ZINTER": zinter_formatter, # missing test
         "ZMSCORE": format_float_list, # missing test
         "ZPOPMAX": format_sorted_set_return, # missing test
         "ZPOPMIN": format_sorted_set_return, # missing test
-        "ZRANDMEMBER": "ASDASDASDASDASDASDASD",
-        "ZRANGE": "ASDASDASDASDASDASDASD",
-        "ZRANGEBYSCORE": "ASDASDASDASDASDASDASD",
-        "ZREVRANGE": "ASDASDASDASDASDASDASD",
-        "ZREVRANGEBYSCORE": "ASDASDASDASDASDASDASD",
+        "ZRANDMEMBER": zrandmember_formatter, # missing test
+        "ZRANGE": zrange_formatter, # missing test
+        "ZRANGEBYSCORE": zrangebyscore_formatter, # missing test
+        "ZREVRANGE": zrevrange_formatter, # missing test
+        "ZREVRANGEBYSCORE": zrevrangebyscore_formatter, # missing test
         "ZSCAN": zscan_formatter, # missing test
         "ZSCORE": zscore_formatter, # missing test
-        "ZUNION": "ASDASDASDASDASDASDASD",
+        "ZUNION": zunion_formatter, # missing test
         "INCRBYFLOAT": to_float, # missing test
         "PUBSUB NUMSUB": _list_to_dict,
         "SCRIPT EXISTS": format_bool_list, # missing test
@@ -212,3 +292,4 @@ class FormattedResponse:
     }
 
     # TODO: Check return_cursor stuff.
+    # TODO: lots of duplicate formatters. unite them
