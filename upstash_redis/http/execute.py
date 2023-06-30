@@ -9,7 +9,7 @@ from platform import python_version
 from typing import Union, List, Dict
 
 
-async def execute(
+async def async_execute(
     session: ClientSession,
     url: str,
     token: str,

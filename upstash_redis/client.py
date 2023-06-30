@@ -2,7 +2,7 @@ from os import environ
 from typing import Any, List, Type, Union
 
 from aiohttp import ClientSession
-from upstash_redis.commands.commands import AsyncBasicKeyCommands
+from upstash_redis.commands.commands import BasicKeyCommands
 from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
 from upstash_redis.http.execute import async_execute
 from upstash_redis.schema.http import RESTEncoding, RESTResult
@@ -24,7 +24,7 @@ class AbstractRedis:
     }
 
 
-class Redis(AbstractRedis, AsyncBasicKeyCommands):
+class Redis(AbstractRedis, BasicKeyCommands):
     
     def __init__(
         self,
