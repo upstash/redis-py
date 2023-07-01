@@ -13,20 +13,11 @@ from upstash_redis.schema.commands.parameters import (
     GeoMember,
     FloatMinMax,
 )
-from upstash_redis.schema.commands.returns import (
-    GeoMembersReturn,
-    FormattedGeoMembersReturn,
-    HashReturn,
-    FormattedHashReturn,
-    SortedSetReturn,
-    FormattedSortedSetReturn,
-)
-from aiohttp import ClientSession
-from typing import Type, Any, Literal, Union, List, Dict
-from os import environ
+
+from typing import Any, Literal, Union, List, Dict
 
 
-class BasicKeyCommands(CommandsProtocol):
+class Commands(CommandsProtocol):
     def run(self, command):
         ...
 
@@ -2487,7 +2478,7 @@ class BasicKeyCommands(CommandsProtocol):
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
-    def __init__(self, client: BasicKeyCommands, key: str):
+    def __init__(self, client: Commands, key: str):
         self.client = client
         self.command: List = ["BITFIELD", key]
 
@@ -2549,7 +2540,7 @@ class BitFieldCommands:
 
 
 class BitFieldRO:
-    def __init__(self, client: BasicKeyCommands, key: str):
+    def __init__(self, client: Commands, key: str):
         self.client = client
         self.command: List = ["BITFIELD_RO", key]
 
@@ -2570,7 +2561,7 @@ class BitFieldRO:
 
 
 class PubSub:
-    def __init__(self, client: BasicKeyCommands):
+    def __init__(self, client: Commands):
         self.client = client
 
     def channels(self, pattern: Union[str, None] = None) -> ResponseType:
@@ -2608,7 +2599,7 @@ class PubSub:
         return self.client.run(command)
 
 class Script:
-    def __init__(self, client: BasicKeyCommands):
+    def __init__(self, client: Commands):
         self.client = client
 
     def exists(self, *sha1: str) -> ResponseType:

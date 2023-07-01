@@ -16,7 +16,7 @@ from upstash_redis.schema.commands.parameters import (
 
 from typing import Any, Union, List, Awaitable, Literal, Dict
 
-class BasicKeyCommands:
+class Commands:
     def bitcount(
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
     ) -> int: 
@@ -763,7 +763,7 @@ class BasicKeyCommands:
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
-    def __init__(self, client: BasicKeyCommands, key: str):
+    def __init__(self, client: Commands, key: str):
         ...
 
     def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldCommands":
@@ -783,7 +783,7 @@ class BitFieldCommands:
 
 
 class BitFieldRO:
-    def __init__(self, client: BasicKeyCommands, key: str):
+    def __init__(self, client: Commands, key: str):
         ...
 
     def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldRO":
@@ -794,7 +794,7 @@ class BitFieldRO:
 
 
 class PubSub:
-    def __init__(self, client: BasicKeyCommands):
+    def __init__(self, client: Commands):
         ...
 
     def channels(self, pattern: Union[str, None] = None) -> List[str]:
@@ -810,7 +810,7 @@ class PubSub:
 
 
 class Script:
-    def __init__(self, client: BasicKeyCommands):
+    def __init__(self, client: Commands):
         ...
 
     def exists(self, *sha1: str) -> Union[List[Literal[1, 0]], List[bool]]:

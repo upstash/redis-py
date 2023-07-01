@@ -16,7 +16,7 @@ from upstash_redis.schema.commands.parameters import (
 
 from typing import Any, Union, List, Literal, Dict
 
-class AsyncBasicKeyCommands:
+class AsyncCommands:
     def __init__(self):
         ...
 
@@ -767,7 +767,7 @@ class AsyncBasicKeyCommands:
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
-    def __init__(self, client: AsyncBasicKeyCommands, key: str):
+    def __init__(self, client: AsyncCommands, key: str):
         ...
 
     def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldCommands":
@@ -787,7 +787,7 @@ class BitFieldCommands:
 
 
 class BitFieldRO:
-    def __init__(self, client: AsyncBasicKeyCommands, key: str):
+    def __init__(self, client: AsyncCommands, key: str):
         ...
 
     def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldRO":
@@ -798,7 +798,7 @@ class BitFieldRO:
 
 
 class PubSub:
-    def __init__(self, client: AsyncBasicKeyCommands):
+    def __init__(self, client: AsyncCommands):
         ...
 
     async def channels(self, pattern: Union[str, None] = None) -> List[str]:
@@ -814,7 +814,7 @@ class PubSub:
 
 
 class Script:
-    def __init__(self, client: AsyncBasicKeyCommands):
+    def __init__(self, client: AsyncCommands):
         ...
 
     async def exists(self, *sha1: str) -> Union[List[Literal[1, 0]], List[bool]]:

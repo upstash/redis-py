@@ -1,5 +1,5 @@
-from upstash_redis.commands.commands import BasicKeyCommands
+from upstash_redis.commands.commands import Commands
 
 __all__ = [
-    "BasicKeyCommands"
+    "Commands"
 ]

@@ -2,7 +2,7 @@ from os import environ
 from typing import Any, List, Type, Union
 
 from aiohttp import ClientSession
-from upstash_redis.commands.async_commands import AsyncBasicKeyCommands
+from upstash_redis.commands.async_commands import AsyncCommands
 from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
 from upstash_redis.http.execute import async_execute
 
@@ -11,7 +11,7 @@ from upstash_redis.schema.telemetry import TelemetryData
 from upstash_redis.utils.format import FormattedResponse
 
 
-class Redis(FormattedResponse, AsyncBasicKeyCommands):
+class Redis(FormattedResponse, AsyncCommands):
     
     def __init__(
         self,
