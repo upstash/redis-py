@@ -116,7 +116,7 @@ def format_bool_list(raw: List[Literal[0, 1]]) -> List[bool]:
     return [bool(value) for value in raw]
 
 
-def format_server_time_return(raw: List[str]) -> Dict[str, int]:
+def format_server_time_return(raw: List[str], command=None) -> Dict[str, int]:
     """
     Format the raw output returned by "TIME".
     """
@@ -141,6 +141,9 @@ def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
     return [float(value) if value is not None else None for value in raw]
 
 
+
+def ok_to_bool(res, command):
+    return res == "OK"
 
 def to_bool(res, command):
     return bool(res)
@@ -289,6 +292,13 @@ class FormattedResponse:
         "PUBSUB NUMSUB": _list_to_dict,
         "SCRIPT EXISTS": format_bool_list, # missing test
 
+        "FLUSHALL": ok_to_bool,
+        "FLUSHDB": ok_to_bool,
+        "MSETNX": to_bool,
+        "PSETEX": ok_to_bool,
+        "SET": ok_to_bool,
+        "SETEX": ok_to_bool,
+        "SETNX": to_bool,
     }
 
     # TODO: Check return_cursor stuff.

@@ -326,7 +326,7 @@ class AsyncCommands:
         ...
 
     async def linsert(
-        self, key: str, position: Literal["BEFORE", "AFTER"], pivot: Any, element: Any
+        self, key: str, position: Literal["BEFORE", "AFTER", "before", "after"], pivot: Any, element: Any
     ) -> int:
        ...
 
@@ -337,8 +337,8 @@ class AsyncCommands:
         self,
         source: str,
         destination: str,
-        source_position: Literal["LEFT", "RIGHT"],
-        destination_position: Literal["LEFT", "RIGHT"],
+        source_position: Literal["LEFT", "RIGHT"] = "LEFT",
+        destination_position: Literal["LEFT", "RIGHT"] = "RIGHT",
     ) -> Union[str, None]:
         ...
 
@@ -411,10 +411,10 @@ class AsyncCommands:
     async def dbsize(self) -> int:
         ...
 
-    async def flushall(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> str:
+    async def flushall(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> Union[str, bool]:
         ...
 
-    async def flushdb(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> str:
+    async def flushdb(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> Union[str, bool]:
         ...
 
     async def time(self) -> Union[List[str], Dict[str, int]]:

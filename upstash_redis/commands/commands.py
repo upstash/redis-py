@@ -1012,7 +1012,7 @@ class Commands(CommandsProtocol):
         return self.run(command)
 
     def linsert(
-        self, key: str, position: Literal["BEFORE", "AFTER"], pivot: Any, element: Any
+        self, key: str, position: Literal["BEFORE", "AFTER", "before", "after"], pivot: Any, element: Any
     ) -> ResponseType:
         """
         See https://redis.io/commands/linsert
@@ -1035,8 +1035,8 @@ class Commands(CommandsProtocol):
         self,
         source: str,
         destination: str,
-        source_position: Literal["LEFT", "RIGHT"],
-        destination_position: Literal["LEFT", "RIGHT"],
+        source_position: Literal["LEFT", "RIGHT"] = "LEFT",
+        destination_position: Literal["LEFT", "RIGHT"] = "RIGHT",
     ) -> ResponseType:
         """
         See https://redis.io/commands/lmove
@@ -2248,7 +2248,7 @@ class Commands(CommandsProtocol):
         See https://redis.io/commands/getex
         """
 
-        if not number_are_not_none(ex, px, exat, pxat, persist, number=1):
+        if (ex or px or exat or pxat or persist) and not number_are_not_none(ex, px, exat, pxat, persist, number=1):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         command: List = ["GETEX", key]
@@ -2366,14 +2366,14 @@ class Commands(CommandsProtocol):
         self,
         key: str,
         value: Any,
-        nx: bool = False,
-        xx: bool = False,
-        get: bool = False,
+        nx: Union[bool, None] = None,
+        xx: Union[bool, None] = None,
+        get: Union[bool, None] = None,
         ex: Union[int, None] = None,
         px: Union[int, None] = None,
         exat: Union[int, None] = None,
         pxat: Union[int, None] = None,
-        keepttl: bool = False,
+        keepttl: Union[bool, None] = None,
     ) -> ResponseType:
         """
         See https://redis.io/commands/set
@@ -2382,7 +2382,7 @@ class Commands(CommandsProtocol):
         if nx and xx:
             raise Exception('"nx" and "xx" are mutually exclusive.')
 
-        if not number_are_not_none(ex, px, exat, pxat, keepttl, number=1):
+        if (ex or px or exat or pxat or keepttl) and not number_are_not_none(ex, px, exat, pxat, keepttl, number=1):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         if nx and get:
