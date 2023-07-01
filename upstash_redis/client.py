@@ -4,14 +4,12 @@ from typing import Any, List, Type, Union
 from aiohttp import ClientSession
 from upstash_redis.commands.commands import BasicKeyCommands
 from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
-from upstash_redis.http.execute import async_execute, sync_execute
+from upstash_redis.http.execute import sync_execute
 
 from upstash_redis.schema.http import RESTEncoding, RESTResult
 from upstash_redis.schema.telemetry import TelemetryData
 from upstash_redis.utils.format import FormattedResponse
-
-from asyncio import run
-
+from requests import Session
 
 class Redis(FormattedResponse, BasicKeyCommands):
     
@@ -50,7 +48,30 @@ class Redis(FormattedResponse, BasicKeyCommands):
         self.telemetry_data = telemetry_data
         self.FORMATTERS = self.__class__.FORMATTERS
 
+        self._session = Session()
 
+
+    def __enter__(self):
+        """
+        Enter the sync context.
+        """
+        if self._session is None:
+            self._session = Session()
+
+        # It needs to return the session object because it will be used in "sync with" statements.
+        return self
+    
+    def __exit__(
+        self,
+        exc_type: Union[Type[BaseException], None],
+        exc_val: Union[BaseException, None],
+        exc_tb: Any,
+    ) -> None:
+        """
+        Exit the sync context.
+        """
+        if self._session:
+            self._session.close()
 
     @classmethod
     def from_env(
@@ -82,13 +103,21 @@ class Redis(FormattedResponse, BasicKeyCommands):
             allow_telemetry,
             telemetry_data,
         )
+    
+    def close(self):
+        """
+        Closes the session.
+        """
+        if self._session:
+            self._session.close()
 
-    def run(self, command: List) -> int:
+    def run(self, command: List) -> RESTResult:
         """
         Specify the http options and execute the command.
         """
 
         res = sync_execute(
+                    session = self._session,
                     url=self.url,
                     token=self.token,
                     encoding=self.rest_encoding,
@@ -97,15 +126,14 @@ class Redis(FormattedResponse, BasicKeyCommands):
                     command=command,
                     allow_telemetry=self.allow_telemetry,
                     telemetry_data=self.telemetry_data,
-                )
-                
+        )
 
         main_command = command[0]
-        if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
+        if len(command) > 1 and (main_command == "PUBSUB"):
             main_command = f"{main_command} {command[1]}"
 
         if self.format_return and (main_command in self.FORMATTERS) :
-            return self.FORMATTERS[main_command](res)
+            return self.FORMATTERS[main_command](res, command)
 
         return res
         

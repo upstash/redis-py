@@ -102,7 +102,7 @@ class Redis(FormattedResponse, AsyncBasicKeyCommands):
 
         await self._session.close()
 
-    async def run(self, command: List) -> int:
+    async def run(self, command: List) -> RESTResult:
         """
         Specify the http options and execute the command.
         """

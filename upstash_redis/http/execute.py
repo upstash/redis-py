@@ -9,7 +9,7 @@ from json import dumps
 from platform import python_version
 from typing import Union, List, Dict
 
-import requests
+from requests import Session
 import time
 
 
@@ -88,6 +88,7 @@ async def async_execute(
 
 
 def sync_execute(
+    session: Session,
     url: str,
     token: str,
     encoding: RESTEncoding,
@@ -130,7 +131,7 @@ def sync_execute(
             if encoding:
                 headers["Upstash-Encoding"] = encoding
 
-            response = requests.post(url, headers=headers, json=command).json()
+            response = session.post(url, headers=headers, json=command).json()
 
             # Avoid the [] syntax to prevent KeyError from being raised.
             if response.get("error"):
