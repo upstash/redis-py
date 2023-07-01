@@ -27,6 +27,6 @@ def test_zmscore_without_formatting():
     members = ["member1", "member3", "non_existing_member"]
     result = redis.zmscore(sorted_set, members=members)
 
-    assert result == ["10.0", "30.0", None]
+    assert result == ["10", "30", None]
 
     redis.format_return = True

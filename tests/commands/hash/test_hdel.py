@@ -44,5 +44,5 @@ def test_hdel_with_pairs():
     assert result == 1
 
     remaining_fields = redis.hkeys(hash_name)
-    assert remaining_fields == [field1, field2]
+    assert sorted(remaining_fields) == sorted([field1, field2])
 
