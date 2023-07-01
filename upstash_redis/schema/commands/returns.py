@@ -17,13 +17,6 @@ Note that this might differ from the "GeoMember" type that represents the initia
 """
 FormattedGeoMembersReturn = List[Dict[str, Union[str, float, int]]]
 
-
-# The raw output returned by the Hash commands that return the field-value pairs of a hash.
-HashReturn = List[str]
-
-# The output resulted by formatting "HashReturn"
-FormattedHashReturn = Dict[str, str]
-
 # The raw output returned by the Sorted Set commands that return the member-score pairs of a sorted set.
 SortedSetReturn = List[str]
 

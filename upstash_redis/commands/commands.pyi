@@ -2,8 +2,6 @@
 from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
-    HashReturn,
-    FormattedHashReturn,
     SortedSetReturn,
     FormattedSortedSetReturn,
 )
@@ -14,7 +12,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Union, List, Awaitable, Literal, Dict
+from typing import Any, Optional, Tuple, Union, List, Literal, Dict
 
 class Commands:
     def bitcount(
@@ -259,7 +257,7 @@ class Commands:
     def hget(self, key: str, field: str) -> Union[str, None]:
         ...
 
-    def hgetall(self, key: str) -> Union[HashReturn, FormattedHashReturn]:
+    def hgetall(self, key: str) -> Union[List[str], Dict[str, str]]:
         ...
 
     def hincrby(self, key: str, field: str, increment: int) -> int:
@@ -284,19 +282,19 @@ class Commands:
 
     def hrandfield(
         self, key: str, count: Union[int, None] = None, withvalues: bool = False
-    ) -> Union[(Union[str, None]), Union[HashReturn, FormattedHashReturn]]:
+    ):
         ...
 
     def hscan(
         self,
-        key: str,
+        name: str,
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[List[Union[str, HashReturn]], List[Union[int, FormattedHashReturn]]]:
+    ) -> Tuple[int, Dict[str, str]]:
         ...
 
-    def hset(self, key: str, field_value_pairs: Dict) -> int:
+    def hset(self, name: str, key: Optional[str] = None, val: Optional[str] = None, field_value_pairs: Optional[Dict] = None) -> int:
         ...
 
     def hsetnx(

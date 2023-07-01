@@ -132,7 +132,7 @@ class Redis(FormattedResponse, Commands):
         if len(command) > 1 and (main_command == "PUBSUB"):
             main_command = f"{main_command} {command[1]}"
 
-        if self.format_return and (main_command in self.FORMATTERS) :
+        if (self.format_return or main_command == "HSCAN") and (main_command in self.FORMATTERS):
             return self.FORMATTERS[main_command](res, command)
 
         return res

@@ -1,8 +1,6 @@
 from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
-    HashReturn,
-    FormattedHashReturn,
     SortedSetReturn,
     FormattedSortedSetReturn,
 )
@@ -91,7 +89,7 @@ def format_geo_members_return(
     return result
 
 
-def format_hash_return(raw: HashReturn) -> FormattedHashReturn:
+def format_hash_return(raw: List[str], command = None) -> Dict[str, str]:
     """
     Format the raw output given by Hash commands, usually the ones that return the field-value
     pairs of Hashes.
@@ -262,7 +260,7 @@ class FormattedResponse:
         "GEORADIUSBYMEMBER": georadius_formatter, # same with the georadius, missing tests
         "GEORADIUSBYMEMBER_RO": georadius_formatter, # same with the georadius, missing tests
         "GEOSEARCH": georadius_formatter, # same with the georadius, missing tests
-        "HEXIST": to_bool, # missing test
+        "HEXISTS": to_bool, # missing test
         "HGETALL": format_hash_return, # missing test
         "HINCRBYFLOAT": to_float, # missing test
         "HRANDFIELD": hrandfield_formatter, # missing test
@@ -299,7 +297,9 @@ class FormattedResponse:
         "SET": ok_to_bool,
         "SETEX": ok_to_bool,
         "SETNX": to_bool,
+        "HMSET": ok_to_bool,
     }
 
     # TODO: Check return_cursor stuff.
     # TODO: lots of duplicate formatters. unite them
+    # TODO: all formatters should take `command` parameter

@@ -14,7 +14,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Literal, Union, List, Dict
+from typing import Any, Literal, Optional, Union, List, Dict
 
 
 class Commands(CommandsProtocol):
@@ -289,8 +289,6 @@ class Commands(CommandsProtocol):
     ) -> ResponseType:
         """
         See https://redis.io/commands/scan
-
-        :param return_cursor: if set to False, it won't return the cursor
 
         :param scan_type: replacement for "TYPE"
         :param match_pattern: replacement for "MATCH"
@@ -892,7 +890,7 @@ class Commands(CommandsProtocol):
         command: List = ["HRANDFIELD", key]
 
         if count is not None:
-            command.extend(["COUNT", count])
+            command.extend([count])
 
             if withvalues:
                 command.append("WITHVALUES")
@@ -901,7 +899,7 @@ class Commands(CommandsProtocol):
 
     def hscan(
         self,
-        key: str,
+        name: str,
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
@@ -909,14 +907,10 @@ class Commands(CommandsProtocol):
         """
         See https://redis.io/commands/hscan
 
-        :param return_cursor: if set to False, it won't return the cursor
         :param match_pattern: replacement for "MATCH"
-
-        :return: The cursor will be an integer if "format_return" is True.
-        Only a Dict of field-value pairs will be returned if "return_cursor" is False and "format_return" is True.
         """
 
-        command: List = ["HSCAN", key, cursor]
+        command: List = ["HSCAN", name, cursor]
 
         if match_pattern is not None:
             command.extend(["MATCH", match_pattern])
@@ -927,15 +921,21 @@ class Commands(CommandsProtocol):
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
 
-    def hset(self, key: str, field_value_pairs: Dict) -> ResponseType:
+    def hset(self, name: str, key: Optional[str] = None, val: Optional[str] = None, field_value_pairs: Optional[Dict] = None) -> ResponseType:
         """
         See https://redis.io/commands/hset
         """
+        command: List = ["HSET", name]
 
-        command: List = ["HSET", key]
+        if key is None and field_value_pairs is None:
+            raise Exception("'hset' with no key value pairs")
 
-        for field, value in field_value_pairs.items():
-            command.extend([field, value])
+        if key and val:
+            command.extend([key, val])
+
+        if field_value_pairs is not None:
+            for field, value in field_value_pairs.items():
+                command.extend([field, value])
 
         return self.run(command)
 
@@ -1459,7 +1459,6 @@ class Commands(CommandsProtocol):
         """
         See https://redis.io/commands/sscan
 
-        :param return_cursor: if set to False, it won't return the cursor
         :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
