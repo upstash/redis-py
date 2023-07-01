@@ -12,7 +12,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Optional, Tuple, Union, List, Literal, Dict
+from typing import Any, Optional, Set, Tuple, Union, List, Literal, Dict
 
 class Commands:
     def bitcount(
@@ -421,13 +421,13 @@ class Commands:
     def scard(self, key: str) -> int:
         ...
 
-    def sdiff(self, *keys: str) -> List[str]:
+    def sdiff(self, *keys: str) -> Set[str]:
         ...
 
     def sdiffstore(self, destination: str, *keys: str) -> int:
         ...
 
-    def sinter(self, *keys: str) -> List[str]:
+    def sinter(self, *keys: str) -> Set[str]:
         ...
 
     def sinterstore(self, destination: str, *keys: str) -> int:
@@ -436,7 +436,7 @@ class Commands:
     def sismember(self, key: str, member: Any) -> Union[Literal[1, 0], bool]:
         ...
 
-    def smembers(self, key: str) -> List[str]:
+    def smembers(self, key: str) -> Set[str]:
         ...
 
     def smove(
@@ -460,13 +460,13 @@ class Commands:
     def sscan(
         self,
         key: str,
-        cursor: int,
+        cursor: int = 0,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]:
+    ) -> Tuple[int, List[str]]:
         ...
 
-    def sunion(self, *keys: str) -> List[str]:
+    def sunion(self, *keys: str) -> Set[str]:
         ...
 
     def sunionstore(self, destination: str, *keys: str) -> int:

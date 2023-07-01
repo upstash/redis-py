@@ -1452,7 +1452,7 @@ class Commands(CommandsProtocol):
     def sscan(
         self,
         key: str,
-        cursor: int,
+        cursor: int = 0,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
     ) -> ResponseType:
@@ -1462,7 +1462,6 @@ class Commands(CommandsProtocol):
         :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
-        Only the List of elements will be returned if "return_cursor" is False.
         """
 
         command: List = ["SSCAN", key, cursor]

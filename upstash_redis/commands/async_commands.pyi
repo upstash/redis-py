@@ -12,7 +12,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Optional, Tuple, Union, List, Literal, Dict
+from typing import Any, Optional, Set, Tuple, Union, List, Literal, Dict
 
 class AsyncCommands:
     def __init__(self):
@@ -424,13 +424,13 @@ class AsyncCommands:
     async def scard(self, key: str) -> int:
         ...
 
-    async def sdiff(self, *keys: str) -> List[str]:
+    async def sdiff(self, *keys: str) -> Set[str]:
         ...
 
     async def sdiffstore(self, destination: str, *keys: str) -> int:
         ...
 
-    async def sinter(self, *keys: str) -> List[str]:
+    async def sinter(self, *keys: str) -> Set[str]:
         ...
 
     async def sinterstore(self, destination: str, *keys: str) -> int:
@@ -439,7 +439,7 @@ class AsyncCommands:
     async def sismember(self, key: str, member: Any) -> Union[Literal[1, 0], bool]:
         ...
 
-    async def smembers(self, key: str) -> List[str]:
+    async def smembers(self, key: str) -> Set[str]:
         ...
 
     async def smove(
@@ -463,13 +463,13 @@ class AsyncCommands:
     async def sscan(
         self,
         key: str,
-        cursor: int,
+        cursor: int = 0,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[List[Union[str, List[str]]], List[Union[int, List[str]]]]:
+    ) -> Tuple[int, List[str]]:
         ...
 
-    async def sunion(self, *keys: str) -> List[str]:
+    async def sunion(self, *keys: str) -> Set[str]:
         ...
 
     async def sunionstore(self, destination: str, *keys: str) -> int:

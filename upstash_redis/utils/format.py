@@ -140,6 +140,9 @@ def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
 
 
 
+def to_set(res, command):
+    return set(res)
+
 def ok_to_bool(res, command):
     return res == "OK"
 
@@ -298,6 +301,11 @@ class FormattedResponse:
         "SETEX": ok_to_bool,
         "SETNX": to_bool,
         "HMSET": ok_to_bool,
+
+        "SMEMBERS": to_set,
+        "SDIFF": to_set,
+        "SINTER": to_set,
+        "SUNION": to_set,
     }
 
     # TODO: Check return_cursor stuff.
