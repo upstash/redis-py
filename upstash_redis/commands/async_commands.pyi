@@ -28,7 +28,7 @@ class AsyncCommands:
     def bitfield(self, key: str) -> "BitFieldCommands":
         ...
 
-    async def bitfield_ro(self, key: str) -> "BitFieldRO":
+    def bitfield_ro(self, key: str) -> "BitFieldRO":
         ...
 
     async def bitop(

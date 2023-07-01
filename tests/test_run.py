@@ -1,4 +1,4 @@
-from tests.client import redis
+from tests.async_client import redis
 from pytest import mark
 
 
