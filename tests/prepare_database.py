@@ -109,3 +109,6 @@ async def main() -> None:
 
 
 run(main())
+
+
+# TODO: add pipelining functionality
