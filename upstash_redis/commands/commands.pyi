@@ -2,8 +2,6 @@
 from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
-    SortedSetReturn,
-    FormattedSortedSetReturn,
 )
 
 from upstash_redis.schema.commands.parameters import (
@@ -495,7 +493,7 @@ class Commands:
 
     def zdiff(
         self, *keys: str, withscores: bool = False
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zdiffstore(self, destination: str, *keys: str) -> int:
@@ -512,7 +510,7 @@ class Commands:
         weights: Union[List[float], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zinterstore(
@@ -534,17 +532,17 @@ class Commands:
 
     def zpopmax(
         self, key: str, count: Union[int, None] = None
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zpopmin(
         self, key: str, count: Union[int, None] = None
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zrandmember(
         self, key: str, count: Union[int, None] = None, withscores: bool = False
-    ) -> Union[(Union[str, None]), (Union[SortedSetReturn, FormattedSortedSetReturn])]:
+    ) -> Union[(Union[str, None]), (Union[List[str], Dict[str, float]])]:
         ...
 
     def zrange(
@@ -557,7 +555,7 @@ class Commands:
         limit_offset: Union[int, None] = None,
         limit_count: Union[int, None] = None,
         withscores: bool = False,
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zrangebylex(
@@ -578,7 +576,7 @@ class Commands:
         withscores: bool = False,
         offset: Union[int, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zrangestore(
@@ -613,7 +611,7 @@ class Commands:
 
     def zrevrange(
         self, key: str, start: int, stop: int, withscores: bool = False
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zrevrangebylex(
@@ -634,7 +632,7 @@ class Commands:
         withscores: bool = False,
         limit_offset: Union[int, None] = None,
         limit_count: Union[int, None] = None,
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zrevrank(self, key: str, member: str) -> Union[int, None]:
@@ -646,7 +644,7 @@ class Commands:
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[List[Union[str, SortedSetReturn]],List[Union[int, FormattedSortedSetReturn]]]:
+    ) -> Union[List[Union[str, List[str]]],List[Union[int, Dict[str, float]]]]:
         ...
 
     def zscore(self, key: str, member: str) -> Union[str, None, float]:
@@ -658,7 +656,7 @@ class Commands:
         weights: Union[List[float], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> Union[SortedSetReturn, FormattedSortedSetReturn]:
+    ) -> Union[List[str], Dict[str, float]]:
         ...
 
     def zunionstore(

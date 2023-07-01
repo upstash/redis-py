@@ -1,8 +1,6 @@
 from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
-    SortedSetReturn,
-    FormattedSortedSetReturn,
 )
 from typing import Literal, Union, List, Dict
 
@@ -122,7 +120,7 @@ def format_server_time_return(raw: List[str], command=None) -> Dict[str, int]:
     return {"seconds": int(raw[0]), "microseconds": int(raw[1])}
 
 
-def format_sorted_set_return(raw: SortedSetReturn) -> FormattedSortedSetReturn:
+def format_sorted_set_return(raw: List[str]) -> Dict[str, float]:
     """
     Format the raw output given by Sorted Set commands, usually the ones that return the member-score
     pairs of Sorted Sets.
