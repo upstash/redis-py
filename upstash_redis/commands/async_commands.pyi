@@ -10,7 +10,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Optional, Set, Tuple, Union, List, Literal, Dict
+from typing import Any, Iterable, Optional, Set, Tuple, Union, List, Literal, Dict
 
 class AsyncCommands:
     def __init__(self):
@@ -494,12 +494,12 @@ class AsyncCommands:
     ) -> int:
         ...
 
-    async def zdiff(
-        self, *keys: str, withscores: bool = False
-    ) -> Union[List[str], Dict[str, float]]:
+    def zdiff(
+        self, keys: List[str], withscores: bool = False
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
-    async def zdiffstore(self, destination: str, *keys: str) -> int:
+    async def zdiffstore(self, destination: str, keys: List[str]) -> int:
         ...
 
     async def zincrby(
@@ -509,18 +509,18 @@ class AsyncCommands:
 
     async def zinter(
         self,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zinterstore(
         self,
         destination: str,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int:
         ...
@@ -529,23 +529,23 @@ class AsyncCommands:
         ...
 
     async def zmscore(
-        self, key: str, *members: str
+        self, key: str, members: List[str]
     ) -> Union[List[Union[str, None]], List[Union[float, None]]]:
         ...
 
     async def zpopmax(
         self, key: str, count: Union[int, None] = None
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zpopmin(
         self, key: str, count: Union[int, None] = None
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zrandmember(
         self, key: str, count: Union[int, None] = None, withscores: bool = False
-    ) -> Union[(Union[str, None]), (Union[List[str], Dict[str, float]])]:
+    ) -> Union[(Union[str, None]), (Union[List[str], List[Tuple[str, float]]])]:
         ...
 
     async def zrange(
@@ -558,7 +558,7 @@ class AsyncCommands:
         limit_offset: Union[int, None] = None,
         limit_count: Union[int, None] = None,
         withscores: bool = False,
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zrangebylex(
@@ -577,17 +577,17 @@ class AsyncCommands:
         min_score: FloatMinMax,
         max_score: FloatMinMax,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
-    ) -> Union[List[str], Dict[str, float]]:
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zrangestore(
         self,
         dst: str,
         src: str,
-        min_score: FloatMinMax,
-        max_score: FloatMinMax,
+        start: FloatMinMax,
+        stop: FloatMinMax,
         range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
         limit_offset: Union[int, None] = None,
@@ -614,7 +614,7 @@ class AsyncCommands:
 
     async def zrevrange(
         self, key: str, start: int, stop: int, withscores: bool = False
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zrevrangebylex(
@@ -622,8 +622,8 @@ class AsyncCommands:
         key: str,
         max_score: str,
         min_score: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
     ) -> List[str]:
         ...
 
@@ -635,7 +635,7 @@ class AsyncCommands:
         withscores: bool = False,
         limit_offset: Union[int, None] = None,
         limit_count: Union[int, None] = None,
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zrevrank(self, key: str, member: str) -> Union[int, None]:
@@ -647,26 +647,26 @@ class AsyncCommands:
         cursor: int,
         match_pattern: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> Union[List[Union[str, List[str]]],List[Union[int, Dict[str, float]]]]:
+    ) -> Tuple[int, List[Tuple[str, float]]]:
         ...
 
     async def zscore(self, key: str, member: str) -> Union[str, None, float]:
         ...
 
-    async def zunion(
+    def zunion(
         self,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> Union[List[str], Dict[str, float]]:
+    ) -> Union[List[str], List[Tuple[str, float]]]:
         ...
 
     async def zunionstore(
         self,
         destination: str,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int:
         ...

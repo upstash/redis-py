@@ -2,7 +2,7 @@ from upstash_redis.schema.commands.returns import (
     GeoMembersReturn,
     FormattedGeoMembersReturn,
 )
-from typing import Literal, Union, List, Dict
+from typing import Literal, Tuple, Union, List, Dict
 
 
 def _list_to_dict(raw: List, command=None) -> Dict:
@@ -120,16 +120,16 @@ def format_server_time_return(raw: List[str], command=None) -> Dict[str, int]:
     return {"seconds": int(raw[0]), "microseconds": int(raw[1])}
 
 
-def format_sorted_set_return(raw: List[str]) -> Dict[str, float]:
+def format_sorted_set_return(raw: List[str], command=None) -> list[Tuple[str, float]]:
     """
     Format the raw output given by Sorted Set commands, usually the ones that return the member-score
     pairs of Sorted Sets.
     """
+    it = iter(raw)
+    return list(zip(it, map(float, it)))
 
-    return _list_to_dict(raw=raw)
 
-
-def format_float_list(raw: List[Union[str, None]]) -> List[Union[float, None]]:
+def format_float_list(raw: List[Union[str, None]], command=None) -> List[Union[float, None]]:
     """
     Format a list of strings representing floats or None values.
     """
@@ -309,3 +309,4 @@ class FormattedResponse:
     # TODO: Check return_cursor stuff.
     # TODO: lots of duplicate formatters. unite them
     # TODO: all formatters should take `command` parameter
+    # TODO: check commands using format_sorted_set_return

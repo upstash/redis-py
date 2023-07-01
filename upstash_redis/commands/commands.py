@@ -14,7 +14,7 @@ from upstash_redis.schema.commands.parameters import (
     FloatMinMax,
 )
 
-from typing import Any, Literal, Optional, Union, List, Dict
+from typing import Any, Iterable, Literal, Optional, Union, List, Dict
 
 
 class Commands(CommandsProtocol):
@@ -1584,7 +1584,7 @@ class Commands(CommandsProtocol):
     """
 
     def zdiff(
-        self, *keys: str, withscores: bool = False
+        self, keys: List[str], withscores: bool = False
     ) -> ResponseType:
         """
         See https://redis.io/commands/zdiff
@@ -1604,7 +1604,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def zdiffstore(self, destination: str, *keys: str) -> ResponseType:
+    def zdiffstore(self, destination: str, keys: List[str]) -> ResponseType:
         """
         See https://redis.io/commands/zdiffstore
 
@@ -1638,8 +1638,8 @@ class Commands(CommandsProtocol):
 
     def zinter(
         self,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
     ) -> ResponseType:
@@ -1670,8 +1670,8 @@ class Commands(CommandsProtocol):
     def zinterstore(
         self,
         destination: str,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseType:
         """
@@ -1713,7 +1713,7 @@ class Commands(CommandsProtocol):
         return self.run(command)
 
     def zmscore(
-        self, key: str, *members: str
+        self, key: str, members: List[str]
     ) -> ResponseType:
         """
         See https://redis.io/commands/zmscore
@@ -1867,8 +1867,8 @@ class Commands(CommandsProtocol):
         min_score: FloatMinMax,
         max_score: FloatMinMax,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
     ) -> ResponseType:
         """
         See https://redis.io/commands/zrangebyscore
@@ -1881,13 +1881,13 @@ class Commands(CommandsProtocol):
         :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
-        if number_are_not_none(offset, count, number=1):
+        if number_are_not_none(limit_offset, limit_count, number=1):
             raise Exception('Both "offset" and "count" must be specified.')
 
         command: List = ["ZRANGEBYSCORE", key, min_score, max_score]
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
         if withscores:
             command.append("WITHSCORES")
@@ -1898,8 +1898,8 @@ class Commands(CommandsProtocol):
         self,
         dst: str,
         src: str,
-        min_score: FloatMinMax,
-        max_score: FloatMinMax,
+        start: FloatMinMax,
+        stop: FloatMinMax,
         range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
         limit_offset: Union[int, None] = None,
@@ -1908,17 +1908,15 @@ class Commands(CommandsProtocol):
         """
         See https://redis.io/commands/zrangestore
 
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
-
-        If you need to use "-inf" and "+inf", please write them as strings.
+        :param start: replacement for "MIN"
+        :param stop: replacement for "MAX"
         """
 
         handle_non_deprecated_zrange_exceptions(
-            range_method, min_score, max_score, limit_offset, limit_count
+            range_method, start, stop, limit_offset, limit_count
         )
 
-        command: List = ["ZRANGESTORE", dst, src, min_score, max_score]
+        command: List = ["ZRANGESTORE", dst, src, start, stop]
 
         if range_method:
             command.append(range_method)
@@ -2022,8 +2020,8 @@ class Commands(CommandsProtocol):
         key: str,
         max_score: str,
         min_score: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        limit_offset: Union[int, None] = None,
+        limit_count: Union[int, None] = None,
     ) -> ResponseType:
         """
         See https://redis.io/commands/zrevrangebylex
@@ -2032,12 +2030,12 @@ class Commands(CommandsProtocol):
         :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min_score, max_score, offset, count)
+        handle_zrangebylex_exceptions(min_score, max_score, limit_offset, limit_count)
 
         command: List = ["ZREVRANGEBYLEX", key, max_score, min_score]
 
-        if offset is not None:
-            command.extend(["LIMIT", offset, count])
+        if limit_offset is not None:
+            command.extend(["LIMIT", limit_offset, limit_count])
 
         return self.run(command)
 
@@ -2099,9 +2097,6 @@ class Commands(CommandsProtocol):
         See https://redis.io/commands/zscan
 
         :param match_pattern: replacement for "MATCH"
-
-        :return: The cursor will be an integer if "format_return" is True.
-        Only a Dict of member-score pairs will be returned if "return_cursor" is False and "format_return" is True.
         """
 
         command: List = ["ZSCAN", key, cursor]
@@ -2133,8 +2128,8 @@ class Commands(CommandsProtocol):
 
     def zunion(
         self,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
     ) -> ResponseType:
@@ -2165,8 +2160,8 @@ class Commands(CommandsProtocol):
     def zunionstore(
         self,
         destination: str,
-        *keys: str,
-        weights: Union[List[float], None] = None,
+        keys: List[str],
+        weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseType:
         """
