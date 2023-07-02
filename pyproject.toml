@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "upstash_redis_a"
-version = "0.1.4"
-description = ""
-authors = ["Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
+name = "upstash_redis"
+version = "0.13.1"
+description = "Serverless Redis Sdk from Upstash"
+authors = ["Upstash <support@upstash.com>", "Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "upstash_redis" }]
 
@@ -11,6 +11,8 @@ python = "^3.8"
 aiohttp = "^3.8.4"
 pytest = "^7.3.0"
 pytest-asyncio = "^0.21.0"
+requests = "^2.31.0"
+urllib3 = ">=1.26.6,<2.0"
 
 
 [build-system]

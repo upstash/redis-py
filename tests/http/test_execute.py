@@ -1,4 +1,4 @@
-from upstash_redis.http.execute import execute
+from upstash_redis.http.execute import async_execute
 from upstash_redis.exception import UpstashException
 from aiohttp import ClientSession
 from os import environ
@@ -10,7 +10,7 @@ async def test_without_encoding() -> None:
     session = ClientSession()
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -31,7 +31,7 @@ async def test_with_encoding() -> None:
     session = ClientSession()
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -52,7 +52,7 @@ async def test_with_encoding_and_object() -> None:
     session = ClientSession()
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -73,7 +73,7 @@ async def test_with_invalid_command() -> None:
     session = ClientSession()
 
     with raises(UpstashException):
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -93,7 +93,7 @@ async def test_with_default_telemetry() -> None:
     session = ClientSession()
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -114,7 +114,7 @@ async def test_with_custom_telemetry() -> None:
     session = ClientSession()
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
@@ -133,7 +133,7 @@ async def test_with_custom_telemetry() -> None:
     )
 
     assert (
-        await execute(
+        await async_execute(
             session=session,
             url=environ["UPSTASH_REDIS_REST_URL"],
             token=environ["UPSTASH_REDIS_REST_TOKEN"],
