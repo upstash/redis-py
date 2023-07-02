@@ -187,7 +187,7 @@ class Commands:
         sort: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]], int]:
         ...
 
     def georadiusbymember_ro(

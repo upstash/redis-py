@@ -450,7 +450,7 @@ class Commands(CommandsProtocol):
 
         :param count_any: replacement for "ANY"
 
-        :return: A List of Dicts with the requested properties if "format_return" is True.
+        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_georadius_write_exceptions(
@@ -504,7 +504,7 @@ class Commands(CommandsProtocol):
 
         :param count_any: replacement for "ANY"
 
-        :return: A List of Dicts with the requested properties if "format_return" is True.
+        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         if count_any and count is None:
@@ -553,7 +553,7 @@ class Commands(CommandsProtocol):
 
         :param count_any: replacement for "ANY"
 
-        :return: A List of Dicts with the requested properties if "format_return" is True.
+        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_georadius_write_exceptions(
@@ -606,7 +606,7 @@ class Commands(CommandsProtocol):
 
         :param count_any: replacement for "ANY"
 
-        :return: A List of Dicts with the requested properties if "format_return" is True.
+        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         if count_any and count is None:
@@ -656,7 +656,7 @@ class Commands(CommandsProtocol):
 
         :param count_any: replacement for "ANY"
 
-        :return: A List of Dicts with the requested properties if "format_return" is True.
+        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_geosearch_exceptions(
