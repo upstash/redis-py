@@ -120,7 +120,7 @@ def format_server_time_return(raw: List[str], command=None) -> Dict[str, int]:
     return {"seconds": int(raw[0]), "microseconds": int(raw[1])}
 
 
-def format_sorted_set_return(raw: List[str], command=None) -> list[Tuple[str, float]]:
+def format_sorted_set_return(raw: List[str], command=None) -> List[Tuple[str, float]]:
     """
     Format the raw output given by Sorted Set commands, usually the ones that return the member-score
     pairs of Sorted Sets.
