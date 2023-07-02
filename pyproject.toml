@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "upstash_redis"
-version = "0.12.4"
-description = ""
-authors = ["Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
+version = "0.13.1"
+description = "Serverless Redis Sdk from Upstash"
+authors = ["Upstash <support@upstash.com>", "Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
 readme = "README.md"
 packages = [{ include = "upstash_redis" }]
 

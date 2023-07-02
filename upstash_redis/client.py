@@ -138,3 +138,5 @@ class Redis(FormattedResponse, Commands):
         return res
         
 
+
+# TODO: get platform from env variable for telemetry
