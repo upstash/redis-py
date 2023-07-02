@@ -1,8 +1,4 @@
 
-from upstash_redis.schema.commands.returns import (
-    GeoMembersReturn,
-    FormattedGeoMembersReturn,
-)
 
 from upstash_redis.schema.commands.parameters import (
     BitFieldOffset,
@@ -161,7 +157,7 @@ class AsyncCommands:
         sort: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn, int]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]], int]:
         ...
 
     async def georadius_ro(
@@ -177,7 +173,7 @@ class AsyncCommands:
         count: Union[int, None] = None,
         count_any: bool = False,
         sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     async def georadiusbymember(
@@ -194,7 +190,7 @@ class AsyncCommands:
         sort: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     async def georadiusbymember_ro(
@@ -209,7 +205,7 @@ class AsyncCommands:
         count: Union[int, None] = None,
         count_any: bool = False,
         sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     async def geosearch(
@@ -228,7 +224,7 @@ class AsyncCommands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     async def geosearchstore(

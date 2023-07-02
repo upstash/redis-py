@@ -1,8 +1,4 @@
 
-from upstash_redis.schema.commands.returns import (
-    GeoMembersReturn,
-    FormattedGeoMembersReturn,
-)
 
 from upstash_redis.schema.commands.parameters import (
     BitFieldOffset,
@@ -158,7 +154,7 @@ class Commands:
         sort: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn, int]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]], int]:
         ...
 
     def georadius_ro(
@@ -174,7 +170,7 @@ class Commands:
         count: Union[int, None] = None,
         count_any: bool = False,
         sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     def georadiusbymember(
@@ -191,7 +187,7 @@ class Commands:
         sort: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     def georadiusbymember_ro(
@@ -206,7 +202,7 @@ class Commands:
         count: Union[int, None] = None,
         count_any: bool = False,
         sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     def geosearch(
@@ -225,7 +221,7 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-    ) -> Union[GeoMembersReturn, FormattedGeoMembersReturn]:
+    ) -> Union[List[Union[str, List[Union[str, List[str]]]]], List[Dict[str, Union[str, float, int]]]]:
         ...
 
     def geosearchstore(

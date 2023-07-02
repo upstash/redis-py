@@ -1,7 +1,3 @@
-from upstash_redis.schema.commands.returns import (
-    GeoMembersReturn,
-    FormattedGeoMembersReturn,
-)
 from typing import Literal, Tuple, Union, List, Dict
 
 
@@ -30,11 +26,11 @@ def format_geo_positions_return(
 
 
 def format_geo_members_return(
-    raw: GeoMembersReturn,
+    raw: List[Union[str, List[Union[str, List[str]]]]],
     with_distance: Union[bool, None],
     with_hash: Union[bool, None],
     with_coordinates: Union[bool, None],
-) -> FormattedGeoMembersReturn:
+) -> List[Dict[str, Union[str, float, int]]]:
     """
     Format the raw output given by some Geo commands, usually the ones that return properties of members,
     when additional properties are requested.
@@ -52,7 +48,7 @@ def format_geo_members_return(
     All represented as strings
     """
 
-    result: FormattedGeoMembersReturn = []
+    result: List[Dict[str, Union[str, float, int]]] = []
 
     for member in raw:
         formatted_member: Dict[str, Union[str, float, int]] = {"member": member[0]}
