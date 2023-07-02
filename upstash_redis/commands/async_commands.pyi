@@ -437,6 +437,9 @@ class AsyncCommands:
     async def sismember(self, key: str, member: Any) -> Union[Literal[1, 0], bool]:
         ...
 
+    async def smismember(self, key: str, *members: Any) -> Union[List[Literal[1, 0]], List[bool]]:
+        ...
+
     async def smembers(self, key: str) -> Set[str]:
         ...
 

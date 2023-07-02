@@ -147,6 +147,9 @@ def ok_to_bool(res, command):
 def to_bool(res, command):
     return bool(res)
 
+def list_to_bool_list(res, command):
+    return list(map(bool, res))
+
 def to_float(res, command):
     return float(res)
 
@@ -270,6 +273,7 @@ class FormattedResponse:
         "PFADD": to_bool,
         "TIME": format_server_time_return, # missing test
         "SISMEMBER": to_bool, # missing test
+        "SMISMEMBER": list_to_bool_list,
         "SMOVE": to_bool, # missing test
         "SSCAN": sscan_formatter, # missing test
         "ZADD": zadd_formatter, # missing test

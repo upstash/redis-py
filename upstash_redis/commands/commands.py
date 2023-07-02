@@ -1391,6 +1391,20 @@ class Commands(CommandsProtocol):
         command: List = ["SMEMBERS", key]
 
         return self.run(command)
+    
+    def smismember(self, key: str, *members: Any) -> ResponseType:
+        """
+        See https://redis.io/commands/smismember
+        
+        :return: A bool list if self.format_return is True.
+        """
+
+        if len(members) == 0:
+            raise Exception("At least one member must be removed.")
+
+        command: List = ["SMISMEMBER", key, *members]
+
+        return self.run(command)
 
     def smove(
         self, source: str, destination: str, member: Any

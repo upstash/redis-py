@@ -434,6 +434,9 @@ class Commands:
     def sismember(self, key: str, member: Any) -> Union[Literal[1, 0], bool]:
         ...
 
+    def smismember(self, key: str, *members: Any) -> Union[List[Literal[1, 0]], List[bool]]:
+        ...
+        
     def smembers(self, key: str) -> Set[str]:
         ...
 
