@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sets():
     set1 = "set1"
@@ -9,6 +10,7 @@ def flush_sets():
     destination_set = "diff_set"
 
     redis.delete(set1, set2, set3, destination_set)
+
 
 def test_sdiffstore():
     set1 = "set1"

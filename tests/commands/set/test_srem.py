@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_set():
     set_name = "myset"
     redis.delete(set_name)
     yield
     redis.delete(set_name)
+
 
 def test_srem_existing_members():
     set_name = "myset"
@@ -24,6 +26,7 @@ def test_srem_existing_members():
     # Assert that the removed members no longer exist in the set
     assert redis.sismember(set_name, "member1") == 0
     assert redis.sismember(set_name, "member3") is False
+
 
 def test_srem_nonexistent_members():
     set_name = "myset"

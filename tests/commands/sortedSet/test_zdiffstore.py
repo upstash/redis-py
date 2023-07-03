@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_sets():
     sorted_set1 = "sorted_set1"
@@ -10,6 +11,7 @@ def flush_sorted_sets():
     redis.delete(sorted_set1)
     redis.delete(sorted_set2)
     redis.delete(diff_result)
+
 
 def test_zdiffstore():
     sorted_set1 = "sorted_set1"
@@ -22,4 +24,7 @@ def test_zdiffstore():
     result = redis.zdiffstore(destination=diff_result, keys=[sorted_set1, sorted_set2])
     assert result == 2
 
-    assert redis.zrange(diff_result, 0, -1, withscores=True) == [("member1", 10.0), ("member3", 30.0)]
+    assert redis.zrange(diff_result, 0, -1, withscores=True) == [
+        ("member1", 10.0),
+        ("member3", 30.0),
+    ]

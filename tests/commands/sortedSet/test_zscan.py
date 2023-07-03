@@ -1,16 +1,20 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_set():
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
+
 def test_zscan():
     sorted_set = "sorted_set"
 
-    redis.zadd(sorted_set, {"apple": 1, "banana": 2, "cherry": 3, "mango": 4, "orange": 5})
+    redis.zadd(
+        sorted_set, {"apple": 1, "banana": 2, "cherry": 3, "mango": 4, "orange": 5}
+    )
 
     cursor = 0
     members = []
@@ -23,7 +27,13 @@ def test_zscan():
         if cursor == 0:
             break
 
-    expected_members = [("apple", 1.0), ("banana", 2.0), ("cherry", 3.0), ("mango", 4.0), ("orange", 5.0)]
+    expected_members = [
+        ("apple", 1.0),
+        ("banana", 2.0),
+        ("cherry", 3.0),
+        ("mango", 4.0),
+        ("orange", 5.0),
+    ]
     assert sorted(members) == sorted(expected_members)
 
     cursor = 0
@@ -31,7 +41,9 @@ def test_zscan():
     matching_members = []
 
     while True:
-        cursor, scan_members = redis.zscan(sorted_set, cursor=cursor, match_pattern=pattern)
+        cursor, scan_members = redis.zscan(
+            sorted_set, cursor=cursor, match_pattern=pattern
+        )
 
         matching_members.extend(scan_members)
 

@@ -1,10 +1,12 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_hash():
     hash_name = "myhash"
     redis.delete(hash_name)
+
 
 def test_hrandfield_single():
     hash_name = "myhash"
@@ -17,6 +19,7 @@ def test_hrandfield_single():
     # Get a single random field from the hash
     result = redis.hrandfield(hash_name)
     assert result in ["field1", "field2", "field3"]
+
 
 def test_hrandfield_multiple():
     hash_name = "myhash"
@@ -47,7 +50,7 @@ def test_hrandfield_multiple_without_formatting():
     redis.hset(hash_name, "field1", "value1")
     redis.hset(hash_name, "field2", "value2")
     redis.hset(hash_name, "field3", "value3")
-    
+
     result: dict = redis.hrandfield(hash_name, count=2, withvalues=True)
     assert isinstance(result, list)
     assert redis.hget(hash_name, result[0]) == result[1]

@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_mylists():
     mylists = ["mylist1", "mylist2", "mylist3", "mylist4", "mylist5"]
 
     for mylist in mylists:
         redis.delete(mylist)
+
 
 def test_lpop_existing_key():
     mylist = "mylist1"
@@ -20,6 +22,7 @@ def test_lpop_existing_key():
 
     redis.delete(mylist)
 
+
 def test_lpop_empty_list():
     mylist = "mylist2"
 
@@ -28,6 +31,7 @@ def test_lpop_empty_list():
 
     redis.delete(mylist)
 
+
 def test_lpop_nonexistent_key():
     mylist = "mylist3"
 
@@ -35,6 +39,7 @@ def test_lpop_nonexistent_key():
     assert result is None
 
     redis.delete(mylist)
+
 
 def test_lpop_with_count():
     mylist = "mylist4"
@@ -53,6 +58,7 @@ def test_lpop_with_count():
     assert redis.lrange(mylist, 0, -1) == []
 
     redis.delete(mylist)
+
 
 def test_lpop_with_count_zero():
     mylist = "mylist5"

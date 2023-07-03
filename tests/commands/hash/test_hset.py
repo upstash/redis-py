@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_hash():
     hash_name = "myhash"
     redis.delete(hash_name)
     yield
     redis.delete(hash_name)
+
 
 def test_hset():
     hash_name = "myhash"
@@ -22,10 +24,7 @@ def test_hset():
     assert redis.hget(hash_name, "field1") == "updated_value"
 
     # Use HSET command to set multiple field-value pairs at once
-    field_value_pairs = {
-        "field2": "value2",
-        "field3": "value3"
-    }
+    field_value_pairs = {"field2": "value2", "field3": "value3"}
     result = redis.hset(hash_name, field_value_pairs=field_value_pairs)
     assert result == 2  # Number of fields added to the hash
     assert redis.hget(hash_name, "field2") == "value2"

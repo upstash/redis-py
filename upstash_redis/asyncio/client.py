@@ -3,7 +3,13 @@ from typing import Any, List, Type, Union
 
 from aiohttp import ClientSession
 from upstash_redis.commands.async_commands import AsyncCommands
-from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
+from upstash_redis.config import (
+    REST_ENCODING,
+    REST_RETRIES,
+    REST_RETRY_INTERVAL,
+    FORMAT_RETURN,
+    ALLOW_TELEMETRY,
+)
 from upstash_redis.http.execute import async_execute
 
 from upstash_redis.schema.http import RESTEncoding, RESTResult
@@ -12,7 +18,6 @@ from upstash_redis.utils.format import FormattedResponse
 
 
 class Redis(FormattedResponse, AsyncCommands):
-    
     def __init__(
         self,
         url: str,
@@ -47,8 +52,6 @@ class Redis(FormattedResponse, AsyncCommands):
 
         self.telemetry_data = telemetry_data
         self.FORMATTERS = self.__class__.FORMATTERS
-
-
 
     @classmethod
     def from_env(
@@ -123,9 +126,16 @@ class Redis(FormattedResponse, AsyncCommands):
         if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
             main_command = f"{main_command} {command[1]}"
 
-        if (self.format_return or main_command == "HSCAN" or main_command == "SMEMBERS" or main_command == "SDIFF" or main_command == "SINTER" or main_command == "SSCAN" or main_command == "SUNION" or main_command == "ZSCAN") and (main_command in self.FORMATTERS):
+        if (
+            self.format_return
+            or main_command == "HSCAN"
+            or main_command == "SMEMBERS"
+            or main_command == "SDIFF"
+            or main_command == "SINTER"
+            or main_command == "SSCAN"
+            or main_command == "SUNION"
+            or main_command == "ZSCAN"
+        ) and (main_command in self.FORMATTERS):
             return self.FORMATTERS[main_command](res, command)
 
         return res
-        
-

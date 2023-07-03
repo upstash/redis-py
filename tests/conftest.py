@@ -1,4 +1,5 @@
 import pytest
+
 """
 Flush and fill the testing database with the necessary data.
 """
@@ -111,5 +112,3 @@ async def main() -> None:
 
 def pytest_configure():
     run(main())
-
-

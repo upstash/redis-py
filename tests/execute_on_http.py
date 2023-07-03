@@ -23,8 +23,8 @@ async def execute_on_http(*command_elements: str) -> RESTResult:
 
             return body["result"]
 
-def sync_execute_on_http(*command_elements: str) -> RESTResult:
 
+def sync_execute_on_http(*command_elements: str) -> RESTResult:
     response = requests.post(url, headers=headers, json=[*command_elements])
     body = response.json()
 
@@ -35,6 +35,3 @@ def sync_execute_on_http(*command_elements: str) -> RESTResult:
         raise Exception(body.get("error"))
 
     return body["result"]
-        
-
-        

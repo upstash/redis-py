@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_sets():
     sorted_set1 = "sorted_set1"
@@ -11,6 +12,7 @@ def flush_sorted_sets():
     redis.delete(sorted_set2)
     redis.delete(destination)
 
+
 def test_zinterstore():
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
@@ -20,7 +22,9 @@ def test_zinterstore():
     redis.zadd(sorted_set2, {"member1": 5, "member3": 15, "member4": 25, "memberx": 5})
 
     weights = [2, 1]
-    result = redis.zinterstore(destination, keys=[sorted_set1, sorted_set2], weights=weights, aggregate="SUM")
+    result = redis.zinterstore(
+        destination, keys=[sorted_set1, sorted_set2], weights=weights, aggregate="SUM"
+    )
     assert result == 3
 
     assert redis.zrange(destination, 0, -1, withscores=True) == [

@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_sets():
     sorted_set1 = "sorted_set1"
@@ -21,6 +22,7 @@ def test_zdiff():
 
     diff_result = redis.zdiff(keys=[sorted_set1, sorted_set2])
     assert diff_result == ["member1", "member3"]
+
 
 def test_zdiff_with_scores():
     sorted_set1 = "sorted_set1"
