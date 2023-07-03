@@ -150,4 +150,3 @@ class Redis(FormattedResponse, Commands):
             return self.FORMATTERS[main_command](res, command)
 
         return res
-
