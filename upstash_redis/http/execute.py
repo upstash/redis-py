@@ -1,3 +1,4 @@
+import os
 import aiohttp
 from upstash_redis.exception import UpstashException
 from upstash_redis.http.decode import decode
@@ -35,7 +36,13 @@ async def async_execute(
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = [
-        element if (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)) else dumps(element)
+        element
+        if (
+            isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, float)
+        )
+        else dumps(element)
         for element in command
     ]
 
@@ -62,6 +69,12 @@ async def async_execute(
                         headers["Upstash-Telemetry-Platform"] = telemetry_data[
                             "platform"
                         ]
+                    elif os.getenv("VERCEL"):
+                        headers["Upstash-Telemetry-Sdk"] = "vercel"
+                    elif os.getenv("AWS_REGION"):
+                        headers["Upstash-Telemetry-Sdk"] = "aws"
+                    else:
+                        headers["Upstash-Telemetry-Sdk"] = "unknown"
 
             if encoding:
                 headers["Upstash-Encoding"] = encoding
@@ -98,9 +111,14 @@ def sync_execute(
     allow_telemetry: bool,
     telemetry_data: Union[TelemetryData, None] = None,
 ) -> RESTResult:
-
     command = [
-        element if (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)) else dumps(element)
+        element
+        if (
+            isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, float)
+        )
+        else dumps(element)
         for element in command
     ]
 
@@ -121,12 +139,18 @@ def sync_execute(
                     if telemetry_data.get("sdk"):
                         headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
                     else:
-                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@development"
+                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@python"
 
                     if telemetry_data.get("platform"):
                         headers["Upstash-Telemetry-Platform"] = telemetry_data[
                             "platform"
                         ]
+                    elif os.getenv("VERCEL"):
+                        headers["Upstash-Telemetry-Sdk"] = "vercel"
+                    elif os.getenv("AWS_REGION"):
+                        headers["Upstash-Telemetry-Sdk"] = "aws"
+                    else:
+                        headers["Upstash-Telemetry-Sdk"] = "unknown"
 
             if encoding:
                 headers["Upstash-Encoding"] = encoding
