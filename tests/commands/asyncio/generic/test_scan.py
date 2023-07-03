@@ -27,6 +27,7 @@ async def test_with_scan_type() -> None:
     async with redis:
         assert (await redis.scan(cursor=0, scan_type="hash"))[1] == ["hash"]
 
+
 @mark.asyncio
 async def test_without_formatting() -> None:
     redis.format_return = False

@@ -3,7 +3,13 @@ from typing import Any, List, Type, Union
 
 from aiohttp import ClientSession
 from upstash_redis.commands.commands import Commands
-from upstash_redis.config import REST_ENCODING, REST_RETRIES, REST_RETRY_INTERVAL, FORMAT_RETURN, ALLOW_TELEMETRY
+from upstash_redis.config import (
+    REST_ENCODING,
+    REST_RETRIES,
+    REST_RETRY_INTERVAL,
+    FORMAT_RETURN,
+    ALLOW_TELEMETRY,
+)
 from upstash_redis.http.execute import sync_execute
 
 from upstash_redis.schema.http import RESTEncoding, RESTResult
@@ -11,8 +17,8 @@ from upstash_redis.schema.telemetry import TelemetryData
 from upstash_redis.utils.format import FormattedResponse
 from requests import Session
 
+
 class Redis(FormattedResponse, Commands):
-    
     def __init__(
         self,
         url: str,
@@ -50,7 +56,6 @@ class Redis(FormattedResponse, Commands):
 
         self._session = Session()
 
-
     def __enter__(self):
         """
         Enter the sync context.
@@ -60,7 +65,7 @@ class Redis(FormattedResponse, Commands):
 
         # It needs to return the session object because it will be used in "sync with" statements.
         return self
-    
+
     def __exit__(
         self,
         exc_type: Union[Type[BaseException], None],
@@ -103,7 +108,7 @@ class Redis(FormattedResponse, Commands):
             allow_telemetry,
             telemetry_data,
         )
-    
+
     def close(self):
         """
         Closes the session.
@@ -117,26 +122,34 @@ class Redis(FormattedResponse, Commands):
         """
 
         res = sync_execute(
-                    session = self._session,
-                    url=self.url,
-                    token=self.token,
-                    encoding=self.rest_encoding,
-                    retries=self.rest_retries,
-                    retry_interval=self.rest_retry_interval,
-                    command=command,
-                    allow_telemetry=self.allow_telemetry,
-                    telemetry_data=self.telemetry_data,
+            session=self._session,
+            url=self.url,
+            token=self.token,
+            encoding=self.rest_encoding,
+            retries=self.rest_retries,
+            retry_interval=self.rest_retry_interval,
+            command=command,
+            allow_telemetry=self.allow_telemetry,
+            telemetry_data=self.telemetry_data,
         )
 
         main_command = command[0]
         if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
             main_command = f"{main_command} {command[1]}"
 
-        if (self.format_return or main_command == "HSCAN" or main_command == "SMEMBERS" or main_command == "SDIFF" or main_command == "SINTER" or main_command == "SSCAN" or main_command == "SUNION" or main_command == "ZSCAN") and (main_command in self.FORMATTERS):
+        if (
+            self.format_return
+            or main_command == "HSCAN"
+            or main_command == "SMEMBERS"
+            or main_command == "SDIFF"
+            or main_command == "SINTER"
+            or main_command == "SSCAN"
+            or main_command == "SUNION"
+            or main_command == "ZSCAN"
+        ) and (main_command in self.FORMATTERS):
             return self.FORMATTERS[main_command](res, command)
 
         return res
-        
 
 
 # TODO: get platform from env variable for telemetry

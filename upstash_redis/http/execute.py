@@ -35,7 +35,13 @@ async def async_execute(
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = [
-        element if (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)) else dumps(element)
+        element
+        if (
+            isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, float)
+        )
+        else dumps(element)
         for element in command
     ]
 
@@ -98,9 +104,14 @@ def sync_execute(
     allow_telemetry: bool,
     telemetry_data: Union[TelemetryData, None] = None,
 ) -> RESTResult:
-
     command = [
-        element if (isinstance(element, str) or isinstance(element, int) or isinstance(element, float)) else dumps(element)
+        element
+        if (
+            isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, float)
+        )
+        else dumps(element)
         for element in command
     ]
 

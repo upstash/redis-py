@@ -33,10 +33,13 @@ async def test_without_formatting() -> None:
 
     redis.format_return = True
 
+
 @mark.asyncio
 async def test_with_formatting() -> None:
     redis.format_return = True
 
     async with redis:
         await redis.copy(source="string", destination="copy_destination_2")
-        assert await redis.copy(source="string", destination="copy_destination_2") == False
+        assert (
+            await redis.copy(source="string", destination="copy_destination_2") == False
+        )

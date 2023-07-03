@@ -1,10 +1,13 @@
 from pytest import mark, raises
 from tests.async_client import redis
 
+
 @mark.asyncio
 async def test() -> None:
     async with redis:
-        assert await redis.georadiusbymember_ro("test_geo_index", "Catania", 200, "KM") == ["Palermo", "Catania"]
+        assert await redis.georadiusbymember_ro(
+            "test_geo_index", "Catania", 200, "KM"
+        ) == ["Palermo", "Catania"]
 
 
 @mark.asyncio
@@ -63,7 +66,9 @@ async def test_with_coordinates() -> None:
 @mark.asyncio
 async def test_with_count() -> None:
     async with redis:
-        assert await redis.georadiusbymember_ro("test_geo_index", "Catania", 200, unit="KM", count=1) == ["Catania"]
+        assert await redis.georadiusbymember_ro(
+            "test_geo_index", "Catania", 200, unit="KM", count=1
+        ) == ["Catania"]
 
 
 @mark.asyncio

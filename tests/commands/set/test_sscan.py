@@ -1,11 +1,13 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_set():
     set_name = "myset"
 
     redis.delete(set_name)
+
 
 def test_sscan_with_match_and_count():
     set_name = "myset"
@@ -19,6 +21,7 @@ def test_sscan_with_match_and_count():
 
     # Assert that the matching members are returned with the specified count
     assert all(member in members for member in matching_members)
+
 
 def test_sscan_without_match_and_count():
     set_name = "myset"

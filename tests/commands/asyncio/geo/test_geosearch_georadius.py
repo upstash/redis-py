@@ -6,15 +6,26 @@ from tests.async_client import redis
 async def test() -> None:
     async with redis:
         assert await redis.geosearch(
-            "test_geo_index", fromlonlat_longitude=15, fromlonlat_latitude=37, byradius=200, unit="KM"
+            "test_geo_index",
+            fromlonlat_longitude=15,
+            fromlonlat_latitude=37,
+            byradius=200,
+            unit="KM",
         ) == ["Palermo", "Catania"]
+
 
 @mark.asyncio
 async def test_with_box() -> None:
     async with redis:
         assert await redis.geosearch(
-            "test_geo_index", fromlonlat_longitude=14, fromlonlat_latitude=35, bybox_height=600, bybox_width=4000, unit="km"
+            "test_geo_index",
+            fromlonlat_longitude=14,
+            fromlonlat_latitude=35,
+            bybox_height=600,
+            bybox_width=4000,
+            unit="km",
         ) == ["Catania"]
+
 
 @mark.asyncio
 async def test_with_distance() -> None:
@@ -76,7 +87,12 @@ async def test_with_coordinates() -> None:
 async def test_with_count() -> None:
     async with redis:
         assert await redis.geosearch(
-            "test_geo_index", fromlonlat_longitude=15, fromlonlat_latitude=37, byradius=200, unit="KM", count=1
+            "test_geo_index",
+            fromlonlat_longitude=15,
+            fromlonlat_latitude=37,
+            byradius=200,
+            unit="KM",
+            count=1,
         ) == ["Catania"]
 
 

@@ -1,11 +1,13 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_set():
     set_name = "myset"
 
     redis.delete(set_name)
+
 
 def test_srandmember_existing_set():
     set_name = "myset"
@@ -19,6 +21,7 @@ def test_srandmember_existing_set():
 
     # Assert that the result is a member of the set
     assert result in members
+
 
 def test_srandmember_nonexistent_set():
     set_name = "nonexistent_set"

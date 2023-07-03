@@ -1,16 +1,20 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_set():
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
+
 def test_zrevrange():
     sorted_set = "sorted_set"
 
-    redis.zadd(sorted_set, {"apple": 10, "banana": 20, "cherry": 30, "mango": 40, "orange": 50})
+    redis.zadd(
+        sorted_set, {"apple": 10, "banana": 20, "cherry": 30, "mango": 40, "orange": 50}
+    )
 
     result = redis.zrevrange(sorted_set, 1, 3)
     assert result == ["mango", "cherry", "banana"]

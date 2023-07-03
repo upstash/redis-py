@@ -1,11 +1,13 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_mylist():
     mylist = "mylist"
 
     redis.delete(mylist)
+
 
 def test_lset_existing_index():
     mylist = "mylist"
@@ -17,6 +19,7 @@ def test_lset_existing_index():
 
     expected_list = ["value1", "new_value", "value3"]
     assert redis.lrange(mylist, 0, -1) == expected_list
+
 
 def test_lset_nonexistent_index():
     mylist = "mylist"

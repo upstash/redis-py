@@ -1,11 +1,13 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_set():
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
+
 
 def test_zrange():
     sorted_set = "sorted_set"
@@ -21,6 +23,7 @@ def test_zrange():
 
     assert all(isinstance(member[1], float) for member in result)
 
+
 def test_zrange_with_range_method():
     sorted_set = "sorted_set"
 
@@ -29,7 +32,9 @@ def test_zrange_with_range_method():
     with pytest.raises(Exception):
         redis.zrange(sorted_set, start=0, stop=2, withscores=True, range_method="BYLEX")
 
-    result = redis.zrange(sorted_set, start=0, stop=2, withscores=True, range_method="BYSCORE")
+    result = redis.zrange(
+        sorted_set, start=0, stop=2, withscores=True, range_method="BYSCORE"
+    )
 
     assert isinstance(result, list)
     assert all(isinstance(member, tuple) and len(member) == 2 for member in result)
@@ -37,6 +42,7 @@ def test_zrange_with_range_method():
     assert all(member[0] in ["member1", "member2", "member3"] for member in result)
 
     assert all(isinstance(member[1], float) for member in result)
+
 
 def test_zrange_with_bylex():
     sorted_set = "sorted_set"

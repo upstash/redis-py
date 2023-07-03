@@ -1,9 +1,11 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_all():
     redis.flushall()
+
 
 def test_flushall():
     redis.set("key1", "value1")
@@ -17,6 +19,7 @@ def test_flushall():
     assert redis.get("key2") is None
     assert redis.get("key3") is None
 
+
 def test_flushall_without_formatting():
     redis.format_return = False
 
@@ -24,4 +27,3 @@ def test_flushall_without_formatting():
     assert result is "OK"
 
     redis.format_return = True
-

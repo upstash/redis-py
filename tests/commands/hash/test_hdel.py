@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_hash():
     hash_name = "myhash"
     redis.delete(hash_name)
     yield
     redis.delete(hash_name)
+
 
 def test_hdel():
     hash_name = "myhash"
@@ -25,6 +27,7 @@ def test_hdel():
     remaining_fields = redis.hkeys(hash_name)
     assert remaining_fields == [field1]  # Only field1 should remain
 
+
 def test_hdel_with_pairs():
     hash_name = "myhash"
 
@@ -37,7 +40,7 @@ def test_hdel_with_pairs():
     field2 = "field2"
     field3 = "field3"
 
-    redis.hset(hash_name,field_value_pairs=pairs)
+    redis.hset(hash_name, field_value_pairs=pairs)
 
     result = redis.hdel(hash_name, field3)
 
@@ -45,4 +48,3 @@ def test_hdel_with_pairs():
 
     remaining_fields = redis.hkeys(hash_name)
     assert sorted(remaining_fields) == sorted([field1, field2])
-

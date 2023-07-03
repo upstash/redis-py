@@ -1,10 +1,12 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_key():
     key = "mykey"
     redis.delete(key)
+
 
 def test_setrange():
     key = "mykey"

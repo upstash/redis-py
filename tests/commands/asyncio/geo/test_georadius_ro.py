@@ -101,9 +101,6 @@ async def test_with_sort() -> None:
         ) == ["Catania", "Palermo"]
 
 
-
-
-
 @mark.asyncio
 async def test_with_invalid_parameters() -> None:
     async with redis:

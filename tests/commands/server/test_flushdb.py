@@ -1,9 +1,11 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_db():
     redis.flushdb()
+
 
 def test_flushdb():
     redis.set("key1", "value1")

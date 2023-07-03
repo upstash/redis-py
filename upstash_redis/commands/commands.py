@@ -1,4 +1,3 @@
-
 from upstash_redis.typing import CommandsProtocol, ResponseType
 
 from upstash_redis.utils.exception import (
@@ -185,9 +184,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def expireat(
-        self, key: str, unix_time_seconds: int
-    ) -> ResponseType:
+    def expireat(self, key: str, unix_time_seconds: int) -> ResponseType:
         """
         See https://redis.io/commands/expireat
 
@@ -229,9 +226,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def pexpireat(
-        self, key: str, unix_time_milliseconds: int
-    ) -> ResponseType:
+    def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseType:
         """
         See https://redis.io/commands/pexpireat
 
@@ -310,7 +305,6 @@ class Commands(CommandsProtocol):
 
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
-
 
     def touch(self, *keys: str) -> ResponseType:
         """
@@ -405,7 +399,7 @@ class Commands(CommandsProtocol):
 
         command: List = ["GEODIST", key, member1, member2, unit]
 
-        return self.run(command)        
+        return self.run(command)
 
     def geohash(self, key: str, *members: str) -> ResponseType:
         """
@@ -416,9 +410,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def geopos(
-        self, key: str, *members: str
-    ) -> ResponseType:
+    def geopos(self, key: str, *members: str) -> ResponseType:
         """
         See https://redis.io/commands/geopos
 
@@ -531,7 +523,6 @@ class Commands(CommandsProtocol):
 
         # If none of the additional properties are requested, the result will be "List[str]".
         return self.run(command)
-
 
     def georadiusbymember(
         self,
@@ -820,9 +811,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def hincrbyfloat(
-        self, key: str, field: str, increment: float
-    ) -> ResponseType:
+    def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseType:
         """
         See https://redis.io/commands/hincrbyfloat
 
@@ -921,7 +910,13 @@ class Commands(CommandsProtocol):
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
 
-    def hset(self, name: str, key: Optional[str] = None, val: Optional[str] = None, field_value_pairs: Optional[Dict] = None) -> ResponseType:
+    def hset(
+        self,
+        name: str,
+        key: Optional[str] = None,
+        val: Optional[str] = None,
+        field_value_pairs: Optional[Dict] = None,
+    ) -> ResponseType:
         """
         See https://redis.io/commands/hset
         """
@@ -939,9 +934,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def hsetnx(
-        self, key: str, field: str, value: Any
-    ) -> ResponseType:
+    def hsetnx(self, key: str, field: str, value: Any) -> ResponseType:
         """
         See https://redis.io/commands/hsetnx
 
@@ -1012,7 +1005,11 @@ class Commands(CommandsProtocol):
         return self.run(command)
 
     def linsert(
-        self, key: str, position: Literal["BEFORE", "AFTER", "before", "after"], pivot: Any, element: Any
+        self,
+        key: str,
+        position: Literal["BEFORE", "AFTER", "before", "after"],
+        pivot: Any,
+        element: Any,
     ) -> ResponseType:
         """
         See https://redis.io/commands/linsert
@@ -1052,9 +1049,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def lpop(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def lpop(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/lpop
 
@@ -1153,9 +1148,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def rpop(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def rpop(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/rpop
 
@@ -1268,7 +1261,9 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def flushall(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> ResponseType:
+    def flushall(
+        self, mode: Union[Literal["ASYNC", "SYNC"], None] = None
+    ) -> ResponseType:
         """
         See https://redis.io/commands/flushall
         """
@@ -1280,7 +1275,9 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def flushdb(self, mode: Union[Literal["ASYNC", "SYNC"], None] = None) -> ResponseType:
+    def flushdb(
+        self, mode: Union[Literal["ASYNC", "SYNC"], None] = None
+    ) -> ResponseType:
         """
         See https://redis.io/commands/flushdb
         """
@@ -1391,11 +1388,11 @@ class Commands(CommandsProtocol):
         command: List = ["SMEMBERS", key]
 
         return self.run(command)
-    
+
     def smismember(self, key: str, *members: Any) -> ResponseType:
         """
         See https://redis.io/commands/smismember
-        
+
         :return: A bool list if self.format_return is True.
         """
 
@@ -1406,9 +1403,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def smove(
-        self, source: str, destination: str, member: Any
-    ) -> ResponseType:
+    def smove(self, source: str, destination: str, member: Any) -> ResponseType:
         """
         See https://redis.io/commands/smove
 
@@ -1419,9 +1414,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def spop(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def spop(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/spop
 
@@ -1435,9 +1428,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def srandmember(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/srandmember
 
@@ -1597,9 +1588,7 @@ class Commands(CommandsProtocol):
     whether "with_scores" is True or not, its raw return type will be List[str].
     """
 
-    def zdiff(
-        self, keys: List[str], withscores: bool = False
-    ) -> ResponseType:
+    def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseType:
         """
         See https://redis.io/commands/zdiff
 
@@ -1632,9 +1621,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def zincrby(
-        self, key: str, increment: float, member: str
-    ) -> ResponseType:
+    def zincrby(self, key: str, increment: float, member: str) -> ResponseType:
         """
         See https://redis.io/commands/zincrby
 
@@ -1726,9 +1713,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def zmscore(
-        self, key: str, members: List[str]
-    ) -> ResponseType:
+    def zmscore(self, key: str, members: List[str]) -> ResponseType:
         """
         See https://redis.io/commands/zmscore
 
@@ -1742,9 +1727,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def zpopmax(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/zpopmax
 
@@ -1760,9 +1743,7 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def zpopmin(
-        self, key: str, count: Union[int, None] = None
-    ) -> ResponseType:
+    def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseType:
         """
         See https://redis.io/commands/zpopmin
 
@@ -2255,7 +2236,9 @@ class Commands(CommandsProtocol):
         See https://redis.io/commands/getex
         """
 
-        if (ex or px or exat or pxat or persist) and not number_are_not_none(ex, px, exat, pxat, persist, number=1):
+        if (ex or px or exat or pxat or persist) and not number_are_not_none(
+            ex, px, exat, pxat, persist, number=1
+        ):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         command: List = ["GETEX", key]
@@ -2389,7 +2372,9 @@ class Commands(CommandsProtocol):
         if nx and xx:
             raise Exception('"nx" and "xx" are mutually exclusive.')
 
-        if (ex or px or exat or pxat or keepttl) and not number_are_not_none(ex, px, exat, pxat, keepttl, number=1):
+        if (ex or px or exat or pxat or keepttl) and not number_are_not_none(
+            ex, px, exat, pxat, keepttl, number=1
+        ):
             raise Exception("Exactly one of the expiration settings must be specified.")
 
         if nx and get:
@@ -2467,7 +2452,7 @@ class Commands(CommandsProtocol):
         command: List = ["SUBSTR", key, start, end]
 
         return self.run(command)
-    
+
     def script_exists(self, *sha1: str) -> ResponseType:
         """
         See https://redis.io/commands/script-exists
@@ -2482,7 +2467,9 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    def script_flush(self, mode: Optional[Literal["ASYNC", "SYNC"]] = None) -> ResponseType:
+    def script_flush(
+        self, mode: Optional[Literal["ASYNC", "SYNC"]] = None
+    ) -> ResponseType:
         """
         See https://redis.io/commands/script-flush
         """
@@ -2502,7 +2489,7 @@ class Commands(CommandsProtocol):
         command: List = ["SCRIPT", "LOAD", script]
 
         return self.run(command)
-    
+
     # def pubsub_channels(self, pattern: Union[str, None] = None) -> ResponseType:
     #     """
     #     See https://redis.io/commands/pubsub-channels
@@ -2556,7 +2543,9 @@ class BitFieldCommands:
 
         return self
 
-    def set(self, encoding: str, offset: BitFieldOffset, value: int) -> "BitFieldCommands":
+    def set(
+        self, encoding: str, offset: BitFieldOffset, value: int
+    ) -> "BitFieldCommands":
         """
         Set the specified bit field and returns its old value.
 
@@ -2568,7 +2557,9 @@ class BitFieldCommands:
 
         return self
 
-    def incrby(self, encoding: str, offset: BitFieldOffset, increment: int) -> "BitFieldCommands":
+    def incrby(
+        self, encoding: str, offset: BitFieldOffset, increment: int
+    ) -> "BitFieldCommands":
         """
         Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
 
@@ -2620,7 +2611,6 @@ class BitFieldRO:
 
     def execute(self) -> ResponseType:
         return self.client.run(command=self.command)
-
 
 
 """

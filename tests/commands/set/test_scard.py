@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_set():
     set_name = "myset"
     redis.delete(set_name)
     yield
     redis.delete(set_name)
+
 
 def test_scard():
     set_name = "myset"

@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sets():
     set1 = "set1"
@@ -8,6 +9,7 @@ def flush_sets():
 
     redis.delete(set1)
     redis.delete(set2)
+
 
 def test_sunion():
     set1 = "set1"
@@ -25,6 +27,7 @@ def test_sunion():
     # Assert that the union of both sets is returned
     assert result == {"apple", "banana", "cherry", "date"}
 
+
 def test_sunion_empty_sets():
     set1 = "set1"
     set2 = "set2"
@@ -34,6 +37,7 @@ def test_sunion_empty_sets():
 
     # Assert that an empty set is returned
     assert result == set()
+
 
 def test_sunion_single_set():
     set1 = "set1"

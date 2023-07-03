@@ -1,11 +1,13 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_set():
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
+
 
 def test_zscore():
     sorted_set = "sorted_set"
@@ -17,6 +19,7 @@ def test_zscore():
 
     non_existent_score = redis.zscore(sorted_set, "nonexistent_member")
     assert non_existent_score is None
+
 
 def test_zscore_without_formatting():
     redis.format_return = False

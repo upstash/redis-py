@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_set():
     set_name = "myset"
     redis.delete(set_name)
     yield
     redis.delete(set_name)
+
 
 def test_smismember():
     set_name = "myset"
@@ -19,8 +21,10 @@ def test_smismember():
 
     assert members == [True, 1, False]
 
-def test_smismember_nonexisting_set():
 
-    members = redis.smismember("non_existing_set", "element1", "element3", "non_existing_element")
+def test_smismember_nonexisting_set():
+    members = redis.smismember(
+        "non_existing_set", "element1", "element3", "non_existing_element"
+    )
 
     assert members == [False, False, False]

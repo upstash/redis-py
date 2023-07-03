@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_keys():
     keys = ["key1", "key2", "key3"]
@@ -8,12 +9,9 @@ def flush_keys():
     yield
     redis.delete(*keys)
 
+
 def test_msetnx_all_keys_do_not_exist():
-    key_value_pairs = {
-        "key1": "value1",
-        "key2": "value2",
-        "key3": "value3"
-    }
+    key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     result = redis.msetnx(key_value_pairs)
 
@@ -22,12 +20,9 @@ def test_msetnx_all_keys_do_not_exist():
     for key, value in key_value_pairs.items():
         assert redis.get(key) == value
 
+
 def test_msetnx_some_keys_exist():
-    key_value_pairs = {
-        "key1": "value1",
-        "key2": "value2",
-        "key3": "value3"
-    }
+    key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     redis.set("key2", "existing_value")
 
@@ -40,12 +35,8 @@ def test_msetnx_some_keys_exist():
 
 
 def test_msetnx_without_formatting():
-    redis.format_return = False    
-    key_value_pairs = {
-        "key1": "value1",
-        "key2": "value2",
-        "key3": "value3"
-    }
+    redis.format_return = False
+    key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     result = redis.msetnx(key_value_pairs)
 
