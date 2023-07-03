@@ -2,12 +2,14 @@ import time
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_key():
     key = "mykey"
     redis.delete(key)
     yield
     redis.delete(key)
+
 
 def test_psetex():
     key = "mykey"
@@ -24,6 +26,7 @@ def test_psetex():
     time.sleep(2)
 
     assert redis.get(key) is None
+
 
 def test_psetex_without_formatting():
     redis.format_return = False

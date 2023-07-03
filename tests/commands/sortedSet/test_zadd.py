@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sorted_set():
     sorted_set = "sorted_set"
     redis.delete(sorted_set)
     yield
     redis.delete(sorted_set)
+
 
 def test_zadd():
     sorted_set = "sorted_set"
@@ -24,6 +26,7 @@ def test_zadd():
         ("member3", 30.0),
     ]
 
+
 def test_zadd_existing_member():
     sorted_set = "sorted_set"
 
@@ -39,13 +42,13 @@ def test_zadd_existing_member():
     # Assert that the score of the existing member is updated
     assert redis.zscore(sorted_set, "member1") == 20.0
 
+
 def test_zadd_exception_with_incr():
     sorted_set = "sorted_set"
 
     # Add multiple members to the sorted set, incr with multiple should throw exception
     with pytest.raises(Exception):
         redis.zadd(sorted_set, {"member1": 10, "member2": 20}, incr=True)
-
 
 
 def test_zadd_multiple_members():

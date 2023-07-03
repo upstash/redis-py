@@ -1,6 +1,7 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_sets():
     set1 = "set1"
@@ -14,6 +15,7 @@ def flush_sets():
     redis.delete(set1)
     redis.delete(set2)
     redis.delete(union_set)
+
 
 def test_sunionstore():
     set1 = "set1"
@@ -35,6 +37,7 @@ def test_sunionstore():
     # Assert that the members in the union set are as expected
     assert redis.smembers(union_set) == {"apple", "banana", "cherry", "date"}
 
+
 def test_sunionstore_empty_sets():
     set1 = "set1"
     set2 = "set2"
@@ -48,6 +51,7 @@ def test_sunionstore_empty_sets():
 
     # Assert that the union set is also empty
     assert redis.smembers(union_set) == set()
+
 
 def test_sunionstore_single_set():
     set1 = "set1"

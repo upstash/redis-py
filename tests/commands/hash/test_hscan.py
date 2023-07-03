@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_hash():
     hash_name = "myhash"
     redis.delete(hash_name)
     yield
     redis.delete(hash_name)
+
 
 def test_hscan_with_match():
     hash_name = "myhash"
@@ -24,7 +26,9 @@ def test_hscan_with_match():
     result = {}
 
     while True:
-        cursor, data = redis.hscan(hash_name, cursor, count=count, match_pattern=match_pattern)
+        cursor, data = redis.hscan(
+            hash_name, cursor, count=count, match_pattern=match_pattern
+        )
         result.update(data)
 
         if cursor == 0:

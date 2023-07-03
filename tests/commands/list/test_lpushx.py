@@ -1,12 +1,14 @@
 import pytest
 from tests.sync_client import redis
 
+
 @pytest.fixture(autouse=True)
 def flush_mylists():
     mylists = ["mylist1", "mylist2"]
 
     for mylist in mylists:
         redis.delete(mylist)
+
 
 def test_lpushx_existing_list():
     mylist = "mylist1"
@@ -24,6 +26,7 @@ def test_lpushx_existing_list():
     # Verify that the new value is added to the list
     expected_list = [new_value] + reversed_values
     assert redis.lrange(mylist, 0, -1) == expected_list
+
 
 def test_lpushx_nonexistent_list():
     mylist = "mylist2"
