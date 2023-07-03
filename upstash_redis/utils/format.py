@@ -277,40 +277,40 @@ class FormattedResponse:
         "GEODIST": to_float,
         "GEOPOS": format_geo_positions_return,
         "GEORADIUS": georadius_formatter,
-        "GEORADIUS_RO": georadius_formatter,  # same with the georadius, missing tests
-        "GEORADIUSBYMEMBER": georadius_formatter,  # same with the georadius, missing tests
-        "GEORADIUSBYMEMBER_RO": georadius_formatter,  # same with the georadius, missing tests
-        "GEOSEARCH": georadius_formatter,  # same with the georadius, missing tests
-        "HEXISTS": to_bool,  # missing test
-        "HGETALL": format_hash_return,  # missing test
-        "HINCRBYFLOAT": to_float,  # missing test
-        "HRANDFIELD": hrandfield_formatter,  # missing test
-        "HSCAN": hscan_formatter,  # missing test
-        "HSETNX": to_bool,  # missing test
+        "GEORADIUS_RO": georadius_formatter,
+        "GEORADIUSBYMEMBER": georadius_formatter,
+        "GEORADIUSBYMEMBER_RO": georadius_formatter,
+        "GEOSEARCH": georadius_formatter,
+        "HEXISTS": to_bool,
+        "HGETALL": format_hash_return,
+        "HINCRBYFLOAT": to_float,
+        "HRANDFIELD": hrandfield_formatter,
+        "HSCAN": hscan_formatter,
+        "HSETNX": to_bool,
         "PFADD": to_bool,
-        "TIME": format_server_time_return,  # missing test
-        "SISMEMBER": to_bool,  # missing test
+        "TIME": format_server_time_return,
+        "SISMEMBER": to_bool,
         "SMISMEMBER": list_to_bool_list,
-        "SMOVE": to_bool,  # missing test
-        "SSCAN": sscan_formatter,  # missing test
-        "ZADD": zadd_formatter,  # missing test
-        "ZDIFF": zdiff_formatter,  # missing test
-        "ZINCRBY": to_float,  # missing test
-        "ZINTER": zinter_formatter,  # missing test
-        "ZMSCORE": format_float_list,  # missing test
-        "ZPOPMAX": format_sorted_set_return,  # missing test
-        "ZPOPMIN": format_sorted_set_return,  # missing test
-        "ZRANDMEMBER": zrandmember_formatter,  # missing test
-        "ZRANGE": zrange_formatter,  # missing test
-        "ZRANGEBYSCORE": zrangebyscore_formatter,  # missing test
-        "ZREVRANGE": zrevrange_formatter,  # missing test
-        "ZREVRANGEBYSCORE": zrevrangebyscore_formatter,  # missing test
-        "ZSCAN": zscan_formatter,  # missing test
-        "ZSCORE": zscore_formatter,  # missing test
-        "ZUNION": zunion_formatter,  # missing test
-        "INCRBYFLOAT": to_float,  # missing test
+        "SMOVE": to_bool,
+        "SSCAN": sscan_formatter,
+        "ZADD": zadd_formatter,
+        "ZDIFF": zdiff_formatter,
+        "ZINCRBY": to_float,
+        "ZINTER": zinter_formatter,
+        "ZMSCORE": format_float_list,
+        "ZPOPMAX": format_sorted_set_return,
+        "ZPOPMIN": format_sorted_set_return,
+        "ZRANDMEMBER": zrandmember_formatter,
+        "ZRANGE": zrange_formatter,
+        "ZRANGEBYSCORE": zrangebyscore_formatter,
+        "ZREVRANGE": zrevrange_formatter,
+        "ZREVRANGEBYSCORE": zrevrangebyscore_formatter,
+        "ZSCAN": zscan_formatter,
+        "ZSCORE": zscore_formatter,
+        "ZUNION": zunion_formatter,
+        "INCRBYFLOAT": to_float,
         "PUBSUB NUMSUB": _list_to_dict,
-        "SCRIPT EXISTS": format_bool_list,  # missing test
+        "SCRIPT EXISTS": format_bool_list,
         "FLUSHALL": ok_to_bool,
         "FLUSHDB": ok_to_bool,
         "MSETNX": to_bool,
@@ -327,7 +327,5 @@ class FormattedResponse:
         "SCRIPT EXISTS": list_to_bool_list,
     }
 
-    # TODO: Check return_cursor stuff.
-    # TODO: lots of duplicate formatters. unite them
+    # TODO: lots of duplicate formatters. unite them, especially format_sorted_set_return
     # TODO: all formatters should take `command` parameter
-    # TODO: check commands using format_sorted_set_return

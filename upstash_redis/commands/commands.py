@@ -289,7 +289,6 @@ class Commands(CommandsProtocol):
         :param match_pattern: replacement for "MATCH"
 
         :return: The cursor will be an integer if "format_return" is True.
-        Only the List of elements will be returned if "return_cursor" is False
         """
 
         command: List = ["SCAN", cursor]
