@@ -759,8 +759,16 @@ class Commands:
     def script_load(self, script: str) -> str:
         ...
 
-    def pubsub(self) -> "PubSub":
-        ...
+    # def pubsub_channels(self, pattern: Union[str, None] = None) -> List[str]:
+    #     ...
+
+    # def pubsub_numpat(self) -> int:
+    #     ...
+
+    # def pubsub_numsub(
+    #     self, *channels: str
+    # ) -> Union[List[Union[str, int]], Dict[str, int]]:
+    #     ...
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -795,20 +803,6 @@ class BitFieldRO:
         ...
 
 
-class PubSub:
-    def __init__(self, client: Commands):
-        ...
-
-    def channels(self, pattern: Union[str, None] = None) -> List[str]:
-        ...
-
-    def numpat(self) -> int:
-        ...
-
-    def numsub(
-        self, *channels: str
-    ) -> Union[List[Union[str, int]], Dict[str, int]]:
-        ...
 
 
 

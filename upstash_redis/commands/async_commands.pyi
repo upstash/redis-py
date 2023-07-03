@@ -762,8 +762,16 @@ class AsyncCommands:
     async def script_load(self, script: str) -> str:
         ...
     
-    def pubsub(self) -> "PubSub":
-        ...
+    # async def pubsub_channels(self, pattern: Union[str, None] = None) -> List[str]:
+    #     ...
+
+    # async def pubsub_numpat(self) -> int:
+    #     ...
+
+    # async def pubsub_numsub(
+    #     self, *channels: str
+    # ) -> Union[List[Union[str, int]], Dict[str, int]]:
+    #     ...
 
 
 
@@ -798,19 +806,4 @@ class BitFieldRO:
     async def execute(self) -> List:
         ...
 
-
-class PubSub:
-    def __init__(self, client: AsyncCommands):
-        ...
-
-    async def channels(self, pattern: Union[str, None] = None) -> List[str]:
-        ...
-
-    async def numpat(self) -> int:
-        ...
-
-    async def numsub(
-        self, *channels: str
-    ) -> Union[List[Union[str, int]], Dict[str, int]]:
-        ...
 

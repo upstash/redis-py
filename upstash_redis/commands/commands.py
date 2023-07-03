@@ -2503,12 +2503,39 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
     
-    def pubsub(self) -> "PubSub":
-        """
-        See https://redis.io/commands/pubsub
-        """
+    # def pubsub_channels(self, pattern: Union[str, None] = None) -> ResponseType:
+    #     """
+    #     See https://redis.io/commands/pubsub-channels
+    #     """
 
-        return PubSub(client=self)
+    #     command: List = ["PUBSUB", "CHANNELS"]
+
+    #     if pattern is not None:
+    #         command.append(pattern)
+
+    #     return self.run(command)
+
+    # def pubsub_numpat(self) -> ResponseType:
+    #     """
+    #     See https://redis.io/commands/pubsub-numpat
+    #     """
+
+    #     command: List = ["PUBSUB", "NUMPAT"]
+
+    #     return self.run(command)
+
+    # def pubsub_numsub(
+    #     self, *channels: str
+    # ) -> ResponseType:
+    #     """
+    #     See https://redis.io/commands/pubsub-numsub
+
+    #     :return: A Dict with channel-number_of_subscribers pairs if "format_return" is True.
+    #     """
+
+    #     command: List = ["PUBSUB", "NUMSUB", *channels]
+
+    #     return self.run(command)
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -2594,44 +2621,6 @@ class BitFieldRO:
     def execute(self) -> ResponseType:
         return self.client.run(command=self.command)
 
-
-class PubSub:
-    def __init__(self, client: Commands):
-        self.client = client
-
-    def channels(self, pattern: Union[str, None] = None) -> ResponseType:
-        """
-        See https://redis.io/commands/pubsub-channels
-        """
-
-        command: List = ["PUBSUB", "CHANNELS"]
-
-        if pattern is not None:
-            command.append(pattern)
-
-        return self.client.run(command=command)
-
-    def numpat(self) -> ResponseType:
-        """
-        See https://redis.io/commands/pubsub-numpat
-        """
-
-        command: List = ["PUBSUB", "NUMPAT"]
-
-        return self.client.run(command=command)
-
-    def numsub(
-        self, *channels: str
-    ) -> ResponseType:
-        """
-        See https://redis.io/commands/pubsub-numsub
-
-        :return: A Dict with channel-number_of_subscribers pairs if "format_return" is True.
-        """
-
-        command: List = ["PUBSUB", "NUMSUB", *channels]
-
-        return self.client.run(command)
 
 
 """
