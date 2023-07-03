@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upstash_redis"
-version = "0.14.0"
+version = "0.14.1"
 description = "Serverless Redis Sdk from Upstash"
 authors = ["Upstash <support@upstash.com>", "Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
 readme = "README.md"
