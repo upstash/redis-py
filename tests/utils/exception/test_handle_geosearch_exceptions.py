@@ -162,7 +162,7 @@ def test_with_coordinates_and_width_and_height():
     )
 
 
-def count_test_with_count_and_any():
+def test_count_with_count_and_any():
     handle_geosearch_exceptions(
         member="member",
         fromlonlat_longitude=None,
