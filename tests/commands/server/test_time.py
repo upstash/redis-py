@@ -1,6 +1,4 @@
-from curses.ascii import isdigit
 from typing import Dict, List
-import pytest
 from tests.sync_client import redis
 
 
