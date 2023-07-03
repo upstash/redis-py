@@ -2468,19 +2468,47 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
     
+    def script_exists(self, *sha1: str) -> ResponseType:
+        """
+        See https://redis.io/commands/script-exists
+
+        :return: A List of bools if "format_return" is True.
+        """
+
+        if len(sha1) == 0:
+            raise Exception("At least one sha1 digests must be provided.")
+
+        command: List = ["SCRIPT", "EXISTS", *sha1]
+
+        return self.run(command)
+
+    def script_flush(self, mode: Optional[Literal["ASYNC", "SYNC"]] = None) -> ResponseType:
+        """
+        See https://redis.io/commands/script-flush
+        """
+
+        command: List = ["SCRIPT", "FLUSH"]
+
+        if mode:
+            command.append(mode)
+
+        return self.run(command)
+
+    def script_load(self, script: str) -> ResponseType:
+        """
+        See https://redis.io/commands/script-load
+        """
+
+        command: List = ["SCRIPT", "LOAD", script]
+
+        return self.run(command)
+    
     def pubsub(self) -> "PubSub":
         """
         See https://redis.io/commands/pubsub
         """
 
         return PubSub(client=self)
-
-    def script(self) -> "Script":
-        """
-        See https://redis.io/commands/script
-        """
-
-        return Script(client=self)
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -2604,45 +2632,6 @@ class PubSub:
         command: List = ["PUBSUB", "NUMSUB", *channels]
 
         return self.client.run(command)
-
-class Script:
-    def __init__(self, client: Commands):
-        self.client = client
-
-    def exists(self, *sha1: str) -> ResponseType:
-        """
-        See https://redis.io/commands/script-exists
-
-        :return: A List of bools if "format_return" is True.
-        """
-
-        if len(sha1) == 0:
-            raise Exception("At least one sha1 digests must be provided.")
-
-        command: List = ["SCRIPT", "EXISTS", *sha1]
-
-        return self.client.run(command=command)
-
-    def flush(self, mode: Literal["ASYNC", "SYNC"]) -> ResponseType:
-        """
-        See https://redis.io/commands/script-flush
-        """
-
-        command: List = ["SCRIPT", "FLUSH"]
-
-        if mode:
-            command.append(mode)
-
-        return self.client.run(command=command)
-
-    def load(self, script: str) -> ResponseType:
-        """
-        See https://redis.io/commands/script-load
-        """
-
-        command: List = ["SCRIPT", "LOAD", script]
-
-        return self.client.run(command=command)
 
 
 """

@@ -752,12 +752,19 @@ class AsyncCommands:
 
     async def substr(self, key: str, start: int, end: int) -> str:
         ...
+
+    async def script_exists(self, *sha1: str) -> Union[List[int], List[bool]]:
+        ...
+
+    async def script_flush(self, mode: Optional[Literal["ASYNC", "SYNC"]] = None) -> Union[str, bool]:
+        ...
+
+    async def script_load(self, script: str) -> str:
+        ...
     
     def pubsub(self) -> "PubSub":
         ...
 
-    def script(self) -> "Script":
-        ...
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -807,16 +814,3 @@ class PubSub:
     ) -> Union[List[Union[str, int]], Dict[str, int]]:
         ...
 
-
-class Script:
-    def __init__(self, client: AsyncCommands):
-        ...
-
-    async def exists(self, *sha1: str) -> Union[List[Literal[1, 0]], List[bool]]:
-        ...
-
-    async def flush(self, mode: Literal["ASYNC", "SYNC"]) -> str:
-        ...
-
-    async def load(self, script: str) -> str:
-        ...

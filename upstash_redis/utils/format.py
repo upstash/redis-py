@@ -304,6 +304,9 @@ class FormattedResponse:
         "SDIFF": to_set,
         "SINTER": to_set,
         "SUNION": to_set,
+
+        "SCRIPT FLUSH": ok_to_bool,
+        "SCRIPT EXISTS": list_to_bool_list,
     }
 
     # TODO: Check return_cursor stuff.
