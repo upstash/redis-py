@@ -63,7 +63,7 @@ async def async_execute(
                     if telemetry_data.get("sdk"):
                         headers["Upstash-Telemetry-Sdk"] = telemetry_data["sdk"]
                     else:
-                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@development"
+                        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@python"
 
                     if telemetry_data.get("platform"):
                         headers["Upstash-Telemetry-Platform"] = telemetry_data[
