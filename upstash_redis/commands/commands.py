@@ -2717,4 +2717,22 @@ class ACL:
             command.append("RESET")
 
         return await self.client.run(command=command)
+
+    async def save(self, count: Union[int, None] = None, reset: bool = False) -> List[str]:
+        # See https://redis.io/commands/acl-save
+
+        command: List = ["ACL", "SAVE"]
+
+        return await self.client.run(command=command)
+
+    async def setuser():
+        ...
+    
+    async def users():
+        ...
+
+    async def whoami():
+        ...
+
+
 """
