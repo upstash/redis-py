@@ -9,11 +9,11 @@ packages = [{ include = "upstash_redis" }]
 [tool.poetry.dependencies]
 python = "^3.8"
 aiohttp = "^3.8.4"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
 pytest = "^7.3.0"
 pytest-asyncio = "^0.21.0"
-requests = "^2.31.0"
-urllib3 = ">=1.26.6,<2.0"
-
 
 [build-system]
 requires = ["poetry-core"]
