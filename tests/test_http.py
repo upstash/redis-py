@@ -8,9 +8,9 @@ from aiohttp import ClientSession
 from pytest import mark, raises
 from requests import Session
 
-from upstash_redis.exception import UpstashException
+from upstash_redis.errors import UpstashError
 from upstash_redis.http import async_execute, decode, make_headers, sync_execute
-from upstash_redis.schema.http import RESTEncoding
+from upstash_redis.typing import RESTEncoding
 
 
 @mark.asyncio
@@ -71,7 +71,7 @@ async def test_async_execute_with_encoding_and_object() -> None:
 @mark.asyncio
 async def test_async_execute_with_invalid_command() -> None:
     async with ClientSession() as session:
-        with raises(UpstashException):
+        with raises(UpstashError):
             await async_execute(
                 session=session,
                 url=environ["UPSTASH_REDIS_REST_URL"],
@@ -140,7 +140,7 @@ def test_sync_execute_with_encoding_and_object() -> None:
 
 def test_sync_execute_with_invalid_command() -> None:
     with Session() as session:
-        with raises(UpstashException):
+        with raises(UpstashError):
             sync_execute(
                 session=session,
                 url=environ["UPSTASH_REDIS_REST_URL"],
@@ -169,7 +169,7 @@ def test_sync_execute_with_invalid_command() -> None:
     ids=["simple string", "ok", "integer", "none", "list", "2d list", "3d list"],
 )
 def test_decode(arg: t.Any, expected: t.Any) -> None:
-    assert decode(arg, "base64") == expected
+    assert decode(arg) == expected
 
 
 @pytest.mark.parametrize(

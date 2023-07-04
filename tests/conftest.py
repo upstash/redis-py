@@ -5,9 +5,10 @@ Flush and fill the testing database with the necessary data.
 """
 
 from asyncio import run
-from aiohttp import ClientSession
 from os import environ
-from typing import List, Dict
+from typing import Dict, List
+
+from aiohttp import ClientSession
 
 url: str = environ["UPSTASH_REDIS_REST_URL"] + "/pipeline"
 token: str = environ["UPSTASH_REDIS_REST_TOKEN"]

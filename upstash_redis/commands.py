@@ -1,24 +1,20 @@
-from upstash_redis.typing import CommandsProtocol, ResponseType
+from typing import Any, Awaitable, Dict, List, Literal, Optional, Union
 
-from upstash_redis.utils.exception import (
+from upstash_redis.typing import BitFieldOffset, FloatMinMax, GeoMember
+from upstash_redis.utils import (
+    handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
     handle_zrangebylex_exceptions,
-    handle_georadius_write_exceptions,
-)
-from upstash_redis.utils.comparison import number_are_not_none
-from upstash_redis.schema.commands.parameters import (
-    BitFieldOffset,
-    GeoMember,
-    FloatMinMax,
+    number_are_not_none,
 )
 
-from typing import Any, Iterable, Literal, Optional, Union, List, Dict
+ResponseType = Union[Awaitable, Any]
 
 
-class Commands(CommandsProtocol):
-    def run(self, command):
-        ...
+class Commands:
+    def run(self, command: List) -> ResponseType:
+        raise NotImplementedError("run")
 
     def bitcount(
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
@@ -2489,39 +2485,8 @@ class Commands(CommandsProtocol):
 
         return self.run(command)
 
-    # def pubsub_channels(self, pattern: Union[str, None] = None) -> ResponseType:
-    #     """
-    #     See https://redis.io/commands/pubsub-channels
-    #     """
 
-    #     command: List = ["PUBSUB", "CHANNELS"]
-
-    #     if pattern is not None:
-    #         command.append(pattern)
-
-    #     return self.run(command)
-
-    # def pubsub_numpat(self) -> ResponseType:
-    #     """
-    #     See https://redis.io/commands/pubsub-numpat
-    #     """
-
-    #     command: List = ["PUBSUB", "NUMPAT"]
-
-    #     return self.run(command)
-
-    # def pubsub_numsub(
-    #     self, *channels: str
-    # ) -> ResponseType:
-    #     """
-    #     See https://redis.io/commands/pubsub-numsub
-
-    #     :return: A Dict with channel-number_of_subscribers pairs if "format_return" is True.
-    #     """
-
-    #     command: List = ["PUBSUB", "NUMSUB", *channels]
-
-    #     return self.run(command)
+AsyncCommands = Commands
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -2610,96 +2575,3 @@ class BitFieldRO:
 
     def execute(self) -> ResponseType:
         return self.client.run(command=self.command)
-
-
-"""
-class ACL:
-    def __init__(self, client: Commands):
-        self.client = client
-
-    async def cat(self, category: Union[str, None] = None) -> List[str]:
-        # See https://redis.io/commands/acl-cat
-
-        command: List = ["ACL", "CAT"]
-
-        if category is not None:
-            command.append(category)
-
-        return await self.client.run(command=command)
-
-    async def deluser(self, *usernames: str) -> int:
-        # See https://redis.io/commands/acl-deluser
-        
-        if len(usernames) == 0:
-            raise Exception("At least one username must be provided.")
-
-        command: List = ["ACL", "DELUSER", *usernames]
-
-        return await self.client.run(command=command)
-
-    async def genpass(self, bits: Union[int, None] = None) -> str:
-        # See https://redis.io/commands/acl-genpass
-
-        command: List = ["ACL", "GENPASS"]
-
-        if bits is not None:
-            command.append(bits)
-
-        return await self.client.run(command=command)
-
-    # Is it possible to format this output?
-    async def getuser(self, username: str) -> Union[List[str], None]:
-        # See https://redis.io/commands/acl-getuser
-
-        command: List = ["ACL", "GETUSER", username]
-
-        return await self.client.run(command=command)
-
-    async def List_rules(self) -> List[str]:
-        # See https://redis.io/commands/acl-List
-
-        command = ["ACL", "LIST"]
-
-        return await self.client.run(command=command)
-
-    async def load(self) -> str:
-        # See https://redis.io/commands/acl-load
-
-        command = ["ACL", "LOAD"]
-
-        return await self.client.run(command=command)
-
-    async def log(self, count: Union[int, None] = None, reset: bool = False) -> List[str]:
-        # See https://redis.io/commands/acl-log
-
-        if count is not None and reset:
-            raise Exception("Cannot specify both "count" and "reset".")
-
-        command: List = ["ACL", "LOG"]
-
-        if count is not None:
-            command.append(count)
-
-        if reset:
-            command.append("RESET")
-
-        return await self.client.run(command=command)
-
-    async def save(self, count: Union[int, None] = None, reset: bool = False) -> List[str]:
-        # See https://redis.io/commands/acl-save
-
-        command: List = ["ACL", "SAVE"]
-
-        return await self.client.run(command=command)
-
-    async def setuser():
-        ...
-    
-    async def users():
-        ...
-
-    async def whoami():
-        ...
-
-
-"""

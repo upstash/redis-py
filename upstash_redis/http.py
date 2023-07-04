@@ -1,16 +1,16 @@
 import os
 import time
 from asyncio import sleep
+from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from aiohttp import ClientSession
 from requests import Session
 
-from upstash_redis.exception import UpstashException
-from upstash_redis.schema.http import RESTEncoding, RESTResponse, RESTResult
-from upstash_redis.utils.base import base64_to_string
+from upstash_redis.errors import UpstashError
+from upstash_redis.typing import RESTEncoding, RESTResult
 
 
 def make_headers(
@@ -20,7 +20,7 @@ def make_headers(
         "Authorization": f"Bearer {token}",
     }
 
-    if encoding:
+    if encoding == "base64":
         headers["Upstash-Encoding"] = encoding
 
     if allow_telemetry:
@@ -72,15 +72,15 @@ async def async_execute(
     for i in range(retries + 1):
         try:
             async with session.post(url, headers=headers, json=command) as response:
-                body: RESTResponse = await response.json()
+                body: Dict[str, Any] = await response.json()
 
                 # Avoid the [] syntax to prevent KeyError from being raised.
                 if body.get("error"):
-                    raise UpstashException(body.get("error"))
+                    raise UpstashError(body.get("error"))
 
                 return (
-                    decode(raw=body["result"], encoding=encoding)
-                    if encoding
+                    decode(raw=body["result"])
+                    if encoding == "base64"
                     else body["result"]
                 )
         except Exception as exception:
@@ -117,11 +117,11 @@ def sync_execute(
 
             # Avoid the [] syntax to prevent KeyError from being raised.
             if response.get("error"):
-                raise UpstashException(response.get("error"))
+                raise UpstashError(response.get("error"))
 
             return (
-                decode(raw=response["result"], encoding=encoding)
-                if encoding
+                decode(raw=response["result"])
+                if encoding == "base64"
                 else response["result"]
             )
         except Exception as exception:
@@ -132,25 +132,20 @@ def sync_execute(
                 time.sleep(retry_interval)
 
 
-def decode(raw: RESTResult, encoding: str) -> RESTResult:
+def decode(raw: RESTResult) -> RESTResult:
     """
     Decode the response received from the REST API.
     """
 
-    if encoding == "base64":
-        if isinstance(raw, str):
-            return "OK" if raw == "OK" else base64_to_string(raw)
-
-        elif isinstance(raw, int) or raw is None:
-            return raw
-
-        elif isinstance(raw, List):
-            return [
-                # Decode recursively.
-                decode(element, encoding)
-                for element in raw
-            ]
-        else:
-            raise UpstashException(
-                f"Error decoding data for result type {str(type(raw))}"
-            )
+    if isinstance(raw, str):
+        return "OK" if raw == "OK" else b64decode(raw).decode()
+    elif isinstance(raw, int) or raw is None:
+        return raw
+    elif isinstance(raw, List):
+        return [
+            # Decode recursively.
+            decode(element)
+            for element in raw
+        ]
+    else:
+        raise UpstashError(f"Error decoding data for result type {str(type(raw))}")

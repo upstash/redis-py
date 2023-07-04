@@ -1,4 +1,5 @@
 from typing import Dict, List
+
 from tests.sync_client import redis
 
 
