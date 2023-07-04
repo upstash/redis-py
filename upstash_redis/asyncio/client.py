@@ -2,18 +2,17 @@ from os import environ
 from typing import Any, List, Type, Union
 
 from aiohttp import ClientSession
+
 from upstash_redis.commands.async_commands import AsyncCommands
 from upstash_redis.config import (
+    ALLOW_TELEMETRY,
+    FORMAT_RETURN,
     REST_ENCODING,
     REST_RETRIES,
     REST_RETRY_INTERVAL,
-    FORMAT_RETURN,
-    ALLOW_TELEMETRY,
 )
-from upstash_redis.http.execute import async_execute
-
+from upstash_redis.http import async_execute, make_headers
 from upstash_redis.schema.http import RESTEncoding, RESTResult
-from upstash_redis.schema.telemetry import TelemetryData
 from upstash_redis.utils.format import FormattedResponse
 
 
@@ -27,7 +26,6 @@ class Redis(FormattedResponse, AsyncCommands):
         rest_retry_interval: int = REST_RETRY_INTERVAL,  # Seconds.
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: Union[TelemetryData, None] = None,
     ):
         """
         :param url: UPSTASH_REDIS_REST_URL in the console
@@ -50,8 +48,9 @@ class Redis(FormattedResponse, AsyncCommands):
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
 
-        self.telemetry_data = telemetry_data
         self.FORMATTERS = self.__class__.FORMATTERS
+
+        self._headers = make_headers(token, rest_encoding, allow_telemetry)
 
     @classmethod
     def from_env(
@@ -61,7 +60,6 @@ class Redis(FormattedResponse, AsyncCommands):
         rest_retry_interval: int = REST_RETRY_INTERVAL,
         format_return: bool = FORMAT_RETURN,
         allow_telemetry: bool = ALLOW_TELEMETRY,
-        telemetry_data: Union[TelemetryData, None] = None,
     ):
         """
         Load the credentials from environment.
@@ -81,7 +79,6 @@ class Redis(FormattedResponse, AsyncCommands):
             rest_retry_interval,
             format_return,
             allow_telemetry,
-            telemetry_data,
         )
 
     async def __aenter__(self) -> ClientSession:
@@ -113,13 +110,11 @@ class Redis(FormattedResponse, AsyncCommands):
         res = await async_execute(
             session=self._session,
             url=self.url,
-            token=self.token,
+            headers=self._headers,
             encoding=self.rest_encoding,
             retries=self.rest_retries,
             retry_interval=self.rest_retry_interval,
             command=command,
-            allow_telemetry=self.allow_telemetry,
-            telemetry_data=self.telemetry_data,
         )
 
         main_command = command[0]
