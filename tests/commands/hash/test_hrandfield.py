@@ -44,7 +44,7 @@ def test_hrandfield_multiple() -> None:
 
 
 def test_hrandfield_multiple_without_formatting() -> None:
-    redis.format_return = False
+    redis._format_return = False
     hash_name = "myhash"
 
     # Add fields to the hash
@@ -57,4 +57,4 @@ def test_hrandfield_multiple_without_formatting() -> None:
     assert redis.hget(hash_name, result[0]) == result[1]
     assert redis.hget(hash_name, result[2]) == result[3]
 
-    redis.format_return = True
+    redis._format_return = True

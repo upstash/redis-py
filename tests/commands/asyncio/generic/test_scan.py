@@ -32,10 +32,10 @@ async def test_with_scan_type() -> None:
 
 @mark.asyncio
 async def test_without_formatting() -> None:
-    redis.format_return = False
+    redis._format_return = False
 
     async with redis:
         result = await redis.scan(cursor=0)
         assert isinstance(result[0], str) and isinstance(result[1], List)
 
-    redis.format_return = True
+    redis._format_return = True

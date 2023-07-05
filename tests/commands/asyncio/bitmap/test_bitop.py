@@ -58,8 +58,8 @@ async def test_not() -> None:
         # Manually execute over the REST API because the response is not valid JSON.
         async with ClientSession() as session:
             async with session.post(
-                url=redis.url,
-                headers={"Authorization": f"Bearer {redis.token}"},
+                url=redis._url,
+                headers={"Authorization": f"Bearer {redis._token}"},
                 json=["GET", "bitop_destination_4"],
             ) as response:
                 # Prevent Python from interpreting escape characters.

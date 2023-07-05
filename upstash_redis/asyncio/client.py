@@ -30,16 +30,16 @@ class Redis(AsyncCommands):
         :param allow_telemetry: whether anonymous telemetry can be collected
         """
 
-        self.url = url
-        self.token = token
+        self._url = url
+        self._token = token
 
-        self.allow_telemetry = allow_telemetry
+        self._allow_telemetry = allow_telemetry
 
-        self.format_return = format_return
+        self._format_return = format_return
 
-        self.rest_encoding = rest_encoding
-        self.rest_retries = rest_retries
-        self.rest_retry_interval = rest_retry_interval
+        self._rest_encoding = rest_encoding
+        self._rest_retries = rest_retries
+        self._rest_retry_interval = rest_retry_interval
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
 
@@ -100,11 +100,11 @@ class Redis(AsyncCommands):
 
         res = await async_execute(
             session=self._session,
-            url=self.url,
+            url=self._url,
             headers=self._headers,
-            encoding=self.rest_encoding,
-            retries=self.rest_retries,
-            retry_interval=self.rest_retry_interval,
+            encoding=self._rest_encoding,
+            retries=self._rest_retries,
+            retry_interval=self._rest_retry_interval,
             command=command,
         )
 
@@ -113,7 +113,7 @@ class Redis(AsyncCommands):
             main_command = f"{main_command} {command[1]}"
 
         if (
-            self.format_return
+            self._format_return
             or main_command == "HSCAN"
             or main_command == "SMEMBERS"
             or main_command == "SDIFF"

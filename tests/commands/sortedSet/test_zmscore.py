@@ -22,7 +22,7 @@ def test_zmscore():
 
 
 def test_zmscore_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     sorted_set = "sorted_set"
 
@@ -33,4 +33,4 @@ def test_zmscore_without_formatting():
 
     assert result == ["10", "30", None]
 
-    redis.format_return = True
+    redis._format_return = True

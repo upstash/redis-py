@@ -12,7 +12,7 @@ def test_time():
 
 
 def test_time_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     result = redis.time()
     assert isinstance(result, List)
@@ -21,4 +21,4 @@ def test_time_without_formatting():
     assert result[0].isdigit()
     assert result[1].isdigit()
 
-    redis.format_return = True
+    redis._format_return = True

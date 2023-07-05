@@ -22,11 +22,11 @@ async def test_with_unit() -> None:
 
 @mark.asyncio
 async def test_without_formatting() -> None:
-    redis.format_return = False
+    redis._format_return = False
 
     async with redis:
         assert (
             await redis.geodist("test_geo_index", "Palermo", "Catania") == "166274.1516"
         )
 
-    redis.format_return = True
+    redis._format_return = True

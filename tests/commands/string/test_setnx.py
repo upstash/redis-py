@@ -27,7 +27,7 @@ def test_setnx():
 
 
 def test_setnx_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     key = "mykey"
     value = "myvalue"
@@ -39,4 +39,4 @@ def test_setnx_without_formatting():
     result = redis.setnx(key, "newvalue")
     assert result is 0
 
-    redis.format_return = True
+    redis._format_return = True

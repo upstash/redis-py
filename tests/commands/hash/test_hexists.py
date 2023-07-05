@@ -24,7 +24,7 @@ def test_hexists():
 
 
 def test_hexists_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     hash_name = "myhash"
     field1 = "field1"
     field2 = "field2"
@@ -37,4 +37,4 @@ def test_hexists_without_formatting():
     assert exists_field1 is 1
     assert exists_field2 is 0
 
-    redis.format_return = True
+    redis._format_return = True

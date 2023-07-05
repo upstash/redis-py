@@ -11,9 +11,9 @@ async def test() -> None:
 
 @mark.asyncio
 async def test_without_formatting() -> None:
-    redis.format_return = False
+    redis._format_return = False
 
     async with redis:
         assert await redis.renamenx("string", newkey="string") == 0
 
-    redis.format_return = True
+    redis._format_return = True
