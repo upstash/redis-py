@@ -2486,9 +2486,6 @@ class Commands:
         return self.run(command)
 
 
-AsyncCommands = Commands
-
-
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):
@@ -2575,3 +2572,8 @@ class BitFieldRO:
 
     def execute(self) -> ResponseType:
         return self.client.run(command=self.command)
+
+
+AsyncCommands = Commands
+AsyncBitFieldCommands = BitFieldCommands
+AsyncBitFieldRO = BitFieldRO
