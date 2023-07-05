@@ -22,9 +22,9 @@ def test_flushall():
 
 
 def test_flushall_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     result = redis.flushall()
     assert result is "OK"
 
-    redis.format_return = True
+    redis._format_return = True

@@ -38,7 +38,6 @@ The SDK is currently compatible with python 3.8 and above.
 pip install upstash-redis
 ```
 
-
 ## Usage
 To be able to use upstash-redis, you need to create a database on [Upstash](https://console.upstash.com/)
 and grab `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from the console.
@@ -67,7 +66,6 @@ redis = Redis.from_env()
 from upstash_redis.asyncio import Redis
 redis = Redis.from_env()
 ```
-
 
 If you are in a serverless environment that allows it, it's recommended to initialise the client outside the request handler
 to be reused while your function is still hot.
@@ -110,7 +108,6 @@ the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` funct
     .execute()
 ```
 
-
 ### Custom commands
 If you want to run a command that hasn't been implemented, you can use the `run` function of your client instance
 and pass the command as `list`
@@ -119,40 +116,22 @@ and pass the command as `list`
 redis.run(command=["XLEN", "test_stream"])
 ```
 
-If you want to have more control over your session management or need to use multiple custom values, use
-the [sync_execute](./upstash_redis/http/execute.py) function directly.
-
-
-
 # Encoding
 Although Redis can store invalid JSON data, there might be problems with the deserialization.
 To avoid this, the Upstash REST proxy is capable of encoding the data as base64 on the server and then sending it to the client to be
 decoded. 
 
 For very large data, this can add a few milliseconds in latency. So, if you're sure that your data is valid JSON, you can set
-`rest_encoding` to `False`.
-
+`rest_encoding` to `None`.
 
 # Retry mechanism
 upstash-redis has a fallback mechanism in case of network or API issues. By default, if a request fails it'll retry once, 3 seconds 
 after the error. If you want to customize that, set `rest_retries` and `rest_retry_interval` (in seconds).
 
-
 # Formatting returns
 The SDK relies on the Upstash REST proxy, which returns the `RESP2` responses of the given commands.
 By default, we apply formatting to some of them to provide a better developer experience.
 If you want the commands to output the raw return, set `format_return` to `False`.
-
-You can also opt out of individual commands:
-
-```python
-redis.format_return = False
-
-print(redis.copy(source="source_string", destination="destination_string"))
-
-redis.format_return = True
-```
-
 
 # Contributing
 

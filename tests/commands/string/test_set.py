@@ -24,7 +24,7 @@ def test_set():
 
 
 def test_set_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     key = "mykey"
     value = "myvalue"
     ex_seconds = 10
@@ -33,7 +33,7 @@ def test_set_without_formatting():
 
     assert result == "OK"
 
-    redis.format_return = True
+    redis._format_return = True
 
 
 def test_set_invalid_parameters():

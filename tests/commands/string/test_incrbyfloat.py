@@ -25,7 +25,7 @@ def test_incrbyfloat():
 
 
 def test_incrbyfloat_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     key = "mykey"
     initial_value = 3.14
@@ -36,4 +36,4 @@ def test_incrbyfloat_without_formatting():
     result = redis.incrbyfloat(key, increment)
     assert isinstance(result, str)
 
-    redis.format_return = True
+    redis._format_return = True

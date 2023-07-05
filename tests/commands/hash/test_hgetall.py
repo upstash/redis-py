@@ -25,7 +25,7 @@ def test_hgetall():
 
 
 def test_hgetall_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     hash_name = "myhash"
     fields_values = {"field1": "value1", "field2": "value2"}
@@ -36,4 +36,4 @@ def test_hgetall_without_formatting():
 
     assert isinstance(result, list)
 
-    redis.format_return = True
+    redis._format_return = True

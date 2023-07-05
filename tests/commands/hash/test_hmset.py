@@ -24,7 +24,7 @@ def test_hmset():
 
 
 def test_hmset_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
 
     hash_name = "myhash"
 
@@ -36,4 +36,4 @@ def test_hmset_without_formatting():
 
     assert result == "OK"
 
-    redis.format_return = True
+    redis._format_return = True

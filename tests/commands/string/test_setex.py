@@ -24,7 +24,7 @@ def test_setex():
 
 
 def test_setex_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     key = "mykey"
     value = "myvalue"
     ex_seconds = 10
@@ -33,4 +33,4 @@ def test_setex_without_formatting():
 
     assert result == "OK"
 
-    redis.format_return = True
+    redis._format_return = True

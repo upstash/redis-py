@@ -23,7 +23,7 @@ def test_zscore():
 
 
 def test_zscore_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})
@@ -34,4 +34,4 @@ def test_zscore_without_formatting():
     non_existent_score = redis.zscore(sorted_set, "nonexistent_member")
     assert non_existent_score is None
 
-    redis.format_return = True
+    redis._format_return = True

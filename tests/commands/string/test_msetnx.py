@@ -36,11 +36,11 @@ def test_msetnx_some_keys_exist():
 
 
 def test_msetnx_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     result = redis.msetnx(key_value_pairs)
 
     assert result is 1
 
-    redis.format_return = True
+    redis._format_return = True

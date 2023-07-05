@@ -31,7 +31,7 @@ def test_psetex():
 
 
 def test_psetex_without_formatting():
-    redis.format_return = False
+    redis._format_return = False
     key = "mykey"
     value = "myvalue"
     expiration_ms = 1000
@@ -40,4 +40,4 @@ def test_psetex_without_formatting():
 
     assert result == "OK"
 
-    redis.format_return = True
+    redis._format_return = True
