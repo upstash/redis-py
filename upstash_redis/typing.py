@@ -1,9 +1,9 @@
-from typing import List, Literal, Optional, TypedDict, TypeVar, Union
+from typing import List, Literal, Optional, TypedDict, Union
 
 """
 The type of the "result" field returned by the REST API. 
 """
-RESTResult = TypeVar("RESTResult", str, int, List, None, Literal[0, 1], Literal["OK"])
+RESTResult = Union[str, int, List, None, Literal[0, 1], Literal["OK"]]
 
 """
 The type of encoding that will be passed as a header to the REST API. 

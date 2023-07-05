@@ -1,6 +1,3 @@
-from ast import Dict
-from typing import List
-
 import pytest
 
 from tests.sync_client import redis

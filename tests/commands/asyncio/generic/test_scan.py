@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List
 
 from pytest import mark
 

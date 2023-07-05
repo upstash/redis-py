@@ -4,7 +4,7 @@ from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from aiohttp import ClientSession
 from requests import Session
@@ -45,7 +45,7 @@ async def async_execute(
     headers: Dict[str, str],
     encoding: RESTEncoding,
     retries: int,
-    retry_interval: int,
+    retry_interval: float,
     command: List,
 ) -> RESTResult:
     """
@@ -69,26 +69,35 @@ async def async_execute(
         for element in command
     ]
 
-    for i in range(retries + 1):
+    response: Optional[Dict[str, Any]] = None
+    last_error: Optional[Exception] = None
+
+    for attempts_left in range(max(0, retries), -1, -1):
         try:
-            async with session.post(url, headers=headers, json=command) as response:
-                body: Dict[str, Any] = await response.json()
+            async with session.post(url, headers=headers, json=command) as r:
+                response = await r.json()
+                break  # Break the loop as soon as we receive a proper response
+        except Exception as e:
+            last_error = e
 
-                # Avoid the [] syntax to prevent KeyError from being raised.
-                if body.get("error"):
-                    raise UpstashError(body.get("error"))
-
-                return (
-                    decode(raw=body["result"])
-                    if encoding == "base64"
-                    else body["result"]
-                )
-        except Exception as exception:
-            if i == retries:
-                # If we exhausted all the retries, raise the exception.
-                raise exception
-            else:
+            if attempts_left > 0:
                 await sleep(retry_interval)
+
+    if response is None:
+        assert last_error is not None
+
+        # Exhausted all retries, but no response is received
+        raise last_error
+
+    if response.get("error"):
+        raise UpstashError(response["error"])
+
+    result = response["result"]
+
+    if encoding == "base64":
+        return decode(result)
+
+    return result
 
 
 def sync_execute(
@@ -97,8 +106,8 @@ def sync_execute(
     headers: Dict[str, str],
     encoding: RESTEncoding,
     retries: int,
-    retry_interval: int,
-    command: List,
+    retry_interval: float,
+    command: List[Any],
 ) -> RESTResult:
     command = [
         element
@@ -111,25 +120,34 @@ def sync_execute(
         for element in command
     ]
 
-    for i in range(retries + 1):
+    response: Optional[Dict[str, Any]] = None
+    last_error: Optional[Exception] = None
+
+    for attempts_left in range(max(0, retries), -1, -1):
         try:
             response = session.post(url, headers=headers, json=command).json()
+            break  # Break the loop as soon as we receive a proper response
+        except Exception as e:
+            last_error = e
 
-            # Avoid the [] syntax to prevent KeyError from being raised.
-            if response.get("error"):
-                raise UpstashError(response.get("error"))
-
-            return (
-                decode(raw=response["result"])
-                if encoding == "base64"
-                else response["result"]
-            )
-        except Exception as exception:
-            if i == retries:
-                # If we exhausted all the retries, raise the exception.
-                raise exception
-            else:
+            if attempts_left > 0:
                 time.sleep(retry_interval)
+
+    if response is None:
+        assert last_error is not None
+
+        # Exhausted all retries, but no response is received
+        raise last_error
+
+    if response.get("error"):
+        raise UpstashError(response["error"])
+
+    result = response["result"]
+
+    if encoding == "base64":
+        return decode(result)
+
+    return result
 
 
 def decode(raw: RESTResult) -> RESTResult:

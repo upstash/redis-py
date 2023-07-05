@@ -1,4 +1,4 @@
-from typing import Dict, List, Literal, Tuple, Union
+from typing import Callable, Dict, List, Literal, Tuple, Union
 
 
 def _list_to_dict(raw: List, command=None) -> Dict:
@@ -25,10 +25,10 @@ def format_geo_positions_return(
 
 
 def format_geo_members_return(
-    raw: List[Union[str, List[Union[str, List[str]]]]],
-    with_distance: Union[bool, None],
-    with_hash: Union[bool, None],
-    with_coordinates: Union[bool, None],
+    raw: List[List[Union[str, List[str]]]],
+    with_distance: bool,
+    with_hash: bool,
+    with_coordinates: bool,
 ) -> List[Dict[str, Union[str, float, int]]]:
     """
     Format the raw output given by some Geo commands, usually the ones that return properties of members,
@@ -49,33 +49,39 @@ def format_geo_members_return(
 
     result: List[Dict[str, Union[str, float, int]]] = []
 
+    # (metin): mypy has trouble narrowing down the types in this function.
+    # We can use typing.cast(str, xxx) to force it manually narrow
+    # down the types, but I don't like the idea of calling a function
+    # that has a runtime cost to just please the type checker. Until
+    # there is a better way of doing it, I wil just ignore the errors.
+
     for member in raw:
-        formatted_member: Dict[str, Union[str, float, int]] = {"member": member[0]}
+        formatted_member: Dict[str, Union[str, float, int]] = {"member": member[0]}  # type: ignore[dict-item]
 
         if with_distance:
-            formatted_member["distance"] = float(member[1])
+            formatted_member["distance"] = float(member[1])  # type: ignore[arg-type]
 
             if with_hash:
-                formatted_member["hash"] = int(member[2])
+                formatted_member["hash"] = int(member[2])  # type: ignore[arg-type]
 
                 if with_coordinates:
-                    formatted_member["longitude"] = float(member[3][0])
-                    formatted_member["latitude"] = float(member[3][1])
+                    formatted_member["longitude"] = float(member[3][0])  # type: ignore[arg-type]
+                    formatted_member["latitude"] = float(member[3][1])  # type: ignore[arg-type]
 
             elif with_coordinates:
-                formatted_member["longitude"] = float(member[2][0])
-                formatted_member["latitude"] = float(member[2][1])
+                formatted_member["longitude"] = float(member[2][0])  # type: ignore[arg-type]
+                formatted_member["latitude"] = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_hash:
-            formatted_member["hash"] = int(member[1])
+            formatted_member["hash"] = int(member[1])  # type: ignore[arg-type]
 
             if with_coordinates:
-                formatted_member["longitude"] = float(member[2][0])
-                formatted_member["latitude"] = float(member[2][1])
+                formatted_member["longitude"] = float(member[2][0])  # type: ignore[arg-type]
+                formatted_member["latitude"] = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_coordinates:
-            formatted_member["longitude"] = float(member[1][0])
-            formatted_member["latitude"] = float(member[1][1])
+            formatted_member["longitude"] = float(member[1][0])  # type: ignore[arg-type]
+            formatted_member["latitude"] = float(member[1][1])  # type: ignore[arg-type]
 
         result.append(formatted_member)
 
@@ -264,7 +270,7 @@ def zunion_formatter(res, command):
     return res
 
 
-FORMATTERS = {
+FORMATTERS: Dict[str, Callable] = {
     "COPY": to_bool,
     "EXPIRE": to_bool,
     "EXPIREAT": to_bool,
@@ -309,7 +315,6 @@ FORMATTERS = {
     "ZUNION": zunion_formatter,
     "INCRBYFLOAT": to_float,
     "PUBSUB NUMSUB": _list_to_dict,
-    "SCRIPT EXISTS": format_bool_list,
     "FLUSHALL": ok_to_bool,
     "FLUSHDB": ok_to_bool,
     "MSETNX": to_bool,
