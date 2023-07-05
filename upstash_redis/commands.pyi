@@ -822,7 +822,7 @@ class AsyncCommands:
     async def zcount(
         self, key: str, min_score: FloatMinMax, max_score: FloatMinMax
     ) -> int: ...
-    def zdiff(
+    async def zdiff(
         self, keys: List[str], withscores: bool = False
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     async def zdiffstore(self, destination: str, keys: List[str]) -> int: ...
@@ -931,7 +931,7 @@ class AsyncCommands:
         count: Union[int, None] = None,
     ) -> Tuple[int, List[Tuple[str, float]]]: ...
     async def zscore(self, key: str, member: str) -> Union[str, None, float]: ...
-    def zunion(
+    async def zunion(
         self,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
