@@ -1,4 +1,5 @@
 import pytest
+import requests
 
 """
 Flush and fill the testing database with the necessary data.
@@ -101,15 +102,7 @@ commands: List[List] = [
 ]
 
 
-async def main() -> None:
-    async with ClientSession() as session:
-        async with session.post(url=url, headers=headers, json=commands) as response:
-            if response.status != 200:
-                raise Exception((await response.json()).get("error"))
-
-            print("success")
-            await session.close()
-
-
 def pytest_configure():
-    run(main())
+    with requests.post(url, headers=headers, json=commands) as r:
+        if r.status_code != 200:
+            raise RuntimeError(r.json()["error"])
