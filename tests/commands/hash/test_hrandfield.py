@@ -9,7 +9,7 @@ def flush_hash():
     redis.delete(hash_name)
 
 
-def test_hrandfield_single():
+def test_hrandfield_single() -> None:
     hash_name = "myhash"
 
     # Add fields to the hash
@@ -22,7 +22,7 @@ def test_hrandfield_single():
     assert result in ["field1", "field2", "field3"]
 
 
-def test_hrandfield_multiple():
+def test_hrandfield_multiple() -> None:
     hash_name = "myhash"
 
     # Add fields to the hash
@@ -36,14 +36,14 @@ def test_hrandfield_multiple():
     assert len(result) == count  # Number of random fields returned
     assert all(field in ["field1", "field2", "field3"] for field in result)
 
-    result: dict = redis.hrandfield(hash_name, count=2, withvalues=True)
+    result = redis.hrandfield(hash_name, count=2, withvalues=True)
     assert isinstance(result, dict)
 
     for key, val in result.items():
         assert redis.hget(hash_name, key) == val
 
 
-def test_hrandfield_multiple_without_formatting():
+def test_hrandfield_multiple_without_formatting() -> None:
     redis.format_return = False
     hash_name = "myhash"
 

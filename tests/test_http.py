@@ -1,7 +1,8 @@
+import asyncio
 import typing as t
 from os import environ
 from platform import python_version
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 from aiohttp import ClientSession
@@ -20,10 +21,10 @@ async def test_async_execute_without_encoding() -> None:
             await async_execute(
                 session=session,
                 url=environ["UPSTASH_REDIS_REST_URL"],
-                headers=make_headers(environ["UPSTASH_REDIS_REST_TOKEN"], False, False),
+                headers=make_headers(environ["UPSTASH_REDIS_REST_TOKEN"], None, False),
                 retries=0,
                 retry_interval=0,
-                encoding=False,
+                encoding=None,
                 command=["SET", "a", "b"],
             )
             == "OK"
@@ -92,10 +93,10 @@ def test_sync_execute_without_encoding() -> None:
             sync_execute(
                 session=session,
                 url=environ["UPSTASH_REDIS_REST_URL"],
-                headers=make_headers(environ["UPSTASH_REDIS_REST_TOKEN"], False, False),
+                headers=make_headers(environ["UPSTASH_REDIS_REST_TOKEN"], None, False),
                 retries=0,
                 retry_interval=0,
-                encoding=False,
+                encoding=None,
                 command=["SET", "a", "b"],
             )
             == "OK"
@@ -226,7 +227,7 @@ def test_make_headers(
 
 def test_make_headers_on_vercel() -> None:
     with patch("os.getenv", side_effect=lambda arg: arg if arg == "VERCEL" else None):
-        assert make_headers("token", False, True) == {
+        assert make_headers("token", None, True) == {
             "Authorization": "Bearer token",
             "Upstash-Telemetry-Sdk": "upstash_redis@python",
             "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
@@ -238,9 +239,96 @@ def test_make_headers_on_aws() -> None:
     with patch(
         "os.getenv", side_effect=lambda arg: arg if arg == "AWS_REGION" else None
     ):
-        assert make_headers("token", False, True) == {
+        assert make_headers("token", None, True) == {
             "Authorization": "Bearer token",
             "Upstash-Telemetry-Sdk": "upstash_redis@python",
             "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
             "Upstash-Telemetry-Platform": "aws",
         }
+
+
+@pytest.mark.parametrize("retry_count", [0, 42, 100])
+def test_sync_execute_no_retry_on_success(retry_count: int) -> None:
+    session = MagicMock()
+    response = MagicMock()
+    response.json = MagicMock(return_value={"result": "OK"})
+    session.post = MagicMock(return_value=response)
+
+    assert sync_execute(session, "", {}, None, retry_count, 0, []) == "OK"
+
+    assert session.post.call_count == 1
+
+
+def test_sync_execute_no_retry_on_error_response_from_server() -> None:
+    session = MagicMock()
+    response = MagicMock()
+    response.json = MagicMock(return_value={"error": "expected error"})
+    session.post = MagicMock(return_value=response)
+
+    with raises(UpstashError) as e:
+        sync_execute(session, "", {}, None, 100, 0, [])
+
+    assert str(e.value) == "expected error"
+    assert session.post.call_count == 1
+
+
+@pytest.mark.parametrize("retry_count", [0, 42, 100])
+def test_sync_execute_retry_on_post_request_error(retry_count) -> None:
+    session = MagicMock()
+    session.post = MagicMock(side_effect=RuntimeError("expected error"))
+
+    with raises(RuntimeError) as e:
+        sync_execute(session, "", {}, None, retry_count, 0, [])
+
+    assert str(e.value) == "expected error"
+
+    # We start couting retries after the first attempt
+    assert session.post.call_count == (retry_count + 1)
+
+
+@pytest.mark.parametrize("retry_count", [0, 42, 100])
+@mark.asyncio
+async def test_async_execute_no_retry_on_success(retry_count: int) -> None:
+    session = MagicMock()
+    response = MagicMock()
+    f: asyncio.Future[t.Dict] = asyncio.Future()
+    f.set_result({"result": "OK"})
+    response.json = MagicMock(return_value=f)
+    session.post = MagicMock(return_value=response)
+    response.__aenter__.return_value = response
+
+    assert (await async_execute(session, "", {}, None, retry_count, 0, [])) == "OK"
+
+    assert session.post.call_count == 1
+
+
+@mark.asyncio
+async def test_async_execute_no_retry_on_error_response_from_server() -> None:
+    session = MagicMock()
+    response = MagicMock()
+    f: asyncio.Future[t.Dict] = asyncio.Future()
+    f.set_result({"error": "expected error"})
+    response.json = MagicMock(return_value=f)
+    session.post = MagicMock(return_value=response)
+    response.__aenter__.return_value = response
+
+    with raises(UpstashError) as e:
+        await async_execute(session, "", {}, None, 100, 0, [])
+
+    assert str(e.value) == "expected error"
+    assert session.post.call_count == 1
+
+
+@pytest.mark.parametrize("retry_count", [0, 42, 100])
+@mark.asyncio
+async def test_async_execute_retry_on_post_request_error(retry_count) -> None:
+    session = MagicMock()
+    session.post = MagicMock(side_effect=RuntimeError("expected error"))
+
+    with raises(RuntimeError) as e:
+        await async_execute(session, "", {}, None, retry_count, 0, [])
+
+    assert str(e.value) == "expected error"
+
+    # We start couting retries after the first attempt
+    assert session.post.call_count == (retry_count + 1)

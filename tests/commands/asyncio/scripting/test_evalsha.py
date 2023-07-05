@@ -6,7 +6,7 @@ from tests.execute_on_http import execute_on_http
 
 @mark.asyncio
 async def test() -> None:
-    sha1_digest: str = await execute_on_http("SCRIPT", "LOAD", 'return "hello world"')
+    sha1_digest = await execute_on_http("SCRIPT", "LOAD", 'return "hello world"')
 
     async with redis:
         assert await redis.evalsha(sha1_digest) == "hello world"
@@ -14,9 +14,7 @@ async def test() -> None:
 
 @mark.asyncio
 async def test_with_keys() -> None:
-    sha1_digest: str = await execute_on_http(
-        "SCRIPT", "LOAD", "return {KEYS[1], KEYS[2]}"
-    )
+    sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {KEYS[1], KEYS[2]}")
 
     async with redis:
         assert await redis.evalsha(sha1_digest, keys=["a", "b"]) == ["a", "b"]
@@ -24,9 +22,7 @@ async def test_with_keys() -> None:
 
 @mark.asyncio
 async def test_with_arguments() -> None:
-    sha1_digest: str = await execute_on_http(
-        "SCRIPT", "LOAD", "return {ARGV[1], ARGV[2]}"
-    )
+    sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {ARGV[1], ARGV[2]}")
 
     async with redis:
         assert await redis.evalsha(sha1_digest, args=["c", "d"]) == ["c", "d"]
@@ -34,9 +30,7 @@ async def test_with_arguments() -> None:
 
 @mark.asyncio
 async def test_with_keys_and_arguments() -> None:
-    sha1_digest: str = await execute_on_http(
-        "SCRIPT", "LOAD", "return {ARGV[1], KEYS[1]}"
-    )
+    sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {ARGV[1], KEYS[1]}")
 
     async with redis:
         assert await redis.evalsha(sha1_digest, keys=["a"], args=["b"]) == ["b", "a"]
