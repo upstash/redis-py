@@ -1,4 +1,5 @@
 from pytest import fixture, mark
+
 from tests.sync_client import redis
 
 

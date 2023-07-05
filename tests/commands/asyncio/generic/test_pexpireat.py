@@ -1,6 +1,8 @@
+from time import sleep, time
+
 from pytest import mark
+
 from tests.async_client import redis
-from time import time, sleep
 from tests.execute_on_http import execute_on_http
 
 

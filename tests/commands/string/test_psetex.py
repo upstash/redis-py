@@ -1,5 +1,7 @@
 import time
+
 import pytest
+
 from tests.sync_client import redis
 
 

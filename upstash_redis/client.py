@@ -3,29 +3,22 @@ from typing import Any, List, Type, Union
 
 from requests import Session
 
-from upstash_redis.commands.commands import Commands
-from upstash_redis.config import (
-    ALLOW_TELEMETRY,
-    FORMAT_RETURN,
-    REST_ENCODING,
-    REST_RETRIES,
-    REST_RETRY_INTERVAL,
-)
+from upstash_redis.commands import Commands
+from upstash_redis.format import FORMATTERS
 from upstash_redis.http import make_headers, sync_execute
-from upstash_redis.schema.http import RESTEncoding, RESTResult
-from upstash_redis.utils.format import FormattedResponse
+from upstash_redis.typing import RESTEncoding, RESTResult
 
 
-class Redis(FormattedResponse, Commands):
+class Redis(Commands):
     def __init__(
         self,
         url: str,
         token: str,
-        rest_encoding: RESTEncoding = REST_ENCODING,
-        rest_retries: int = REST_RETRIES,
-        rest_retry_interval: int = REST_RETRY_INTERVAL,  # Seconds.
-        format_return: bool = FORMAT_RETURN,
-        allow_telemetry: bool = ALLOW_TELEMETRY,
+        rest_encoding: RESTEncoding = "base64",
+        rest_retries: int = 1,
+        rest_retry_interval: float = 3,  # Seconds.
+        format_return: bool = True,
+        allow_telemetry: bool = True,
     ):
         """
         :param url: UPSTASH_REDIS_REST_URL in the console
@@ -47,8 +40,6 @@ class Redis(FormattedResponse, Commands):
         self.rest_encoding = rest_encoding
         self.rest_retries = rest_retries
         self.rest_retry_interval = rest_retry_interval
-
-        self.FORMATTERS = self.__class__.FORMATTERS
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
@@ -78,11 +69,11 @@ class Redis(FormattedResponse, Commands):
     @classmethod
     def from_env(
         cls,
-        rest_encoding: RESTEncoding = REST_ENCODING,
-        rest_retries: int = REST_RETRIES,
-        rest_retry_interval: int = REST_RETRY_INTERVAL,
-        format_return: bool = FORMAT_RETURN,
-        allow_telemetry: bool = ALLOW_TELEMETRY,
+        rest_encoding: RESTEncoding = "base64",
+        rest_retries: int = 1,
+        rest_retry_interval: float = 3,
+        format_return: bool = True,
+        allow_telemetry: bool = True,
     ):
         """
         Load the credentials from environment.
@@ -139,7 +130,7 @@ class Redis(FormattedResponse, Commands):
             or main_command == "SSCAN"
             or main_command == "SUNION"
             or main_command == "ZSCAN"
-        ) and (main_command in self.FORMATTERS):
-            return self.FORMATTERS[main_command](res, command)
+        ) and (main_command in FORMATTERS):
+            return FORMATTERS[main_command](res, command)
 
         return res

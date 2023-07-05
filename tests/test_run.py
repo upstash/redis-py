@@ -1,5 +1,6 @@
-from tests.async_client import redis
 from pytest import mark
+
+from tests.async_client import redis
 
 
 @mark.asyncio

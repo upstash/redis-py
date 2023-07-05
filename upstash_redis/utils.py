@@ -1,6 +1,14 @@
-from upstash_redis.schema.commands.parameters import FloatMinMax
-from upstash_redis.utils.comparison import number_are_not_none
-from typing import Literal, Union
+from typing import Any, Literal, Union
+
+from upstash_redis.typing import FloatMinMax
+
+
+def number_are_not_none(*parameters: Any, number: int) -> bool:
+    """
+    Check if "number" of the given parameters are not None.
+    """
+
+    return sum(parameter is not None for parameter in parameters) == number
 
 
 def handle_georadius_write_exceptions(

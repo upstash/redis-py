@@ -1,6 +1,8 @@
+from typing import List, Union
+
 from pytest import mark
+
 from tests.async_client import redis
-from typing import Union, List
 
 
 @mark.asyncio
