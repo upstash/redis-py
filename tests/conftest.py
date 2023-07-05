@@ -1,15 +1,13 @@
 import pytest
 import pytest_asyncio
+import requests
 
 """
 Flush and fill the testing database with the necessary data.
 """
 
-from asyncio import run
 from os import environ
 from typing import Dict, List
-
-from aiohttp import ClientSession
 
 from upstash_redis import AsyncRedis, Redis
 
@@ -104,15 +102,10 @@ commands: List[List] = [
 ]
 
 
-async def main() -> None:
-    async with ClientSession() as session:
-        async with session.post(url=url, headers=headers, json=commands) as response:
-            if response.status != 200:
-                raise Exception((await response.json()).get("error"))
-
-
 def pytest_configure():
-    run(main())
+    with requests.post(url, headers=headers, json=commands) as r:
+        if r.status_code != 200:
+            raise RuntimeError(r.json()["error"])
 
 
 @pytest_asyncio.fixture
