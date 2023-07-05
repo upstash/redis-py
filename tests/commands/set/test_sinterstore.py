@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sets():
+def flush_sets(redis: Redis):
     set1 = "set1"
     set2 = "set2"
     set3 = "set3"
@@ -13,7 +13,7 @@ def flush_sets():
     redis.delete(set1, set2, set3, result_set)
 
 
-def test_sinterstore():
+def test_sinterstore(redis: Redis):
     set1 = "set1"
     set2 = "set2"
     set3 = "set3"

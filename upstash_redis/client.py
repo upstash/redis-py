@@ -44,28 +44,6 @@ class Redis(Commands):
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
 
-    def __enter__(self):
-        """
-        Enter the sync context.
-        """
-        if self._session is None:
-            self._session = Session()
-
-        # It needs to return the session object because it will be used in "sync with" statements.
-        return self
-
-    def __exit__(
-        self,
-        exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
-        exc_tb: Any,
-    ) -> None:
-        """
-        Exit the sync context.
-        """
-        if self._session:
-            self._session.close()
-
     @classmethod
     def from_env(
         cls,
@@ -95,12 +73,22 @@ class Redis(Commands):
             allow_telemetry,
         )
 
+    def __enter__(self) -> "Redis":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Union[Type[BaseException], None],
+        exc_val: Union[BaseException, None],
+        exc_tb: Any,
+    ) -> None:
+        self.close()
+
     def close(self):
         """
-        Closes the session.
+        Closes the resources associated with the client.
         """
-        if self._session:
-            self._session.close()
+        self._session.close()
 
     def run(self, command: List) -> RESTResult:
         """

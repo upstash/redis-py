@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Type, Union
+from typing import Any, List, Optional, Type, Union
 
 from aiohttp import ClientSession
 
@@ -42,6 +42,7 @@ class Redis(AsyncCommands):
         self._rest_retry_interval = rest_retry_interval
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
+        self._session: Optional[ClientSession] = None
 
     @classmethod
     def from_env(
@@ -72,14 +73,8 @@ class Redis(AsyncCommands):
             allow_telemetry,
         )
 
-    async def __aenter__(self) -> ClientSession:
-        """
-        Enter the async context.
-        """
-
-        self._session: ClientSession = ClientSession()
-        # It needs to return the session object because it will be used in "async with" statements.
-        return self._session
+    async def __aenter__(self) -> "Redis":
+        return self
 
     async def __aexit__(
         self,
@@ -87,16 +82,24 @@ class Redis(AsyncCommands):
         exc_val: Union[BaseException, None],
         exc_tb: Any,
     ) -> None:
-        """
-        Exit the async context.
-        """
+        await self.close()
 
-        await self._session.close()
+    async def close(self) -> None:
+        """
+        Closes the resources associated with the client.
+        """
+        if self._session:
+            await self._session.close()
 
     async def run(self, command: List) -> RESTResult:
         """
         Specify the http options and execute the command.
         """
+        if not self._session:
+            # We had to initialize session here, under an
+            # async method, so that the session can bind
+            # to the running event loop.
+            self._session = ClientSession()
 
         res = await async_execute(
             session=self._session,

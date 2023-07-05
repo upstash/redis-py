@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_mylist():
+def flush_mylist(redis: Redis):
     mylist = "mylist"
 
     redis.delete(mylist)
 
 
-def test_lrem_existing_value():
+def test_lrem_existing_value(redis: Redis):
     mylist = "mylist"
     values = ["value1", "value2", "value3", "value2"]
 
@@ -23,7 +23,7 @@ def test_lrem_existing_value():
     assert redis.lrange(mylist, 0, -1) == expected_list
 
 
-def test_lrem_nonexistent_value():
+def test_lrem_nonexistent_value(redis: Redis):
     mylist = "mylist"
     values = ["value1", "value2", "value3"]
 
@@ -35,7 +35,7 @@ def test_lrem_nonexistent_value():
     assert redis.lrange(mylist, 0, -1) == values
 
 
-def test_lrem_with_count():
+def test_lrem_with_count(redis: Redis):
     mylist = "mylist"
     values = ["value1", "value2", "value3", "value2"]
 

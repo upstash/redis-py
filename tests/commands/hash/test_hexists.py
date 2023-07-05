@@ -1,15 +1,15 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_hash():
+def flush_hash(redis: Redis):
     hash_name = "myhash"
     redis.delete(hash_name)
 
 
-def test_hexists():
+def test_hexists(redis: Redis):
     hash_name = "myhash"
     field1 = "field1"
     field2 = "field2"
@@ -23,7 +23,7 @@ def test_hexists():
     assert exists_field2 is False
 
 
-def test_hexists_without_formatting():
+def test_hexists_without_formatting(redis: Redis):
     redis._format_return = False
     hash_name = "myhash"
     field1 = "field1"
@@ -36,5 +36,3 @@ def test_hexists_without_formatting():
 
     assert exists_field1 is 1
     assert exists_field2 is 0
-
-    redis._format_return = True

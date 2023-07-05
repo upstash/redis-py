@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_set():
+def flush_set(redis: Redis):
     set_name = "myset"
     redis.delete(set_name)
     yield
     redis.delete(set_name)
 
 
-def test_spop_existing_member():
+def test_spop_existing_member(redis: Redis):
     set_name = "myset"
 
     # Add members to the set
@@ -27,7 +27,7 @@ def test_spop_existing_member():
     assert not redis.sismember(set_name, result)
 
 
-def test_spop_empty_set():
+def test_spop_empty_set(redis: Redis):
     set_name = "myset"
 
     # Perform the spop operation on an empty set
@@ -37,7 +37,7 @@ def test_spop_empty_set():
     assert result is None
 
 
-def test_spop_nonexistent_set():
+def test_spop_nonexistent_set(redis: Redis):
     set_name = "nonexistent_set"
 
     # Perform the spop operation on a nonexistent set

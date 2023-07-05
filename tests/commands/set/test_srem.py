@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_set():
+def flush_set(redis: Redis):
     set_name = "myset"
     redis.delete(set_name)
     yield
     redis.delete(set_name)
 
 
-def test_srem_existing_members():
+def test_srem_existing_members(redis: Redis):
     set_name = "myset"
     members = ["member1", "member2", "member3"]
 
@@ -29,7 +29,7 @@ def test_srem_existing_members():
     assert redis.sismember(set_name, "member3") is False
 
 
-def test_srem_nonexistent_members():
+def test_srem_nonexistent_members(redis: Redis):
     set_name = "myset"
     members = ["member1", "member2", "member3"]
 

@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_set():
+def flush_set(redis: Redis):
     set_name = "myset"
 
     redis.delete(set_name)
 
 
-def test_smembers():
+def test_smembers(redis: Redis):
     set_name = "myset"
 
     # Add elements to the set

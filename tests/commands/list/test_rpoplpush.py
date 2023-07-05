@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_lists():
+def flush_lists(redis: Redis):
     lists = ["list1", "list2", "list3"]
 
     for list_name in lists:
@@ -16,7 +16,7 @@ def flush_lists():
         redis.delete(list_name)
 
 
-def test_rpoplpush_existing_elements():
+def test_rpoplpush_existing_elements(redis: Redis):
     source_list = "list1"
     destination_list = "list2"
     values = ["value1", "value2", "value3"]
@@ -33,7 +33,7 @@ def test_rpoplpush_existing_elements():
     assert redis.lrange(destination_list, 0, -1) == expected_destination_list
 
 
-def test_rpoplpush_empty_source_list():
+def test_rpoplpush_empty_source_list(redis: Redis):
     source_list = "list2"
     destination_list = "list3"
 
@@ -44,7 +44,7 @@ def test_rpoplpush_empty_source_list():
     assert redis.llen(destination_list) == 0
 
 
-def test_rpoplpush_nonexistent_lists():
+def test_rpoplpush_nonexistent_lists(redis: Redis):
     source_list = "nonexistent_list1"
     destination_list = "nonexistent_list2"
 

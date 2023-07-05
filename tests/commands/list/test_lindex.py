@@ -1,29 +1,26 @@
 from pytest import fixture, mark
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
-@fixture(scope="module")
-def setup_teardown():
+@fixture(autouse=True)
+def setup_teardown(redis: Redis):
     redis.rpush("mylist", "value1", "value2", "value3")
     yield
     redis.delete("mylist")
 
 
-@mark.usefixtures("setup_teardown")
-def test_lindex_existing_index():
+def test_lindex_existing_index(redis: Redis):
     result = redis.lindex("mylist", 0)
     assert result == "value1"
 
 
-@mark.usefixtures("setup_teardown")
-def test_lindex_invalid_index():
+def test_lindex_invalid_index(redis: Redis):
     result = redis.lindex("mylist", 10)
     assert result is None
 
 
-@mark.usefixtures("setup_teardown")
-def test_lindex_empty_list():
+def test_lindex_empty_list(redis: Redis):
     redis.delete("mylist")
 
     result = redis.lindex("mylist", 0)

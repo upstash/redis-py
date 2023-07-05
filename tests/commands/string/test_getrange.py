@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
     yield
     redis.delete(key)
 
 
-def test_getrange():
+def test_getrange(redis: Redis):
     key = "mykey"
     value = "Hello, Redis!"
 

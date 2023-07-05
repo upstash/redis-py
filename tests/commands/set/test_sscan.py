@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_set():
+def flush_set(redis: Redis):
     set_name = "myset"
 
     redis.delete(set_name)
 
 
-def test_sscan_with_match_and_count():
+def test_sscan_with_match_and_count(redis: Redis):
     set_name = "myset"
 
     # Add members to the set
@@ -24,7 +24,7 @@ def test_sscan_with_match_and_count():
     assert all(member in members for member in matching_members)
 
 
-def test_sscan_without_match_and_count():
+def test_sscan_without_match_and_count(redis: Redis):
     set_name = "myset"
 
     # Add members to the set

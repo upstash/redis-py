@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
     redis.delete(sorted_set)
     yield
     redis.delete(sorted_set)
 
 
-def test_zadd():
+def test_zadd(redis: Redis):
     sorted_set = "sorted_set"
 
     # Add members with their respective scores to the sorted set
@@ -28,7 +28,7 @@ def test_zadd():
     ]
 
 
-def test_zadd_existing_member():
+def test_zadd_existing_member(redis: Redis):
     sorted_set = "sorted_set"
 
     # Add an initial member to the sorted set
@@ -44,7 +44,7 @@ def test_zadd_existing_member():
     assert redis.zscore(sorted_set, "member1") == 20.0
 
 
-def test_zadd_exception_with_incr():
+def test_zadd_exception_with_incr(redis: Redis):
     sorted_set = "sorted_set"
 
     # Add multiple members to the sorted set, incr with multiple should throw exception
@@ -52,7 +52,7 @@ def test_zadd_exception_with_incr():
         redis.zadd(sorted_set, {"member1": 10, "member2": 20}, incr=True)
 
 
-def test_zadd_multiple_members():
+def test_zadd_multiple_members(redis: Redis):
     sorted_set = "sorted_set"
 
     # Add multiple members to the sorted set with their scores

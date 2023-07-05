@@ -1,23 +1,19 @@
 from pytest import mark
 
-from tests.async_client import redis
+from upstash_redis import AsyncRedis
 
 
 @mark.asyncio
-async def test() -> None:
-    async with redis:
-        assert await redis.geopos("test_geo_index", "Palermo") == [
-            {"longitude": 13.361389338970184, "latitude": 38.115556395496299}
-        ]
+async def test(async_redis: AsyncRedis) -> None:
+    assert await async_redis.geopos("test_geo_index", "Palermo") == [
+        {"longitude": 13.361389338970184, "latitude": 38.115556395496299}
+    ]
 
 
 @mark.asyncio
-async def test_without_formatting() -> None:
-    redis._format_return = False
+async def test_without_formatting(async_redis: AsyncRedis) -> None:
+    async_redis._format_return = False
 
-    async with redis:
-        assert await redis.geopos("test_geo_index", "Palermo") == [
-            ["13.361389338970184", "38.115556395496299"]
-        ]
-
-    redis._format_return = True
+    assert await async_redis.geopos("test_geo_index", "Palermo") == [
+        ["13.361389338970184", "38.115556395496299"]
+    ]

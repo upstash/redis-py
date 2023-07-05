@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
     yield
     redis.delete(key)
 
 
-def test_setnx():
+def test_setnx(redis: Redis):
     key = "mykey"
     value = "myvalue"
 
@@ -26,7 +26,7 @@ def test_setnx():
     assert redis.get(key) == value
 
 
-def test_setnx_without_formatting():
+def test_setnx_without_formatting(redis: Redis):
     redis._format_return = False
 
     key = "mykey"
@@ -38,5 +38,3 @@ def test_setnx_without_formatting():
 
     result = redis.setnx(key, "newvalue")
     assert result is 0
-
-    redis._format_return = True

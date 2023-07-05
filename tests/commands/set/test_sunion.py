@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sets():
+def flush_sets(redis: Redis):
     set1 = "set1"
     set2 = "set2"
 
@@ -12,7 +12,7 @@ def flush_sets():
     redis.delete(set2)
 
 
-def test_sunion():
+def test_sunion(redis: Redis):
     set1 = "set1"
     set2 = "set2"
 
@@ -29,7 +29,7 @@ def test_sunion():
     assert result == {"apple", "banana", "cherry", "date"}
 
 
-def test_sunion_empty_sets():
+def test_sunion_empty_sets(redis: Redis):
     set1 = "set1"
     set2 = "set2"
 
@@ -40,7 +40,7 @@ def test_sunion_empty_sets():
     assert result == set()
 
 
-def test_sunion_single_set():
+def test_sunion_single_set(redis: Redis):
     set1 = "set1"
 
     # Add members to set1

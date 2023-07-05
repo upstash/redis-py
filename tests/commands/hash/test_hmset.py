@@ -1,15 +1,15 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_hash():
+def flush_hash(redis: Redis):
     hash_name = "myhash"
     redis.delete(hash_name)
 
 
-def test_hmset():
+def test_hmset(redis: Redis):
     hash_name = "myhash"
 
     # Define the field-value pairs to set in the hash
@@ -23,7 +23,7 @@ def test_hmset():
     assert redis.hmget(hash_name, *fields) == ["value1", "value2", "value3"]
 
 
-def test_hmset_without_formatting():
+def test_hmset_without_formatting(redis: Redis):
     redis._format_return = False
 
     hash_name = "myhash"
@@ -35,5 +35,3 @@ def test_hmset_without_formatting():
     result = redis.hmset(hash_name, fields)
 
     assert result == "OK"
-
-    redis._format_return = True

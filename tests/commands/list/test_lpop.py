@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_mylists():
+def flush_mylists(redis: Redis):
     mylists = ["mylist1", "mylist2", "mylist3", "mylist4", "mylist5"]
 
     for mylist in mylists:
         redis.delete(mylist)
 
 
-def test_lpop_existing_key():
+def test_lpop_existing_key(redis: Redis):
     mylist = "mylist1"
     values = ["value1", "value2", "value3"]
 
@@ -24,7 +24,7 @@ def test_lpop_existing_key():
     redis.delete(mylist)
 
 
-def test_lpop_empty_list():
+def test_lpop_empty_list(redis: Redis):
     mylist = "mylist2"
 
     result = redis.lpop(mylist)
@@ -33,7 +33,7 @@ def test_lpop_empty_list():
     redis.delete(mylist)
 
 
-def test_lpop_nonexistent_key():
+def test_lpop_nonexistent_key(redis: Redis):
     mylist = "mylist3"
 
     result = redis.lpop(mylist)
@@ -42,7 +42,7 @@ def test_lpop_nonexistent_key():
     redis.delete(mylist)
 
 
-def test_lpop_with_count():
+def test_lpop_with_count(redis: Redis):
     mylist = "mylist4"
     values = ["value1", "value2", "value3", "value4"]
 
@@ -61,7 +61,7 @@ def test_lpop_with_count():
     redis.delete(mylist)
 
 
-def test_lpop_with_count_zero():
+def test_lpop_with_count_zero(redis: Redis):
     mylist = "mylist5"
     values = ["value1", "value2", "value3", "value4"]
 

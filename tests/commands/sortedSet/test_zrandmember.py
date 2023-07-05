@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
 
-def test_zrandmember():
+def test_zrandmember(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})
@@ -20,7 +20,7 @@ def test_zrandmember():
     assert result in ["member1", "member2", "member3"]
 
 
-def test_zrandmember_with_count():
+def test_zrandmember_with_count(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})
@@ -33,7 +33,7 @@ def test_zrandmember_with_count():
     assert all(member in ["member1", "member2", "member3"] for member in result)
 
 
-def test_zrandmember_with_withscores():
+def test_zrandmember_with_withscores(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})

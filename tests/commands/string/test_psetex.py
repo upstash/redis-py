@@ -2,18 +2,18 @@ import time
 
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
     yield
     redis.delete(key)
 
 
-def test_psetex():
+def test_psetex(redis: Redis):
     key = "mykey"
     value = "myvalue"
     expiration_ms = 1000
@@ -30,7 +30,7 @@ def test_psetex():
     assert redis.get(key) is None
 
 
-def test_psetex_without_formatting():
+def test_psetex_without_formatting(redis: Redis):
     redis._format_return = False
     key = "mykey"
     value = "myvalue"
@@ -39,5 +39,3 @@ def test_psetex_without_formatting():
     result = redis.psetex(key, expiration_ms, value)
 
     assert result == "OK"
-
-    redis._format_return = True

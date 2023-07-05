@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 
 """
 Flush and fill the testing database with the necessary data.
@@ -9,6 +10,8 @@ from os import environ
 from typing import Dict, List
 
 from aiohttp import ClientSession
+
+from upstash_redis import AsyncRedis, Redis
 
 url: str = environ["UPSTASH_REDIS_REST_URL"] + "/pipeline"
 token: str = environ["UPSTASH_REDIS_REST_TOKEN"]
@@ -107,9 +110,18 @@ async def main() -> None:
             if response.status != 200:
                 raise Exception((await response.json()).get("error"))
 
-            print("success")
-            await session.close()
-
 
 def pytest_configure():
     run(main())
+
+
+@pytest_asyncio.fixture
+async def async_redis():
+    async with AsyncRedis.from_env(allow_telemetry=False) as redis:
+        yield redis
+
+
+@pytest.fixture
+def redis():
+    with Redis.from_env(allow_telemetry=False) as redis:
+        yield redis
