@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
 
-def test_zlexcount():
+def test_zlexcount(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(

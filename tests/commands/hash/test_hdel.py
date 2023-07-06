@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_hash():
+def flush_hash(redis: Redis):
     hash_name = "myhash"
     redis.delete(hash_name)
     yield
     redis.delete(hash_name)
 
 
-def test_hdel():
+def test_hdel(redis: Redis):
     hash_name = "myhash"
     field1 = "field1"
     field2 = "field2"
@@ -29,7 +29,7 @@ def test_hdel():
     assert remaining_fields == [field1]  # Only field1 should remain
 
 
-def test_hdel_with_pairs():
+def test_hdel_with_pairs(redis: Redis):
     hash_name = "myhash"
 
     pairs = {

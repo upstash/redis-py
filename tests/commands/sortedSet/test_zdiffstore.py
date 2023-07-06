@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_sets():
+def flush_sorted_sets(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
     diff_result = "diff_result"
@@ -14,7 +14,7 @@ def flush_sorted_sets():
     redis.delete(diff_result)
 
 
-def test_zdiffstore():
+def test_zdiffstore(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
     diff_result = "diff_result"

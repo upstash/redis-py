@@ -1,15 +1,15 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_hash():
+def flush_hash(redis: Redis):
     hash_name = "myhash"
     redis.delete(hash_name)
 
 
-def test_hrandfield_single() -> None:
+def test_hrandfield_single(redis: Redis) -> None:
     hash_name = "myhash"
 
     # Add fields to the hash
@@ -22,7 +22,7 @@ def test_hrandfield_single() -> None:
     assert result in ["field1", "field2", "field3"]
 
 
-def test_hrandfield_multiple() -> None:
+def test_hrandfield_multiple(redis: Redis) -> None:
     hash_name = "myhash"
 
     # Add fields to the hash
@@ -43,7 +43,7 @@ def test_hrandfield_multiple() -> None:
         assert redis.hget(hash_name, key) == val
 
 
-def test_hrandfield_multiple_without_formatting() -> None:
+def test_hrandfield_multiple_without_formatting(redis: Redis) -> None:
     redis._format_return = False
     hash_name = "myhash"
 
@@ -56,5 +56,3 @@ def test_hrandfield_multiple_without_formatting() -> None:
     assert isinstance(result, list)
     assert redis.hget(hash_name, result[0]) == result[1]
     assert redis.hget(hash_name, result[2]) == result[3]
-
-    redis._format_return = True

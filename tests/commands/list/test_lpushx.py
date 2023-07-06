@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_mylists():
+def flush_mylists(redis: Redis):
     mylists = ["mylist1", "mylist2"]
 
     for mylist in mylists:
         redis.delete(mylist)
 
 
-def test_lpushx_existing_list():
+def test_lpushx_existing_list(redis: Redis):
     mylist = "mylist1"
     values = ["value1", "value2"]
     reversed_values = ["value2", "value1"]
@@ -29,7 +29,7 @@ def test_lpushx_existing_list():
     assert redis.lrange(mylist, 0, -1) == expected_list
 
 
-def test_lpushx_nonexistent_list():
+def test_lpushx_nonexistent_list(redis: Redis):
     mylist = "mylist2"
     value = "value1"
 

@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
     yield
     redis.delete(key)
 
 
-def test_set():
+def test_set(redis: Redis):
     key = "mykey"
     value = "myvalue"
     ex_seconds = 10
@@ -23,7 +23,7 @@ def test_set():
     assert redis.ttl(key) == ex_seconds
 
 
-def test_set_without_formatting():
+def test_set_without_formatting(redis: Redis):
     redis._format_return = False
     key = "mykey"
     value = "myvalue"
@@ -33,10 +33,8 @@ def test_set_without_formatting():
 
     assert result == "OK"
 
-    redis._format_return = True
 
-
-def test_set_invalid_parameters():
+def test_set_invalid_parameters(redis: Redis):
     key = "mykey"
     value = "myvalue"
     ex_seconds = 10

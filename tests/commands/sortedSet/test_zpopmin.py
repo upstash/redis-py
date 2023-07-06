@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
 
-def test_zpopmin():
+def test_zpopmin(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})
@@ -23,7 +23,7 @@ def test_zpopmin():
     assert redis.zscore(sorted_set, "member1") is None
 
 
-def test_zpopmin_with_count():
+def test_zpopmin_with_count(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30})

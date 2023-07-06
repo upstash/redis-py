@@ -1,9 +1,8 @@
 from pytest import mark
 
-from tests.async_client import redis
+from upstash_redis import AsyncRedis
 
 
 @mark.asyncio
-async def test() -> None:
-    async with redis:
-        assert await redis.publish("test", "hello") == 0
+async def test(async_redis: AsyncRedis) -> None:
+    assert await async_redis.publish("test", "hello") == 0

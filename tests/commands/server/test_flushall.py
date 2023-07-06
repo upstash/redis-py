@@ -1,14 +1,14 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_all():
+def flush_all(redis: Redis):
     redis.flushall()
 
 
-def test_flushall():
+def test_flushall(redis: Redis):
     redis.set("key1", "value1")
     redis.set("key2", "value2")
     redis.set("key3", "value3")
@@ -21,10 +21,8 @@ def test_flushall():
     assert redis.get("key3") is None
 
 
-def test_flushall_without_formatting():
+def test_flushall_without_formatting(redis: Redis):
     redis._format_return = False
 
     result = redis.flushall()
     assert result is "OK"
-
-    redis._format_return = True

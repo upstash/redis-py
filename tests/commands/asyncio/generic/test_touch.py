@@ -1,18 +1,16 @@
 from pytest import mark, raises
 
-from tests.async_client import redis
+from upstash_redis import AsyncRedis
 
 
 @mark.asyncio
-async def test() -> None:
-    async with redis:
-        assert await redis.touch("string") == 1
+async def test(async_redis: AsyncRedis) -> None:
+    assert await async_redis.touch("string") == 1
 
 
 @mark.asyncio
-async def test_without_keys() -> None:
-    async with redis:
-        with raises(Exception) as exception:
-            await redis.touch()
+async def test_without_keys(async_redis: AsyncRedis) -> None:
+    with raises(Exception) as exception:
+        await async_redis.touch()
 
-        assert str(exception.value) == "At least one key must be specified."
+    assert str(exception.value) == "At least one key must be specified."

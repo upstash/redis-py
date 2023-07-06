@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_sets():
+def flush_sorted_sets(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
     destination = "union_result"
@@ -14,7 +14,7 @@ def flush_sorted_sets():
     redis.delete(destination)
 
 
-def test_zunionstore():
+def test_zunionstore(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
     destination = "union_result"

@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_set():
+def flush_set(redis: Redis):
     set_name = "myset"
 
     redis.delete(set_name)
 
 
-def test_srandmember_existing_set():
+def test_srandmember_existing_set(redis: Redis):
     set_name = "myset"
     members = ["member1", "member2", "member3"]
 
@@ -24,7 +24,7 @@ def test_srandmember_existing_set():
     assert result in members
 
 
-def test_srandmember_nonexistent_set():
+def test_srandmember_nonexistent_set(redis: Redis):
     set_name = "nonexistent_set"
 
     # Perform the srandmember operation on a nonexistent set

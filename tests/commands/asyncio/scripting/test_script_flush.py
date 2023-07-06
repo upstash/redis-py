@@ -1,26 +1,27 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import AsyncRedis
 
 
 @pytest.fixture(autouse=True)
-def load_scripts():
-    redis.script_flush()
+async def load_scripts(async_redis: AsyncRedis):
+    await async_redis.script_flush()
     yield
-    redis.script_flush()
+    await async_redis.script_flush()
 
 
-def test_script_flush():
-    script1 = redis.script_load("return 1")
-    script2 = redis.script_load("return 2")
+@pytest.mark.asyncio
+async def test_script_flush(async_redis: AsyncRedis):
+    script1 = await async_redis.script_load("return 1")
+    script2 = await async_redis.script_load("return 2")
 
-    result = redis.script_exists(script1, script2)
+    result = await async_redis.script_exists(script1, script2)
     expected_result = [True, 1]
     assert result == expected_result
 
-    redis.script_flush()
+    await async_redis.script_flush()
 
-    result = redis.script_exists(script1, script2)
+    result = await async_redis.script_exists(script1, script2)
 
     expected_result = [False, False]
     assert result == expected_result

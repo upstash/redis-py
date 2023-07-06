@@ -74,6 +74,7 @@ Running commands might look like this:
 
 ```python
 from upstash_redis import Redis
+
 redis = Redis.from_env()
 
 def main():
@@ -83,12 +84,12 @@ def main():
 # or for async context:
 
 from upstash_redis.asyncio import Redis
+
 redis = Redis.from_env()
 
-async def main():
-  async with redis:
-    await redis.set("a", "b")
-    print(await redis.get("a"))
+async def main():  
+  await redis.set("a", "b")
+  print(await redis.get("a"))
 ```
 
 ### BITFIELD and BITFIELD_RO

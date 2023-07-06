@@ -1,16 +1,16 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.delete(sorted_set)
 
 
-def test_zrange():
+def test_zrange(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30, "member4": 40})
@@ -25,7 +25,7 @@ def test_zrange():
     assert all(isinstance(member[1], float) for member in result)
 
 
-def test_zrange_with_range_method():
+def test_zrange_with_range_method(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30, "member4": 40})
@@ -45,7 +45,7 @@ def test_zrange_with_range_method():
     assert all(isinstance(member[1], float) for member in result)
 
 
-def test_zrange_with_bylex():
+def test_zrange_with_bylex(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"apple": 1, "banana": 2, "cherry": 3, "date": 4})

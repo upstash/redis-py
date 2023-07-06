@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_keys():
+def flush_keys(redis: Redis):
     keys = ["key1", "key2", "key3"]
     redis.delete(*keys)
     yield
     redis.delete(*keys)
 
 
-def test_msetnx_all_keys_do_not_exist():
+def test_msetnx_all_keys_do_not_exist(redis: Redis):
     key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     result = redis.msetnx(key_value_pairs)
@@ -22,7 +22,7 @@ def test_msetnx_all_keys_do_not_exist():
         assert redis.get(key) == value
 
 
-def test_msetnx_some_keys_exist():
+def test_msetnx_some_keys_exist(redis: Redis):
     key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     redis.set("key2", "existing_value")
@@ -35,12 +35,10 @@ def test_msetnx_some_keys_exist():
     assert redis.get("key3") is None
 
 
-def test_msetnx_without_formatting():
+def test_msetnx_without_formatting(redis: Redis):
     redis._format_return = False
     key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
 
     result = redis.msetnx(key_value_pairs)
 
     assert result is 1
-
-    redis._format_return = True

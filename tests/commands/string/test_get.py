@@ -1,15 +1,15 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
 
 
-def test_get():
+def test_get(redis: Redis):
     key = "mykey"
     value = "Hello, Redis!"
 
@@ -19,7 +19,7 @@ def test_get():
     assert result == value
 
 
-def test_get_none():
+def test_get_none(redis: Redis):
     key = "non_existing_mykey"
 
     assert redis.get(key) is None

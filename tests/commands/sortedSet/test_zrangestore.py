@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_set():
+def flush_sorted_set(redis: Redis):
     sorted_set = "sorted_set"
     destination = "destination"
 
@@ -12,7 +12,7 @@ def flush_sorted_set():
     redis.delete(destination)
 
 
-def test_zrangestore():
+def test_zrangestore(redis: Redis):
     sorted_set = "sorted_set"
     destination = "destination"
 
@@ -28,7 +28,7 @@ def test_zrangestore():
     ]
 
 
-def test_zrangestore_rev():
+def test_zrangestore_rev(redis: Redis):
     sorted_set = "sorted_set"
     destination = "destination"
 
@@ -44,7 +44,7 @@ def test_zrangestore_rev():
     ]
 
 
-def test_zrangestore_limit():
+def test_zrangestore_limit(redis: Redis):
     sorted_set = "sorted_set"
     destination = "destination"
 

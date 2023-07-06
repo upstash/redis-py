@@ -1,17 +1,17 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_hash():
+def flush_hash(redis: Redis):
     hash_name = "myhash"
     redis.delete(hash_name)
     yield
     redis.delete(hash_name)
 
 
-def test_hscan_with_match():
+def test_hscan_with_match(redis: Redis):
     hash_name = "myhash"
 
     # Set some field-value pairs in the hash

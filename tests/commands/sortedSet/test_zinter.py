@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sorted_sets():
+def flush_sorted_sets(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
     redis.delete(sorted_set1)
@@ -14,7 +14,7 @@ def flush_sorted_sets():
     redis.delete(sorted_set2)
 
 
-def test_zinter():
+def test_zinter(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
 
@@ -26,7 +26,7 @@ def test_zinter():
     assert result == ["member1", "member3"]
 
 
-def test_zinter_with_scores():
+def test_zinter_with_scores(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
 
@@ -38,7 +38,7 @@ def test_zinter_with_scores():
     assert result == [("member1", 15.0), ("member3", 45.0)]
 
 
-def test_zinter_with_aggregate_and_weights():
+def test_zinter_with_aggregate_and_weights(redis: Redis):
     sorted_set1 = "sorted_set1"
     sorted_set2 = "sorted_set2"
 

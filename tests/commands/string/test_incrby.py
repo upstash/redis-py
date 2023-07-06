@@ -1,15 +1,15 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_key():
+def flush_key(redis: Redis):
     key = "mykey"
     redis.delete(key)
 
 
-def test_incrby():
+def test_incrby(redis: Redis):
     key = "mykey"
     initial_value = 5
     increment = 2

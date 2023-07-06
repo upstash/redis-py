@@ -1,10 +1,10 @@
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_sets():
+def flush_sets(redis: Redis):
     set_name1 = "set1"
     set_name2 = "set2"
     redis.delete(set_name1)
@@ -14,7 +14,7 @@ def flush_sets():
     redis.delete(set_name2)
 
 
-def test_smove_existing_member():
+def test_smove_existing_member(redis: Redis):
     set_name1 = "set1"
     set_name2 = "set2"
 
@@ -32,7 +32,7 @@ def test_smove_existing_member():
     assert not redis.sismember(set_name1, "member1")
 
 
-def test_smove_nonexistent_member():
+def test_smove_nonexistent_member(redis: Redis):
     set_name1 = "set1"
     set_name2 = "set2"
 

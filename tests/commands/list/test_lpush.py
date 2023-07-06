@@ -1,17 +1,19 @@
+from typing import List
+
 import pytest
 
-from tests.sync_client import redis
+from upstash_redis import Redis
 
 
 @pytest.fixture(autouse=True)
-def flush_mylists():
+def flush_mylists(redis: Redis):
     mylists = ["mylist1", "mylist2", "mylist3", "mylist4"]
 
     for mylist in mylists:
         redis.delete(mylist)
 
 
-def test_lpush_single_value():
+def test_lpush_single_value(redis: Redis):
     mylist = "mylist1"
     value = "value1"
 
@@ -20,7 +22,7 @@ def test_lpush_single_value():
     assert redis.lrange(mylist, 0, -1) == [value]
 
 
-def test_lpush_multiple_values():
+def test_lpush_multiple_values(redis: Redis):
     mylist = "mylist2"
     values = ["value1", "value2", "value3"]
     reverse_values = ["value3", "value2", "value1"]
@@ -30,7 +32,7 @@ def test_lpush_multiple_values():
     assert redis.lrange(mylist, 0, -1) == reverse_values
 
 
-def test_lpush_existing_list():
+def test_lpush_existing_list(redis: Redis):
     mylist = "mylist3"
     values = ["value1", "value2"]
 
@@ -42,9 +44,9 @@ def test_lpush_existing_list():
     assert redis.lrange(mylist, 0, -1) == ["value4", "value3", "value2", "value1"]
 
 
-def test_lpush_empty_list():
+def test_lpush_empty_list(redis: Redis):
     mylist = "mylist4"
-    values = []
+    values: List = []
 
     with pytest.raises(Exception):
         redis.lpush(mylist, *values)
