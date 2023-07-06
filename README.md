@@ -1,19 +1,19 @@
-# Upstash Redis - python edition
+# Upstash Redis Python SDK
 
-upstash-redis is a connectionless, HTTP-based Redis client for python, designed to be used in serverless and serverful environments such as:
+upstash-redis is a connectionless, HTTP-based Redis client for Python, designed to be used in serverless and serverful environments such as:
 - AWS Lambda
 - Vercel Serverless
 - Google Cloud Functions
 - and other environments where HTTP is preferred over TCP.
 
 Inspired by other Redis clients like [@upstash/redis](https://github.com/upstash/upstash-redis) and [redis-py](https://github.com/redis/redis-py),
-the goal of this SDK is to provide a simple way to use Redis in HTTP-based environments.
+the goal of this SDK is to provide a simple way to use Redis over the [Upstash REST API](https://docs.upstash.com/redis/features/restapi).
 
-The SDK is currently compatible with python 3.8 and above.
+The SDK is currently compatible with Python 3.8 and above.
 
 <!-- toc -->
 
-- [Upstash Redis - python edition](#upstash-redis---python-edition)
+- [Upstash Redis Python SDK](#upstash-redis-python-sdk)
 - [Quick Start](#quick-start)
   - [Install](#install)
     - [PyPi](#pypi)
@@ -32,7 +32,7 @@ The SDK is currently compatible with python 3.8 and above.
 
 ## Install
 
-### PyPi
+### PyPI
 ```bash
 pip install upstash-redis
 ```
@@ -42,10 +42,9 @@ To be able to use upstash-redis, you need to create a database on [Upstash](http
 and grab `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` from the console.
 
 ```python
-# In this method, you can also give specific parameters for the Redis instance instance, such as rest_retries and so on
-
 # for sync client
 from upstash_redis import Redis
+
 redis = Redis(url="UPSTASH_REDIS_REST_URL", token="UPSTASH_REDIS_REST_TOKEN")
 
 # for async client
@@ -96,16 +95,16 @@ One particular case is represented by these two chained commands, which are avai
 the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` function to run the commands.
 
 ```python
-    redis.bitfield("test_key")
-    .incrby(encoding="i8", offset=100, increment=100)
-    .overflow("SAT")
-    .incrby(encoding="i8", offset=100, increment=100)
-    .execute()
+redis.bitfield("test_key") \
+  .incrby(encoding="i8", offset=100, increment=100) \
+  .overflow("SAT") \
+  .incrby(encoding="i8", offset=100, increment=100) \
+  .execute()
 
-    redis.bitfield_ro("test_key_2")
-    .get(encoding="u8", offset=0)
-    .get(encoding="u8", offset="#1")
-    .execute()
+redis.bitfield_ro("test_key_2") \
+  .get(encoding="u8", offset=0) \
+  .get(encoding="u8", offset="#1") \
+  .execute()
 ```
 
 ### Custom commands
