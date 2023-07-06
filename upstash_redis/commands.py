@@ -129,9 +129,7 @@ class Commands:
 
         return self.execute(command)
 
-    def copy(
-        self, source: str, destination: str, replace: bool = False
-    ) -> ResponseT:
+    def copy(self, source: str, destination: str, replace: bool = False) -> ResponseT:
         """
         See https://redis.io/commands/copy
         """
