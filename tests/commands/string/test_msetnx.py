@@ -33,12 +33,3 @@ def test_msetnx_some_keys_exist(redis: Redis):
     assert redis.get("key1") is None
     assert redis.get("key2") == "existing_value"
     assert redis.get("key3") is None
-
-
-def test_msetnx_without_formatting(redis: Redis):
-    redis._format_return = False
-    key_value_pairs = {"key1": "value1", "key2": "value2", "key3": "value3"}
-
-    result = redis.msetnx(key_value_pairs)
-
-    assert result is 1

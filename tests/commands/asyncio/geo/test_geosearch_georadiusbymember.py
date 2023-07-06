@@ -7,7 +7,7 @@ from upstash_redis import AsyncRedis
 @mark.asyncio
 async def test(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
-        "test_geo_index", frommember="Catania", unit="KM", byradius=200
+        "test_geo_index", member="Catania", unit="KM", radius=200
     ) == ["Palermo", "Catania"]
 
 
@@ -15,10 +15,10 @@ async def test(async_redis: AsyncRedis) -> None:
 async def test_with_box(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
-        bybox_height=20000000,
-        bybox_width=40000000,
-        unit="ft",
+        member="Catania",
+        height=20000000,
+        width=40000000,
+        unit="FT",
     ) == ["Palermo", "Catania"]
 
 
@@ -26,9 +26,9 @@ async def test_with_box(async_redis: AsyncRedis) -> None:
 async def test_with_distance(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
+        member="Catania",
         unit="KM",
-        byradius=200,
+        radius=200,
         withdist=True,
     ) == [
         {"member": "Palermo", "distance": 166.2742},
@@ -40,8 +40,8 @@ async def test_with_distance(async_redis: AsyncRedis) -> None:
 async def test_with_hash(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
-        byradius=200,
+        member="Catania",
+        radius=200,
         unit="KM",
         withhash=True,
     ) == [
@@ -54,8 +54,8 @@ async def test_with_hash(async_redis: AsyncRedis) -> None:
 async def test_with_coordinates(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
-        byradius=200,
+        member="Catania",
+        radius=200,
         unit="KM",
         withcoord=True,
     ) == [
@@ -75,7 +75,7 @@ async def test_with_coordinates(async_redis: AsyncRedis) -> None:
 @mark.asyncio
 async def test_with_count(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
-        "test_geo_index", frommember="Catania", unit="KM", byradius=200, count=1
+        "test_geo_index", member="Catania", unit="KM", radius=200, count=1
     ) == ["Catania"]
 
 
@@ -83,11 +83,11 @@ async def test_with_count(async_redis: AsyncRedis) -> None:
 async def test_with_any(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
-        byradius=200,
+        member="Catania",
+        radius=200,
         unit="KM",
         count=1,
-        count_any=True,
+        any=True,
     ) == ["Palermo"]
 
 
@@ -95,10 +95,10 @@ async def test_with_any(async_redis: AsyncRedis) -> None:
 async def test_with_sort(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        frommember="Catania",
-        byradius=200,
+        member="Catania",
+        radius=200,
         unit="KM",
-        sort="ASC",
+        order="ASC",
     ) == ["Catania", "Palermo"]
 
 
@@ -107,11 +107,11 @@ async def test_with_invalid_parameters(async_redis: AsyncRedis) -> None:
     with raises(Exception) as exception:
         await async_redis.geosearch(
             "test_geo_index",
-            frommember="Catania",
-            byradius=200,
+            member="Catania",
+            radius=200,
             unit="KM",
             count=None,
-            count_any=True,
+            any=True,
         )
 
-    assert str(exception.value) == '"count_any" can only be used together with "count".'
+    assert str(exception.value) == '"any" can only be used together with "count".'

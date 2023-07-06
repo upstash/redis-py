@@ -1,7 +1,9 @@
 from typing import Callable, Dict, List, Literal, Tuple, Union
 
+from upstash_redis.typing import GeoSearchResult
 
-def _list_to_dict(raw: List, command=None) -> Dict:
+
+def list_to_dict(raw: List, command=None) -> Dict:
     """
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
@@ -9,33 +11,24 @@ def _list_to_dict(raw: List, command=None) -> Dict:
     return {raw[iterator]: raw[iterator + 1] for iterator in range(0, len(raw), 2)}
 
 
-def format_geo_positions_return(
+def format_geopos(
     raw: List[Union[List[str], None]], command=None
-) -> List[Union[Dict[str, float], None]]:
-    """
-    Format the raw output returned by "GEOPOS".
-    """
-
+) -> List[Union[Tuple[float, float], None]]:
     return [
-        {"longitude": float(member[0]), "latitude": float(member[1])}
-        if isinstance(member, List)
-        else None
+        (float(member[0]), float(member[1])) if isinstance(member, List) else None
         for member in raw
     ]
 
 
-def format_geo_members_return(
+def format_geo_search_result(
     raw: List[List[Union[str, List[str]]]],
     with_distance: bool,
     with_hash: bool,
     with_coordinates: bool,
-) -> List[Dict[str, Union[str, float, int]]]:
+) -> List[GeoSearchResult]:
     """
     Format the raw output given by some Geo commands, usually the ones that return properties of members,
     when additional properties are requested.
-
-    Note that the output's type might differ from the "GeoMember" type that represents the initial properties of
-    a geo member.
 
     They generally return, if requested, in order:
      - the distance (float)
@@ -47,7 +40,7 @@ def format_geo_members_return(
     All represented as strings
     """
 
-    result: List[Dict[str, Union[str, float, int]]] = []
+    result: List[GeoSearchResult] = []
 
     # (metin): mypy has trouble narrowing down the types in this function.
     # We can use typing.cast(str, xxx) to force it manually narrow
@@ -56,34 +49,34 @@ def format_geo_members_return(
     # there is a better way of doing it, I wil just ignore the errors.
 
     for member in raw:
-        formatted_member: Dict[str, Union[str, float, int]] = {"member": member[0]}  # type: ignore[dict-item]
+        formatted: GeoSearchResult = {"member": member[0]}  # type: ignore[typeddict-item]
 
         if with_distance:
-            formatted_member["distance"] = float(member[1])  # type: ignore[arg-type]
+            formatted["distance"] = float(member[1])  # type: ignore[arg-type]
 
             if with_hash:
-                formatted_member["hash"] = int(member[2])  # type: ignore[arg-type]
+                formatted["hash"] = int(member[2])  # type: ignore[arg-type]
 
                 if with_coordinates:
-                    formatted_member["longitude"] = float(member[3][0])  # type: ignore[arg-type]
-                    formatted_member["latitude"] = float(member[3][1])  # type: ignore[arg-type]
+                    formatted["longitude"] = float(member[3][0])  # type: ignore[arg-type]
+                    formatted["latitude"] = float(member[3][1])  # type: ignore[arg-type]
 
             elif with_coordinates:
-                formatted_member["longitude"] = float(member[2][0])  # type: ignore[arg-type]
-                formatted_member["latitude"] = float(member[2][1])  # type: ignore[arg-type]
+                formatted["longitude"] = float(member[2][0])  # type: ignore[arg-type]
+                formatted["latitude"] = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_hash:
-            formatted_member["hash"] = int(member[1])  # type: ignore[arg-type]
+            formatted["hash"] = int(member[1])  # type: ignore[arg-type]
 
             if with_coordinates:
-                formatted_member["longitude"] = float(member[2][0])  # type: ignore[arg-type]
-                formatted_member["latitude"] = float(member[2][1])  # type: ignore[arg-type]
+                formatted["longitude"] = float(member[2][0])  # type: ignore[arg-type]
+                formatted["latitude"] = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_coordinates:
-            formatted_member["longitude"] = float(member[1][0])  # type: ignore[arg-type]
-            formatted_member["latitude"] = float(member[1][1])  # type: ignore[arg-type]
+            formatted["longitude"] = float(member[1][0])  # type: ignore[arg-type]
+            formatted["latitude"] = float(member[1][1])  # type: ignore[arg-type]
 
-        result.append(formatted_member)
+        result.append(formatted)
 
     return result
 
@@ -94,7 +87,7 @@ def format_hash_return(raw: List[str], command=None) -> Dict[str, str]:
     pairs of Hashes.
     """
 
-    return _list_to_dict(raw=raw)
+    return list_to_dict(raw=raw)
 
 
 def format_pubsub_numsub_return(raw: List[Union[str, int]]) -> Dict[str, int]:
@@ -102,7 +95,7 @@ def format_pubsub_numsub_return(raw: List[Union[str, int]]) -> Dict[str, int]:
     Format the raw output returned by "PUBSUB NUMSUB".
     """
 
-    return _list_to_dict(raw=raw)
+    return list_to_dict(raw=raw)
 
 
 def format_bool_list(raw: List[Literal[0, 1]]) -> List[bool]:
@@ -113,12 +106,8 @@ def format_bool_list(raw: List[Literal[0, 1]]) -> List[bool]:
     return [bool(value) for value in raw]
 
 
-def format_server_time_return(raw: List[str], command=None) -> Dict[str, int]:
-    """
-    Format the raw output returned by "TIME".
-    """
-
-    return {"seconds": int(raw[0]), "microseconds": int(raw[1])}
+def format_time(raw: List[str], command=None) -> Tuple[int, int]:
+    return (int(raw[0]), int(raw[1]))
 
 
 def format_sorted_set_return(raw: List[str], command=None) -> List[Tuple[str, float]]:
@@ -156,12 +145,19 @@ def list_to_bool_list(res, command):
     return list(map(bool, res))
 
 
+def float_or_none(res, command):
+    if res is None:
+        return None
+
+    return float(res)
+
+
 def to_float(res, command):
     return float(res)
 
 
-def scan_formatter(res, command):
-    return [int(res[0]), res[1]]
+def format_scan(res, command):
+    return (int(res[0]), res[1])
 
 
 def hscan_formatter(res, command):
@@ -180,17 +176,17 @@ def zscore_formatter(res, command):
     return float(res) if res is not None else res
 
 
-def georadius_formatter(res, command):
+def format_search(res, command):
     withdist = "WITHDIST" in command
     withhash = "WITHHASH" in command
     withcoord = "WITHCOORD" in command
     if withdist or withhash or withcoord:
-        return format_geo_members_return(res, withdist, withhash, withcoord)
+        return format_geo_search_result(res, withdist, withhash, withcoord)
 
     return res
 
 
-def hrandfield_formatter(res, command):
+def format_hrandfield(res, command):
     withvalues = "WITHVALUES" in command
     if withvalues:
         return format_hash_return(res)
@@ -206,7 +202,7 @@ def zadd_formatter(res, command):
     return res
 
 
-def zdiff_formatter(res, command):
+def format_zdiff(res, command):
     withscores = "WITHSCORES" in command
     if withscores:
         return format_sorted_set_return(res)
@@ -277,29 +273,31 @@ FORMATTERS: Dict[str, Callable] = {
     "PERSIST": to_bool,
     "PEXPIRE": to_bool,
     "PEXPIREAT": to_bool,
+    "RENAME": ok_to_bool,
     "RENAMENX": to_bool,
-    "SCAN": scan_formatter,
-    "GEODIST": to_float,
-    "GEOPOS": format_geo_positions_return,
-    "GEORADIUS": georadius_formatter,
-    "GEORADIUS_RO": georadius_formatter,
-    "GEORADIUSBYMEMBER": georadius_formatter,
-    "GEORADIUSBYMEMBER_RO": georadius_formatter,
-    "GEOSEARCH": georadius_formatter,
+    "SCAN": format_scan,
+    "GEODIST": float_or_none,
+    "GEOPOS": format_geopos,
+    "GEORADIUS": format_search,
+    "GEORADIUS_RO": format_search,
+    "GEORADIUSBYMEMBER": format_search,
+    "GEORADIUSBYMEMBER_RO": format_search,
+    "GEOSEARCH": format_search,
     "HEXISTS": to_bool,
     "HGETALL": format_hash_return,
     "HINCRBYFLOAT": to_float,
-    "HRANDFIELD": hrandfield_formatter,
+    "HRANDFIELD": format_hrandfield,
     "HSCAN": hscan_formatter,
     "HSETNX": to_bool,
     "PFADD": to_bool,
-    "TIME": format_server_time_return,
+    "PFMERGE": ok_to_bool,
+    "TIME": format_time,
     "SISMEMBER": to_bool,
     "SMISMEMBER": list_to_bool_list,
     "SMOVE": to_bool,
     "SSCAN": sscan_formatter,
     "ZADD": zadd_formatter,
-    "ZDIFF": zdiff_formatter,
+    "ZDIFF": format_zdiff,
     "ZINCRBY": to_float,
     "ZINTER": zinter_formatter,
     "ZMSCORE": format_float_list,
@@ -314,15 +312,17 @@ FORMATTERS: Dict[str, Callable] = {
     "ZSCORE": zscore_formatter,
     "ZUNION": zunion_formatter,
     "INCRBYFLOAT": to_float,
-    "PUBSUB NUMSUB": _list_to_dict,
+    "PUBSUB NUMSUB": list_to_dict,
     "FLUSHALL": ok_to_bool,
     "FLUSHDB": ok_to_bool,
-    "MSETNX": to_bool,
     "PSETEX": ok_to_bool,
     "SET": ok_to_bool,
     "SETEX": ok_to_bool,
     "SETNX": to_bool,
+    "MSET": ok_to_bool,
+    "MSETNX": to_bool,
     "HMSET": ok_to_bool,
+    "LSET": ok_to_bool,
     "SMEMBERS": to_set,
     "SDIFF": to_set,
     "SINTER": to_set,

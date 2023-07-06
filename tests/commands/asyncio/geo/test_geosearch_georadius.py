@@ -7,9 +7,9 @@ from upstash_redis import AsyncRedis
 async def test(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
     ) == ["Palermo", "Catania"]
 
@@ -18,11 +18,11 @@ async def test(async_redis: AsyncRedis) -> None:
 async def test_with_box(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=14,
-        fromlonlat_latitude=35,
-        bybox_height=600,
-        bybox_width=4000,
-        unit="km",
+        longitude=14,
+        latitude=35,
+        height=600,
+        width=4000,
+        unit="KM",
     ) == ["Catania"]
 
 
@@ -30,9 +30,9 @@ async def test_with_box(async_redis: AsyncRedis) -> None:
 async def test_with_distance(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
         withdist=True,
     ) == [
@@ -45,9 +45,9 @@ async def test_with_distance(async_redis: AsyncRedis) -> None:
 async def test_with_hash(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
         withhash=True,
     ) == [
@@ -60,9 +60,9 @@ async def test_with_hash(async_redis: AsyncRedis) -> None:
 async def test_with_coordinates(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
         withcoord=True,
     ) == [
@@ -83,9 +83,9 @@ async def test_with_coordinates(async_redis: AsyncRedis) -> None:
 async def test_with_count(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
         count=1,
     ) == ["Catania"]
@@ -95,12 +95,12 @@ async def test_with_count(async_redis: AsyncRedis) -> None:
 async def test_with_any(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
         count=1,
-        count_any=True,
+        any=True,
     ) == ["Palermo"]
 
 
@@ -108,11 +108,11 @@ async def test_with_any(async_redis: AsyncRedis) -> None:
 async def test_with_sort(async_redis: AsyncRedis) -> None:
     assert await async_redis.geosearch(
         "test_geo_index",
-        fromlonlat_longitude=15,
-        fromlonlat_latitude=37,
-        byradius=200,
+        longitude=15,
+        latitude=37,
+        radius=200,
         unit="KM",
-        sort="ASC",
+        order="ASC",
     ) == ["Catania", "Palermo"]
 
 
@@ -121,12 +121,12 @@ async def test_with_invalid_parameters(async_redis: AsyncRedis) -> None:
     with raises(Exception) as exception:
         await async_redis.geosearch(
             "test_geo_index",
-            fromlonlat_longitude=15,
-            fromlonlat_latitude=37,
-            byradius=200,
+            longitude=15,
+            latitude=37,
+            radius=200,
             unit="KM",
             count=None,
-            count_any=True,
+            any=True,
         )
 
-    assert str(exception.value) == '"count_any" can only be used together with "count".'
+    assert str(exception.value) == '"any" can only be used together with "count".'

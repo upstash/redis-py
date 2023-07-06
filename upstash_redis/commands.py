@@ -1,6 +1,6 @@
-from typing import Any, Awaitable, Dict, List, Literal, Optional, Union
+from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
 
-from upstash_redis.typing import BitFieldOffset, FloatMinMax, GeoMember
+from upstash_redis.typing import FloatMinMaxT
 from upstash_redis.utils import (
     handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
@@ -9,16 +9,16 @@ from upstash_redis.utils import (
     number_are_not_none,
 )
 
-ResponseType = Union[Awaitable, Any]
+ResponseT = Union[Awaitable, Any]
 
 
 class Commands:
-    def run(self, command: List) -> ResponseType:
+    def run(self, command: List) -> ResponseT:
         raise NotImplementedError("run")
 
     def bitcount(
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/bitcount
         """
@@ -40,29 +40,29 @@ class Commands:
 
         return BitFieldCommands(key=key, client=self)
 
-    def bitfield_ro(self, key: str) -> "BitFieldRO":
+    def bitfield_ro(self, key: str) -> "BitFieldROCommands":
         """
         See https://redis.io/commands/bitfield_ro
         """
 
-        return BitFieldRO(key=key, client=self)
+        return BitFieldROCommands(key=key, client=self)
 
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *srckeys: str
-    ) -> ResponseType:
+        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+    ) -> ResponseT:
         """
         See https://redis.io/commands/bitop
         """
 
-        if len(srckeys) == 0:
+        if len(keys) == 0:
             raise Exception("At least one source key must be specified.")
 
-        if operation == "NOT" and len(srckeys) > 1:
+        if operation == "NOT" and len(keys) > 1:
             raise Exception(
                 'The "NOT " operation takes only one source key as argument.'
             )
 
-        command: List = ["BITOP", operation, destkey, *srckeys]
+        command: List = ["BITOP", operation, destkey, *keys]
 
         return self.run(command)
 
@@ -72,7 +72,7 @@ class Commands:
         bit: Literal[0, 1],
         start: Union[int, None] = None,
         end: Union[int, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/bitpos
         """
@@ -90,7 +90,7 @@ class Commands:
 
         return self.run(command)
 
-    def getbit(self, key: str, offset: int) -> ResponseType:
+    def getbit(self, key: str, offset: int) -> ResponseT:
         """
         See https://redis.io/commands/getbit
         """
@@ -99,7 +99,7 @@ class Commands:
 
         return self.run(command)
 
-    def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> ResponseType:
+    def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> ResponseT:
         """
         See https://redis.io/commands/setbit
         """
@@ -108,7 +108,7 @@ class Commands:
 
         return self.run(command)
 
-    def ping(self, message: Union[str, None] = None) -> ResponseType:
+    def ping(self, message: Union[str, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/ping
         """
@@ -120,7 +120,7 @@ class Commands:
 
         return self.run(command)
 
-    def echo(self, message: str) -> ResponseType:
+    def echo(self, message: str) -> ResponseT:
         """
         See https://redis.io/commands/echo
         """
@@ -131,11 +131,9 @@ class Commands:
 
     def copy(
         self, source: str, destination: str, replace: bool = False
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/copy
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["COPY", source, destination]
@@ -145,7 +143,7 @@ class Commands:
 
         return self.run(command)
 
-    def delete(self, *keys: str) -> ResponseType:
+    def delete(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/del
         """
@@ -157,7 +155,7 @@ class Commands:
 
         return self.run(command)
 
-    def exists(self, *keys: str) -> ResponseType:
+    def exists(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/exists
         """
@@ -169,29 +167,25 @@ class Commands:
 
         return self.run(command)
 
-    def expire(self, key: str, seconds: int) -> ResponseType:
+    def expire(self, key: str, seconds: int) -> ResponseT:
         """
         See https://redis.io/commands/expire
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["EXPIRE", key, seconds]
 
         return self.run(command)
 
-    def expireat(self, key: str, unix_time_seconds: int) -> ResponseType:
+    def expireat(self, key: str, unix_time_seconds: int) -> ResponseT:
         """
         See https://redis.io/commands/expireat
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["EXPIREAT", key, unix_time_seconds]
 
         return self.run(command)
 
-    def keys(self, pattern: str) -> ResponseType:
+    def keys(self, pattern: str) -> ResponseT:
         """
         See https://redis.io/commands/keys
         """
@@ -200,40 +194,34 @@ class Commands:
 
         return self.run(command)
 
-    def persist(self, key: str) -> ResponseType:
+    def persist(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/persist
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["PERSIST", key]
 
         return self.run(command)
 
-    def pexpire(self, key: str, milliseconds: int) -> ResponseType:
+    def pexpire(self, key: str, milliseconds: int) -> ResponseT:
         """
         See https://redis.io/commands/pexpire
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["PEXPIRE", key, milliseconds]
 
         return self.run(command)
 
-    def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseType:
+    def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseT:
         """
         See https://redis.io/commands/pexpireat
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
 
         return self.run(command)
 
-    def pttl(self, key: str) -> ResponseType:
+    def pttl(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/pttl
         """
@@ -242,7 +230,7 @@ class Commands:
 
         return self.run(command)
 
-    def randomkey(self) -> ResponseType:
+    def randomkey(self) -> ResponseT:
         """
         See https://redis.io/commands/randomkey
         """
@@ -251,7 +239,7 @@ class Commands:
 
         return self.run(command)
 
-    def rename(self, key: str, newkey: str) -> ResponseType:
+    def rename(self, key: str, newkey: str) -> ResponseT:
         """
         See https://redis.io/commands/rename
         """
@@ -260,11 +248,9 @@ class Commands:
 
         return self.run(command)
 
-    def renamenx(self, key: str, newkey: str) -> ResponseType:
+    def renamenx(self, key: str, newkey: str) -> ResponseT:
         """
         See https://redis.io/commands/renamenx
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["RENAMENX", key, newkey]
@@ -274,34 +260,29 @@ class Commands:
     def scan(
         self,
         cursor: int,
-        match_pattern: Union[str, None] = None,
+        match: Union[str, None] = None,
         count: Union[int, None] = None,
-        scan_type: Union[str, None] = None,
-    ) -> ResponseType:
+        type: Union[str, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/scan
-
-        :param scan_type: replacement for "TYPE"
-        :param match_pattern: replacement for "MATCH"
-
-        :return: The cursor will be an integer if "format_return" is True.
         """
 
         command: List = ["SCAN", cursor]
 
-        if match_pattern is not None:
-            command.extend(["MATCH", match_pattern])
+        if match is not None:
+            command.extend(["MATCH", match])
 
         if count is not None:
             command.extend(["COUNT", count])
 
-        if scan_type is not None:
-            command.extend(["TYPE", scan_type])
+        if type is not None:
+            command.extend(["TYPE", type])
 
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
 
-    def touch(self, *keys: str) -> ResponseType:
+    def touch(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/touch
         """
@@ -313,7 +294,7 @@ class Commands:
 
         return self.run(command)
 
-    def ttl(self, key: str) -> ResponseType:
+    def ttl(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/ttl
         """
@@ -322,7 +303,7 @@ class Commands:
 
         return self.run(command)
 
-    def type(self, key: str) -> ResponseType:
+    def type(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/type
         """
@@ -331,7 +312,7 @@ class Commands:
 
         return self.run(command)
 
-    def unlink(self, *keys: str) -> ResponseType:
+    def unlink(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/unlink
         """
@@ -346,15 +327,15 @@ class Commands:
     def geoadd(
         self,
         key: str,
-        *members: GeoMember,
+        *members: Tuple[float, float, str],
         nx: bool = False,
         xx: bool = False,
         ch: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/geoadd
 
-        :param members: a sequence of GeoMember Dict types (longitude, latitude, name).
+        :param members: a sequence of (longitude, latitude, name).
         """
 
         if len(members) == 0:
@@ -375,7 +356,7 @@ class Commands:
             command.append("CH")
 
         for member in members:
-            command.extend([member["longitude"], member["latitude"], member["member"]])
+            command.extend(member)
 
         return self.run(command)
 
@@ -384,19 +365,17 @@ class Commands:
         key: str,
         member1: str,
         member2: str,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"] = "M",
-    ) -> ResponseType:
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+    ) -> ResponseT:
         """
         See https://redis.io/commands/geodist
-
-        :return: A float value if "format_return" is True.
         """
 
         command: List = ["GEODIST", key, member1, member2, unit]
 
         return self.run(command)
 
-    def geohash(self, key: str, *members: str) -> ResponseType:
+    def geohash(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/geohash
         """
@@ -405,11 +384,9 @@ class Commands:
 
         return self.run(command)
 
-    def geopos(self, key: str, *members: str) -> ResponseType:
+    def geopos(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/geopos
-
-        :return: A List of Dicts with either None or the longitude and latitude if "format_return" is True.
         """
 
         command: List = ["GEOPOS", key, *members]
@@ -422,26 +399,22 @@ class Commands:
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
+        unit: Literal["M", "KM", "FT", "MI"],
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
         count: Union[int, None] = None,
-        count_any: bool = False,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
+        any: bool = False,
+        order: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/georadius
-
-        :param count_any: replacement for "ANY"
-
-        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_georadius_write_exceptions(
-            withdist, withhash, withcoord, count, count_any, store, storedist
+            withdist, withhash, withcoord, count, any, store, storedist
         )
 
         command: List = ["GEORADIUS", key, longitude, latitude, radius, unit]
@@ -457,11 +430,11 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         if store:
             command.extend(["STORE", store])
@@ -478,24 +451,20 @@ class Commands:
         longitude: float,
         latitude: float,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
+        unit: Literal["M", "KM", "FT", "MI"],
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
         count: Union[int, None] = None,
-        count_any: bool = False,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> ResponseType:
+        any: bool = False,
+        order: Union[Literal["ASC", "DESC"], None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/georadius_ro
-
-        :param count_any: replacement for "ANY"
-
-        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
-        if count_any and count is None:
-            raise Exception('"count_any" can only be used together with "count".')
+        if any and count is None:
+            raise Exception('"any" can only be used together with "count".')
 
         command: List = ["GEORADIUS_RO", key, longitude, latitude, radius, unit]
 
@@ -510,11 +479,11 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         # If none of the additional properties are requested, the result will be "List[str]".
         return self.run(command)
@@ -524,26 +493,22 @@ class Commands:
         key: str,
         member: str,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
+        unit: Literal["M", "KM", "FT", "MI"],
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
         count: Union[int, None] = None,
-        count_any: bool = False,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
+        any: bool = False,
+        order: Union[Literal["ASC", "DESC"], None] = None,
         store: Union[str, None] = None,
         storedist: Union[str, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember
-
-        :param count_any: replacement for "ANY"
-
-        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_georadius_write_exceptions(
-            withdist, withhash, withcoord, count, count_any, store, storedist
+            withdist, withhash, withcoord, count, any, store, storedist
         )
 
         command: List = ["GEORADIUSBYMEMBER", key, member, radius, unit]
@@ -559,11 +524,11 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         if store:
             command.extend(["STORE", store])
@@ -579,24 +544,20 @@ class Commands:
         key: str,
         member: str,
         radius: float,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
+        unit: Literal["M", "KM", "FT", "MI"],
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
         count: Union[int, None] = None,
-        count_any: bool = False,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
-    ) -> ResponseType:
+        any: bool = False,
+        order: Union[Literal["ASC", "DESC"], None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember_ro
-
-        :param count_any: replacement for "ANY"
-
-        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
-        if count_any and count is None:
-            raise Exception('"count_any" can only be used together with "count".')
+        if any and count is None:
+            raise Exception('"any" can only be used together with "count".')
 
         command: List = ["GEORADIUSBYMEMBER_RO", key, member, radius, unit]
 
@@ -611,11 +572,11 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         # If none of the additional properties are requested, the result will be "List[str]".
         return self.run(command)
@@ -623,61 +584,57 @@ class Commands:
     def geosearch(
         self,
         key: str,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        frommember: Union[str, None] = None,
-        fromlonlat_longitude: Union[float, None] = None,
-        fromlonlat_latitude: Union[float, None] = None,
-        byradius: Union[float, None] = None,
-        bybox_width: Union[float, None] = None,
-        bybox_height: Union[float, None] = None,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
+        member: Union[str, None] = None,
+        longitude: Union[float, None] = None,
+        latitude: Union[float, None] = None,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        radius: Union[float, None] = None,
+        width: Union[float, None] = None,
+        height: Union[float, None] = None,
+        order: Union[Literal["ASC", "DESC"], None] = None,
         count: Union[int, None] = None,
-        count_any: bool = False,
+        any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/geosearch
-
-        :param count_any: replacement for "ANY"
-
-        :return: A List of Dicts with the requested properties if "format_return" is True and any of the `with` parameters is used.
         """
 
         handle_geosearch_exceptions(
-            frommember,
-            fromlonlat_longitude,
-            fromlonlat_latitude,
-            byradius,
-            bybox_width,
-            bybox_height,
+            member,
+            longitude,
+            latitude,
+            radius,
+            width,
+            height,
             count,
-            count_any,
+            any,
         )
 
         command: List = ["GEOSEARCH", key]
 
-        if frommember is not None:
-            command.extend(["FROMMEMBER", frommember])
+        if member is not None:
+            command.extend(["FROMMEMBER", member])
 
-        if fromlonlat_longitude is not None:
-            command.extend(["FROMLONLAT", fromlonlat_longitude, fromlonlat_latitude])
+        if longitude is not None:
+            command.extend(["FROMLONLAT", longitude, latitude])
 
-        if byradius is not None:
-            command.extend(["BYRADIUS", byradius])
+        if radius is not None:
+            command.extend(["BYRADIUS", radius])
 
-        if bybox_width is not None:
-            command.extend(["BYBOX", bybox_width, bybox_height])
+        if width is not None:
+            command.extend(["BYBOX", width, height])
 
         command.append(unit)
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
         if withdist:
@@ -696,57 +653,55 @@ class Commands:
         self,
         destination: str,
         source: str,
-        unit: Literal["m", "km", "ft", "mi", "M", "KM", "FT", "MI"],
-        frommember: Union[str, None] = None,
-        fromlonlat_longitude: Union[float, None] = None,
-        fromlonlat_latitude: Union[float, None] = None,
-        byradius: Union[float, None] = None,
-        bybox_width: Union[float, None] = None,
-        bybox_height: Union[float, None] = None,
-        sort: Union[Literal["ASC", "DESC"], None] = None,
+        member: Union[str, None] = None,
+        longitude: Union[float, None] = None,
+        latitude: Union[float, None] = None,
+        unit: Literal["M", "KM", "FT", "MI"] = "M",
+        radius: Union[float, None] = None,
+        width: Union[float, None] = None,
+        height: Union[float, None] = None,
+        order: Union[Literal["ASC", "DESC"], None] = None,
         count: Union[int, None] = None,
-        count_any: bool = False,
+        any: bool = False,
         storedist: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/geosearchstore
-
-        :param count_any: replacement for "ANY"
         """
 
         handle_geosearch_exceptions(
-            frommember,
-            fromlonlat_longitude,
-            fromlonlat_latitude,
-            byradius,
-            bybox_width,
-            bybox_height,
+            member,
+            longitude,
+            latitude,
+            radius,
+            width,
+            height,
             count,
-            count_any,
+            any,
         )
 
         command: List = ["GEOSEARCHSTORE", destination, source]
 
-        if frommember is not None:
-            command.extend(["FROMMEMBER", frommember])
+        if member is not None:
+            command.extend(["FROMMEMBER", member])
 
-        if fromlonlat_longitude is not None:
-            command.extend(["FROMLONLAT", fromlonlat_longitude, fromlonlat_latitude])
+        if longitude is not None:
+            command.extend(["FROMLONLAT", longitude, latitude])
 
-        if byradius is not None:
-            command.extend(["BYRADIUS", byradius])
+        if radius is not None:
+            command.extend(["BYRADIUS", radius])
 
-        if bybox_width is not None:
-            command.extend(["BYBOX", bybox_width, bybox_height])
+        if width is not None:
+            command.extend(["BYBOX", width, height])
 
         command.append(unit)
 
-        if sort:
-            command.append(sort)
+        if order:
+            command.append(order)
 
         if count is not None:
             command.extend(["COUNT", count])
-            if count_any:
+            if any:
                 command.append("ANY")
 
         if storedist:
@@ -754,7 +709,7 @@ class Commands:
 
         return self.run(command)
 
-    def hdel(self, key: str, *fields: str) -> ResponseType:
+    def hdel(self, key: str, *fields: str) -> ResponseT:
         """
         See https://redis.io/commands/hdel
         """
@@ -766,18 +721,16 @@ class Commands:
 
         return self.run(command)
 
-    def hexists(self, key: str, field: str) -> ResponseType:
+    def hexists(self, key: str, field: str) -> ResponseT:
         """
         See https://redis.io/commands/hexists
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["HEXISTS", key, field]
 
         return self.run(command)
 
-    def hget(self, key: str, field: str) -> ResponseType:
+    def hget(self, key: str, field: str) -> ResponseT:
         """
         See https://redis.io/commands/hget
         """
@@ -786,18 +739,16 @@ class Commands:
 
         return self.run(command)
 
-    def hgetall(self, key: str) -> ResponseType:
+    def hgetall(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/hgetall
-
-        :return: A Dict of field-value pairs if "format_return" is True.
         """
 
         command: List = ["HGETALL", key]
 
         return self.run(command)
 
-    def hincrby(self, key: str, field: str, increment: int) -> ResponseType:
+    def hincrby(self, key: str, field: str, increment: int) -> ResponseT:
         """
         See https://redis.io/commands/hincrby
         """
@@ -806,18 +757,16 @@ class Commands:
 
         return self.run(command)
 
-    def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseType:
+    def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseT:
         """
         See https://redis.io/commands/hincrbyfloat
-
-        :return: A float if "format_return" is True.
         """
 
         command: List = ["HINCRBYFLOAT", key, field, increment]
 
         return self.run(command)
 
-    def hkeys(self, key: str) -> ResponseType:
+    def hkeys(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/hkeys
         """
@@ -826,7 +775,7 @@ class Commands:
 
         return self.run(command)
 
-    def hlen(self, key: str) -> ResponseType:
+    def hlen(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/hlen
         """
@@ -835,7 +784,7 @@ class Commands:
 
         return self.run(command)
 
-    def hmget(self, key: str, *fields: str) -> ResponseType:
+    def hmget(self, key: str, *fields: str) -> ResponseT:
         """
         See https://redis.io/commands/hmget
         """
@@ -847,25 +796,23 @@ class Commands:
 
         return self.run(command)
 
-    def hmset(self, key: str, field_value_pairs: Dict) -> ResponseType:
+    def hmset(self, key: str, values: Dict[str, str]) -> ResponseT:
         """
         See https://redis.io/commands/hmset
         """
 
         command: List = ["HMSET", key]
 
-        for field, value in field_value_pairs.items():
+        for field, value in values.items():
             command.extend([field, value])
 
         return self.run(command)
 
     def hrandfield(
         self, key: str, count: Union[int, None] = None, withvalues: bool = False
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/hrandfield
-
-        :return: A Dict of field-value pairs if "count" and "withvalues" are specified and "format_return" is True.
         """
 
         if count is None and withvalues:
@@ -883,21 +830,19 @@ class Commands:
 
     def hscan(
         self,
-        name: str,
+        key: str,
         cursor: int,
-        match_pattern: Union[str, None] = None,
+        match: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/hscan
-
-        :param match_pattern: replacement for "MATCH"
         """
 
-        command: List = ["HSCAN", name, cursor]
+        command: List = ["HSCAN", key, cursor]
 
-        if match_pattern is not None:
-            command.extend(["MATCH", match_pattern])
+        if match is not None:
+            command.extend(["MATCH", match])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -907,40 +852,38 @@ class Commands:
 
     def hset(
         self,
-        name: str,
-        key: Optional[str] = None,
-        val: Optional[str] = None,
-        field_value_pairs: Optional[Dict] = None,
-    ) -> ResponseType:
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[str] = None,
+        values: Optional[Dict[str, str]] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/hset
         """
-        command: List = ["HSET", name]
+        command: List = ["HSET", key]
 
-        if key is None and field_value_pairs is None:
+        if field is None and values is None:
             raise Exception("'hset' with no key value pairs")
 
-        if key and val:
-            command.extend([key, val])
+        if field and value:
+            command.extend([field, value])
 
-        if field_value_pairs is not None:
-            for field, value in field_value_pairs.items():
+        if values is not None:
+            for field, value in values.items():
                 command.extend([field, value])
 
         return self.run(command)
 
-    def hsetnx(self, key: str, field: str, value: Any) -> ResponseType:
+    def hsetnx(self, key: str, field: str, value: str) -> ResponseT:
         """
         See https://redis.io/commands/hsetnx
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["HSETNX", key, field, value]
 
         return self.run(command)
 
-    def hstrlen(self, key: str, field: str) -> ResponseType:
+    def hstrlen(self, key: str, field: str) -> ResponseT:
         """
         See https://redis.io/commands/hstrlen
         """
@@ -949,7 +892,7 @@ class Commands:
 
         return self.run(command)
 
-    def hvals(self, key: str) -> ResponseType:
+    def hvals(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/hvals
         """
@@ -958,18 +901,16 @@ class Commands:
 
         return self.run(command)
 
-    def pfadd(self, key: str, *elements: Any) -> ResponseType:
+    def pfadd(self, key: str, *elements: Any) -> ResponseT:
         """
         See https://redis.io/commands/pfadd
-
-        :return: A bool if "format_return" is True.
         """
 
         command: List = ["PFADD", key, *elements]
 
         return self.run(command)
 
-    def pfcount(self, *keys: str) -> ResponseType:
+    def pfcount(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/pfcount
         """
@@ -981,7 +922,7 @@ class Commands:
 
         return self.run(command)
 
-    def pfmerge(self, destkey: str, *sourcekeys: str) -> ResponseType:
+    def pfmerge(self, destkey: str, *sourcekeys: str) -> ResponseT:
         """
         See https://redis.io/commands/pfmerge
         """
@@ -990,7 +931,7 @@ class Commands:
 
         return self.run(command)
 
-    def lindex(self, key: str, index: int) -> ResponseType:
+    def lindex(self, key: str, index: int) -> ResponseT:
         """
         See https://redis.io/commands/lindex
         """
@@ -1002,19 +943,19 @@ class Commands:
     def linsert(
         self,
         key: str,
-        position: Literal["BEFORE", "AFTER", "before", "after"],
-        pivot: Any,
-        element: Any,
-    ) -> ResponseType:
+        where: Literal["BEFORE", "AFTER"],
+        pivot: str,
+        element: str,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/linsert
         """
 
-        command: List = ["LINSERT", key, position, pivot, element]
+        command: List = ["LINSERT", key, where, pivot, element]
 
         return self.run(command)
 
-    def llen(self, key: str) -> ResponseType:
+    def llen(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/llen
         """
@@ -1027,9 +968,9 @@ class Commands:
         self,
         source: str,
         destination: str,
-        source_position: Literal["LEFT", "RIGHT"] = "LEFT",
-        destination_position: Literal["LEFT", "RIGHT"] = "RIGHT",
-    ) -> ResponseType:
+        wherefrom: Literal["LEFT", "RIGHT"] = "LEFT",
+        whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
+    ) -> ResponseT:
         """
         See https://redis.io/commands/lmove
         """
@@ -1038,17 +979,15 @@ class Commands:
             "LMOVE",
             source,
             destination,
-            source_position,
-            destination_position,
+            wherefrom,
+            whereto,
         ]
 
         return self.run(command)
 
-    def lpop(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/lpop
-
-        :param count: defaults to 1 on the server side
         """
 
         command: List = ["LPOP", key]
@@ -1061,11 +1000,11 @@ class Commands:
     def lpos(
         self,
         key: str,
-        element: Any,
+        element: str,
         rank: Union[int, None] = None,
         count: Union[int, None] = None,
         maxlen: Union[int, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/lpos
         """
@@ -1083,7 +1022,7 @@ class Commands:
 
         return self.run(command)
 
-    def lpush(self, key: str, *elements: Any) -> ResponseType:
+    def lpush(self, key: str, *elements: str) -> ResponseT:
         """
         See https://redis.io/commands/lpush
         """
@@ -1095,7 +1034,7 @@ class Commands:
 
         return self.run(command)
 
-    def lpushx(self, key: str, *elements: Any) -> ResponseType:
+    def lpushx(self, key: str, *elements: str) -> ResponseT:
         """
         See https://redis.io/commands/lpushx
         """
@@ -1107,7 +1046,7 @@ class Commands:
 
         return self.run(command)
 
-    def lrange(self, key: str, start: int, stop: int) -> ResponseType:
+    def lrange(self, key: str, start: int, stop: int) -> ResponseT:
         """
         See https://redis.io/commands/lrange
         """
@@ -1116,7 +1055,7 @@ class Commands:
 
         return self.run(command)
 
-    def lrem(self, key: str, count: int, element: Any) -> ResponseType:
+    def lrem(self, key: str, count: int, element: str) -> ResponseT:
         """
         See https://redis.io/commands/lrem
         """
@@ -1125,7 +1064,7 @@ class Commands:
 
         return self.run(command)
 
-    def lset(self, key: str, index: int, element: Any) -> ResponseType:
+    def lset(self, key: str, index: int, element: str) -> ResponseT:
         """
         See https://redis.io/commands/lset
         """
@@ -1134,7 +1073,7 @@ class Commands:
 
         return self.run(command)
 
-    def ltrim(self, key: str, start: int, stop: int) -> ResponseType:
+    def ltrim(self, key: str, start: int, stop: int) -> ResponseT:
         """
         See https://redis.io/commands/ltrim
         """
@@ -1143,11 +1082,9 @@ class Commands:
 
         return self.run(command)
 
-    def rpop(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/rpop
-
-        :param count: defaults to 1 on the server side
         """
 
         command: List = ["RPOP", key]
@@ -1157,7 +1094,7 @@ class Commands:
 
         return self.run(command)
 
-    def rpoplpush(self, source: str, destination: str) -> ResponseType:
+    def rpoplpush(self, source: str, destination: str) -> ResponseT:
         """
         See https://redis.io/commands/rpoplpush
         """
@@ -1166,7 +1103,7 @@ class Commands:
 
         return self.run(command)
 
-    def rpush(self, key: str, *elements: Any) -> ResponseType:
+    def rpush(self, key: str, *elements: str) -> ResponseT:
         """
         See https://redis.io/commands/rpush
         """
@@ -1178,7 +1115,7 @@ class Commands:
 
         return self.run(command)
 
-    def rpushx(self, key: str, *elements: Any) -> ResponseType:
+    def rpushx(self, key: str, *elements: Any) -> ResponseT:
         """
         See https://redis.io/commands/rpushx
         """
@@ -1190,7 +1127,7 @@ class Commands:
 
         return self.run(command)
 
-    def publish(self, channel: str, message: str) -> ResponseType:
+    def publish(self, channel: str, message: str) -> ResponseT:
         """
         See https://redis.io/commands/publish
         """
@@ -1204,7 +1141,7 @@ class Commands:
         script: str,
         keys: Union[List[str], None] = None,
         args: Union[List, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/eval
 
@@ -1228,7 +1165,7 @@ class Commands:
         sha1: str,
         keys: Union[List[str], None] = None,
         args: Union[List, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/evalsha
 
@@ -1247,7 +1184,7 @@ class Commands:
 
         return self.run(command)
 
-    def dbsize(self) -> ResponseType:
+    def dbsize(self) -> ResponseT:
         """
         See https://redis.io/commands/dbsize
         """
@@ -1257,45 +1194,43 @@ class Commands:
         return self.run(command)
 
     def flushall(
-        self, mode: Union[Literal["ASYNC", "SYNC"], None] = None
-    ) -> ResponseType:
+        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+    ) -> ResponseT:
         """
         See https://redis.io/commands/flushall
         """
 
         command: List = ["FLUSHALL"]
 
-        if mode:
-            command.append(mode)
+        if flush_type:
+            command.append(flush_type)
 
         return self.run(command)
 
     def flushdb(
-        self, mode: Union[Literal["ASYNC", "SYNC"], None] = None
-    ) -> ResponseType:
+        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+    ) -> ResponseT:
         """
         See https://redis.io/commands/flushdb
         """
 
         command: List = ["FLUSHDB"]
 
-        if mode:
-            command.append(mode)
+        if flush_type:
+            command.append(flush_type)
 
         return self.run(command)
 
-    def time(self) -> ResponseType:
+    def time(self) -> ResponseT:
         """
         See https://redis.io/commands/time
-
-        :return: A Dict with the keys "seconds" and "microseconds" if self.format_return is True.
         """
 
         command: List = ["TIME"]
 
         return self.run(command)
 
-    def sadd(self, key: str, *members: Any) -> ResponseType:
+    def sadd(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/sadd
         """
@@ -1307,7 +1242,7 @@ class Commands:
 
         return self.run(command)
 
-    def scard(self, key: str) -> ResponseType:
+    def scard(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/scard
         """
@@ -1316,7 +1251,7 @@ class Commands:
 
         return self.run(command)
 
-    def sdiff(self, *keys: str) -> ResponseType:
+    def sdiff(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sdiff
         """
@@ -1328,7 +1263,7 @@ class Commands:
 
         return self.run(command)
 
-    def sdiffstore(self, destination: str, *keys: str) -> ResponseType:
+    def sdiffstore(self, destination: str, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sdiffstore
         """
@@ -1340,7 +1275,7 @@ class Commands:
 
         return self.run(command)
 
-    def sinter(self, *keys: str) -> ResponseType:
+    def sinter(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sinter
         """
@@ -1352,7 +1287,7 @@ class Commands:
 
         return self.run(command)
 
-    def sinterstore(self, destination: str, *keys: str) -> ResponseType:
+    def sinterstore(self, destination: str, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sinterstore
         """
@@ -1364,18 +1299,16 @@ class Commands:
 
         return self.run(command)
 
-    def sismember(self, key: str, member: Any) -> ResponseType:
+    def sismember(self, key: str, member: str) -> ResponseT:
         """
         See https://redis.io/commands/sismember
-
-        :return: A bool if self.format_return is True.
         """
 
         command: List = ["SISMEMBER", key, member]
 
         return self.run(command)
 
-    def smembers(self, key: str) -> ResponseType:
+    def smembers(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/smembers
         """
@@ -1384,11 +1317,9 @@ class Commands:
 
         return self.run(command)
 
-    def smismember(self, key: str, *members: Any) -> ResponseType:
+    def smismember(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/smismember
-
-        :return: A bool list if self.format_return is True.
         """
 
         if len(members) == 0:
@@ -1398,22 +1329,18 @@ class Commands:
 
         return self.run(command)
 
-    def smove(self, source: str, destination: str, member: Any) -> ResponseType:
+    def smove(self, source: str, destination: str, member: str) -> ResponseT:
         """
         See https://redis.io/commands/smove
-
-        :return: A bool if self.format_return is True.
         """
 
         command: List = ["SMOVE", source, destination, member]
 
         return self.run(command)
 
-    def spop(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/spop
-
-        :param count: defaults to 1 on the server side
         """
 
         command: List = ["SPOP", key]
@@ -1423,11 +1350,9 @@ class Commands:
 
         return self.run(command)
 
-    def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/srandmember
-
-        :param count: defaults to 1 on the server side
         """
 
         command: List = ["SRANDMEMBER", key]
@@ -1437,7 +1362,7 @@ class Commands:
 
         return self.run(command)
 
-    def srem(self, key: str, *members: Any) -> ResponseType:
+    def srem(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/srem
         """
@@ -1453,21 +1378,17 @@ class Commands:
         self,
         key: str,
         cursor: int = 0,
-        match_pattern: Union[str, None] = None,
+        match: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/sscan
-
-        :param match_pattern: replacement for "MATCH"
-
-        :return: The cursor will be an integer if "format_return" is True.
         """
 
         command: List = ["SSCAN", key, cursor]
 
-        if match_pattern is not None:
-            command.extend(["MATCH", match_pattern])
+        if match is not None:
+            command.extend(["MATCH", match])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -1475,7 +1396,7 @@ class Commands:
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
 
-    def sunion(self, *keys: str) -> ResponseType:
+    def sunion(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sunion
         """
@@ -1487,7 +1408,7 @@ class Commands:
 
         return self.run(command)
 
-    def sunionstore(self, destination: str, *keys: str) -> ResponseType:
+    def sunionstore(self, destination: str, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/sunionstore
         """
@@ -1502,21 +1423,16 @@ class Commands:
     def zadd(
         self,
         key: str,
-        score_member_pairs: Dict,
+        scores: Dict[str, float],
         nx: bool = False,
         xx: bool = False,
         gt: bool = False,
         lt: bool = False,
         ch: bool = False,
         incr: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zadd
-
-        :param score_member_pairs: a Dict containing members and their scores.
-
-        :return: A float representing the number of elements added or None if "incr" is False
-        and "format_return" is True.
         """
 
         if nx and xx:
@@ -1548,12 +1464,12 @@ class Commands:
         if incr:
             command.append("INCR")
 
-        for name, score in score_member_pairs.items():
+        for name, score in scores.items():
             command.extend([score, name])
 
         return self.run(command)
 
-    def zcard(self, key: str) -> ResponseType:
+    def zcard(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/zcard
         """
@@ -1562,34 +1478,22 @@ class Commands:
 
         return self.run(command)
 
-    def zcount(
-        self, key: str, min_score: FloatMinMax, max_score: FloatMinMax
-    ) -> ResponseType:
+    def zcount(self, key: str, min: FloatMinMaxT, max: FloatMinMaxT) -> ResponseT:
         """
         See https://redis.io/commands/zcount
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
 
-        command: List = ["ZCOUNT", key, min_score, max_score]
+        command: List = ["ZCOUNT", key, min, max]
 
         return self.run(command)
 
-    """
-    This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its raw return type will be List[str].
-    """
-
-    def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseType:
+    def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseT:
         """
         See https://redis.io/commands/zdiff
 
         The number of keys is calculated automatically.
-
-        :return: A Dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -1602,7 +1506,7 @@ class Commands:
 
         return self.run(command)
 
-    def zdiffstore(self, destination: str, keys: List[str]) -> ResponseType:
+    def zdiffstore(self, destination: str, keys: List[str]) -> ResponseT:
         """
         See https://redis.io/commands/zdiffstore
 
@@ -1616,21 +1520,14 @@ class Commands:
 
         return self.run(command)
 
-    def zincrby(self, key: str, increment: float, member: str) -> ResponseType:
+    def zincrby(self, key: str, increment: float, member: str) -> ResponseT:
         """
         See https://redis.io/commands/zincrby
-
-        :return: A float if "format_return" is True.
         """
 
         command: List = ["ZINCRBY", key, increment, member]
 
         return self.run(command)
-
-    """
-    This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its raw return type will be List[str].
-    """
 
     def zinter(
         self,
@@ -1638,13 +1535,11 @@ class Commands:
         weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zinter
 
         The number of keys is calculated automatically.
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -1669,7 +1564,7 @@ class Commands:
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zinterstore
 
@@ -1689,30 +1584,25 @@ class Commands:
 
         return self.run(command)
 
-    def zlexcount(self, key: str, min_score: str, max_score: str) -> ResponseType:
+    def zlexcount(self, key: str, min: str, max: str) -> ResponseT:
         """
         See https://redis.io/commands/zlexcount
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
         """
 
-        if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+        if not min.startswith(("(", "[", "+", "-")) or not max.startswith(
             ("(", "[", "+", "-")
         ):
             raise Exception(
-                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
+                "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
             )
 
-        command: List = ["ZLEXCOUNT", key, min_score, max_score]
+        command: List = ["ZLEXCOUNT", key, min, max]
 
         return self.run(command)
 
-    def zmscore(self, key: str, members: List[str]) -> ResponseType:
+    def zmscore(self, key: str, members: List[str]) -> ResponseT:
         """
         See https://redis.io/commands/zmscore
-
-        :return: A List of float or None values if "format_return" is True.
         """
 
         if len(members) == 0:
@@ -1722,13 +1612,9 @@ class Commands:
 
         return self.run(command)
 
-    def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/zpopmax
-
-        :param count: defaults to 1 on the server side
-
-        :return: A Dict of member-score pairs if "format_return" is True.
         """
 
         command: List = ["ZPOPMAX", key]
@@ -1738,13 +1624,9 @@ class Commands:
 
         return self.run(command)
 
-    def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseType:
+    def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
         See https://redis.io/commands/zpopmin
-
-        :param count: defaults to 1 on the server side
-
-        :return: A Dict of member-score pairs if "format_return" is True.
         """
 
         command: List = ["ZPOPMIN", key]
@@ -1756,13 +1638,9 @@ class Commands:
 
     def zrandmember(
         self, key: str, count: Union[int, None] = None, withscores: bool = False
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrandmember
-
-        :param count: defaults to 1 on the server side
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if count is None and withscores:
@@ -1778,44 +1656,35 @@ class Commands:
 
         return self.run(command)
 
-    """
-    This has actually 3 return scenarios, but, 
-    whether "with_scores" is True or not, its raw return type will be List[str].
-    """
-
     def zrange(
         self,
         key: str,
-        start: FloatMinMax,
-        stop: FloatMinMax,
-        range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        start: FloatMinMaxT,
+        stop: FloatMinMaxT,
+        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
         withscores: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrange
 
         If you need to use "-inf" and "+inf", please write them as strings.
-
-        :return: A Dict of member-score pairs if "with_scores" and "format_return" are True.
         """
 
-        handle_non_deprecated_zrange_exceptions(
-            range_method, start, stop, limit_offset, limit_count
-        )
+        handle_non_deprecated_zrange_exceptions(sortby, start, stop, offset, count)
 
         command: List = ["ZRANGE", key, start, stop]
 
-        if range_method:
-            command.append(range_method)
+        if sortby:
+            command.append(sortby)
 
         if rev:
             command.append("REV")
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         if withscores:
             command.append("WITHSCORES")
@@ -1825,59 +1694,46 @@ class Commands:
     def zrangebylex(
         self,
         key: str,
-        min_score: str,
-        max_score: str,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
-    ) -> ResponseType:
+        min: str,
+        max: str,
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrangebylex
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min_score, max_score, limit_offset, limit_count)
+        handle_zrangebylex_exceptions(min, max, offset, count)
 
-        command: List = ["ZRANGEBYLEX", key, min_score, max_score]
+        command: List = ["ZRANGEBYLEX", key, min, max]
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         return self.run(command)
-
-    """
-    This has actually 3 return scenarios, but, 
-    whether "withscores" is True or not, its raw return type will be List[str].
-    """
 
     def zrangebyscore(
         self,
         key: str,
-        min_score: FloatMinMax,
-        max_score: FloatMinMax,
+        min: FloatMinMaxT,
+        max: FloatMinMaxT,
         withscores: bool = False,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
-    ) -> ResponseType:
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
-        if number_are_not_none(limit_offset, limit_count, number=1):
+        if number_are_not_none(offset, count, number=1):
             raise Exception('Both "offset" and "count" must be specified.')
 
-        command: List = ["ZRANGEBYSCORE", key, min_score, max_score]
+        command: List = ["ZRANGEBYSCORE", key, min, max]
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         if withscores:
             command.append("WITHSCORES")
@@ -1888,38 +1744,33 @@ class Commands:
         self,
         dst: str,
         src: str,
-        start: FloatMinMax,
-        stop: FloatMinMax,
-        range_method: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        min: FloatMinMaxT,
+        max: FloatMinMaxT,
+        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
-    ) -> ResponseType:
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrangestore
-
-        :param start: replacement for "MIN"
-        :param stop: replacement for "MAX"
         """
 
-        handle_non_deprecated_zrange_exceptions(
-            range_method, start, stop, limit_offset, limit_count
-        )
+        handle_non_deprecated_zrange_exceptions(sortby, min, max, offset, count)
 
-        command: List = ["ZRANGESTORE", dst, src, start, stop]
+        command: List = ["ZRANGESTORE", dst, src, min, max]
 
-        if range_method:
-            command.append(range_method)
+        if sortby:
+            command.append(sortby)
 
         if rev:
             command.append("REV")
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         return self.run(command)
 
-    def zrank(self, key: str, member: str) -> ResponseType:
+    def zrank(self, key: str, member: str) -> ResponseT:
         """
         See https://redis.io/commands/zrank
         """
@@ -1928,7 +1779,7 @@ class Commands:
 
         return self.run(command)
 
-    def zrem(self, key: str, *members: str) -> ResponseType:
+    def zrem(self, key: str, *members: str) -> ResponseT:
         """
         See https://redis.io/commands/zrem
         """
@@ -1940,26 +1791,23 @@ class Commands:
 
         return self.run(command)
 
-    def zremrangebylex(self, key: str, min_score: str, max_score: str) -> ResponseType:
+    def zremrangebylex(self, key: str, min: str, max: str) -> ResponseT:
         """
         See https://redis.io/commands/zremrangebylex
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
         """
 
-        if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+        if not min.startswith(("(", "[", "+", "-")) or not max.startswith(
             ("(", "[", "+", "-")
         ):
             raise Exception(
-                "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
+                "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
             )
 
-        command: List = ["ZREMRANGEBYLEX", key, min_score, max_score]
+        command: List = ["ZREMRANGEBYLEX", key, min, max]
 
         return self.run(command)
 
-    def zremrangebyrank(self, key: str, start: int, stop: int) -> ResponseType:
+    def zremrangebyrank(self, key: str, start: int, stop: int) -> ResponseT:
         """
         See https://redis.io/commands/zremrangebyrank
         """
@@ -1969,33 +1817,23 @@ class Commands:
         return self.run(command)
 
     def zremrangebyscore(
-        self, key: str, min_score: FloatMinMax, max_score: FloatMinMax
-    ) -> ResponseType:
+        self, key: str, min: FloatMinMaxT, max: FloatMinMaxT
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zremrangebyscore\
-        
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
 
         If you need to use "-inf" and "+inf", please write them as strings.
         """
 
-        command: List = ["ZREMRANGEBYSCORE", key, min_score, max_score]
+        command: List = ["ZREMRANGEBYSCORE", key, min, max]
 
         return self.run(command)
 
-    """
-    This has actually 3 return scenarios, but,
-    whether "with_scores" is True or not, its raw return type will be List[str].
-    """
-
     def zrevrange(
         self, key: str, start: int, stop: int, withscores: bool = False
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrevrange
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         command: List = ["ZREVRANGE", key, start, stop]
@@ -2008,66 +1846,53 @@ class Commands:
     def zrevrangebylex(
         self,
         key: str,
-        max_score: str,
-        min_score: str,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
-    ) -> ResponseType:
+        max: str,
+        min: str,
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrevrangebylex
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
         """
 
-        handle_zrangebylex_exceptions(min_score, max_score, limit_offset, limit_count)
+        handle_zrangebylex_exceptions(min, max, offset, count)
 
-        command: List = ["ZREVRANGEBYLEX", key, max_score, min_score]
+        command: List = ["ZREVRANGEBYLEX", key, max, min]
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         return self.run(command)
-
-    """
-    This has actually 3 return scenarios, but,
-    whether "withscores" is True or not, its raw return type will be List[str].
-    """
 
     def zrevrangebyscore(
         self,
         key: str,
-        max_score: FloatMinMax,
-        min_score: FloatMinMax,
+        max: FloatMinMaxT,
+        min: FloatMinMaxT,
         withscores: bool = False,
-        limit_offset: Union[int, None] = None,
-        limit_count: Union[int, None] = None,
-    ) -> ResponseType:
+        offset: Union[int, None] = None,
+        count: Union[int, None] = None,
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zrevrangebyscore
 
         If you need to use "-inf" and "+inf", please write them as strings.
-
-        :param min_score: replacement for "MIN"
-        :param max_score: replacement for "MAX"
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
-        if number_are_not_none(limit_offset, limit_count, number=1):
-            raise Exception('Both "limit_offset" and "limit_count" must be specified.')
+        if number_are_not_none(offset, count, number=1):
+            raise Exception('Both "offset" and "count" must be specified.')
 
-        command: List = ["ZREVRANGEBYSCORE", key, max_score, min_score]
+        command: List = ["ZREVRANGEBYSCORE", key, max, min]
 
-        if limit_offset is not None:
-            command.extend(["LIMIT", limit_offset, limit_count])
+        if offset is not None:
+            command.extend(["LIMIT", offset, count])
 
         if withscores:
             command.append("WITHSCORES")
 
         return self.run(command)
 
-    def zrevrank(self, key: str, member: str) -> ResponseType:
+    def zrevrank(self, key: str, member: str) -> ResponseT:
         """
         See https://redis.io/commands/zrevrank
         """
@@ -2080,19 +1905,17 @@ class Commands:
         self,
         key: str,
         cursor: int,
-        match_pattern: Union[str, None] = None,
+        match: Union[str, None] = None,
         count: Union[int, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zscan
-
-        :param match_pattern: replacement for "MATCH"
         """
 
         command: List = ["ZSCAN", key, cursor]
 
-        if match_pattern is not None:
-            command.extend(["MATCH", match_pattern])
+        if match is not None:
+            command.extend(["MATCH", match])
 
         if count is not None:
             command.extend(["COUNT", count])
@@ -2100,35 +1923,26 @@ class Commands:
         # The raw result is composed of the new cursor and the List of elements.
         return self.run(command)
 
-    def zscore(self, key: str, member: str) -> ResponseType:
+    def zscore(self, key: str, member: str) -> ResponseT:
         """
         See https://redis.io/commands/zscore
-
-        :return: A float or None if "format_return" is True.
         """
 
         command: List = ["ZSCORE", key, member]
 
         return self.run(command)
 
-    """
-    This has actually 3 return scenarios, but,
-    whether "withscores" is True or not, its raw return type will be List[str].
-    """
-
     def zunion(
         self,
         keys: List[str],
-        weights: Union[List[float], List[int], None] = None,
+        weights: Union[List[float], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zunion
 
         The number of keys is calculated automatically.
-
-        :return: A Dict of member-score pairs if "withscores" and "format_return" are True.
         """
 
         if len(keys) == 0:
@@ -2153,7 +1967,7 @@ class Commands:
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/zunionstore
 
@@ -2173,7 +1987,7 @@ class Commands:
 
         return self.run(command)
 
-    def append(self, key: str, value: Any) -> ResponseType:
+    def append(self, key: str, value: str) -> ResponseT:
         """
         See https://redis.io/commands/append
         """
@@ -2182,7 +1996,7 @@ class Commands:
 
         return self.run(command)
 
-    def decr(self, key: str) -> ResponseType:
+    def decr(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/decr
         """
@@ -2191,7 +2005,7 @@ class Commands:
 
         return self.run(command)
 
-    def decrby(self, key: str, decrement: int) -> ResponseType:
+    def decrby(self, key: str, decrement: int) -> ResponseT:
         """
         See https://redis.io/commands/decrby
         """
@@ -2200,7 +2014,7 @@ class Commands:
 
         return self.run(command)
 
-    def get(self, key: str) -> ResponseType:
+    def get(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/get
         """
@@ -2209,7 +2023,7 @@ class Commands:
 
         return self.run(command)
 
-    def getdel(self, key: str) -> ResponseType:
+    def getdel(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/getdel
         """
@@ -2226,7 +2040,7 @@ class Commands:
         exat: Union[int, None] = None,
         pxat: Union[int, None] = None,
         persist: Union[bool, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/getex
         """
@@ -2255,7 +2069,7 @@ class Commands:
 
         return self.run(command)
 
-    def getrange(self, key: str, start: int, end: int) -> ResponseType:
+    def getrange(self, key: str, start: int, end: int) -> ResponseT:
         """
         See https://redis.io/commands/getrange
         """
@@ -2264,7 +2078,7 @@ class Commands:
 
         return self.run(command)
 
-    def getset(self, key: str, value: Any) -> ResponseType:
+    def getset(self, key: str, value: str) -> ResponseT:
         """
         See https://redis.io/commands/getset
         """
@@ -2273,7 +2087,7 @@ class Commands:
 
         return self.run(command)
 
-    def incr(self, key: str) -> ResponseType:
+    def incr(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/incr
         """
@@ -2282,7 +2096,7 @@ class Commands:
 
         return self.run(command)
 
-    def incrby(self, key: str, increment: int) -> ResponseType:
+    def incrby(self, key: str, increment: int) -> ResponseT:
         """
         See https://redis.io/commands/incrby
         """
@@ -2291,18 +2105,16 @@ class Commands:
 
         return self.run(command)
 
-    def incrbyfloat(self, key: str, increment: float) -> ResponseType:
+    def incrbyfloat(self, key: str, increment: float) -> ResponseT:
         """
         See https://redis.io/commands/incrbyfloat
-
-        :return: A float if "format_return" is True.
         """
 
         command: List = ["INCRBYFLOAT", key, increment]
 
         return self.run(command)
 
-    def mget(self, *keys: str) -> ResponseType:
+    def mget(self, *keys: str) -> ResponseT:
         """
         See https://redis.io/commands/mget
         """
@@ -2314,31 +2126,31 @@ class Commands:
 
         return self.run(command)
 
-    def mset(self, key_value_pairs: Dict) -> ResponseType:
+    def mset(self, values: Dict[str, str]) -> ResponseT:
         """
         See https://redis.io/commands/mset
         """
 
         command: List = ["MSET"]
 
-        for key, value in key_value_pairs.items():
+        for key, value in values.items():
             command.extend([key, value])
 
         return self.run(command)
 
-    def msetnx(self, key_value_pairs: Dict) -> ResponseType:
+    def msetnx(self, values: Dict[str, str]) -> ResponseT:
         """
         See https://redis.io/commands/msetnx
         """
 
         command: List = ["MSETNX"]
 
-        for key, value in key_value_pairs.items():
+        for key, value in values.items():
             command.extend([key, value])
 
         return self.run(command)
 
-    def psetex(self, key: str, milliseconds: int, value: Any) -> ResponseType:
+    def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
         """
         See https://redis.io/commands/psetex
         """
@@ -2359,7 +2171,7 @@ class Commands:
         exat: Union[int, None] = None,
         pxat: Union[int, None] = None,
         keepttl: Union[bool, None] = None,
-    ) -> ResponseType:
+    ) -> ResponseT:
         """
         See https://redis.io/commands/set
         """
@@ -2403,7 +2215,7 @@ class Commands:
 
         return self.run(command)
 
-    def setex(self, key: str, seconds: int, value: Any) -> ResponseType:
+    def setex(self, key: str, seconds: int, value: str) -> ResponseT:
         """
         See https://redis.io/commands/setex
         """
@@ -2412,7 +2224,7 @@ class Commands:
 
         return self.run(command)
 
-    def setnx(self, key: str, value: Any) -> ResponseType:
+    def setnx(self, key: str, value: str) -> ResponseT:
         """
         See https://redis.io/commands/setnx
         """
@@ -2421,7 +2233,7 @@ class Commands:
 
         return self.run(command)
 
-    def setrange(self, key: str, offset: int, value: Any) -> ResponseType:
+    def setrange(self, key: str, offset: int, value: str) -> ResponseT:
         """
         See https://redis.io/commands/setrange
         """
@@ -2430,7 +2242,7 @@ class Commands:
 
         return self.run(command)
 
-    def strlen(self, key: str) -> ResponseType:
+    def strlen(self, key: str) -> ResponseT:
         """
         See https://redis.io/commands/strlen
         """
@@ -2439,7 +2251,7 @@ class Commands:
 
         return self.run(command)
 
-    def substr(self, key: str, start: int, end: int) -> ResponseType:
+    def substr(self, key: str, start: int, end: int) -> ResponseT:
         """
         See https://redis.io/commands/substr
         """
@@ -2448,11 +2260,9 @@ class Commands:
 
         return self.run(command)
 
-    def script_exists(self, *sha1: str) -> ResponseType:
+    def script_exists(self, *sha1: str) -> ResponseT:
         """
         See https://redis.io/commands/script-exists
-
-        :return: A List of bools if "format_return" is True.
         """
 
         if len(sha1) == 0:
@@ -2463,20 +2273,20 @@ class Commands:
         return self.run(command)
 
     def script_flush(
-        self, mode: Optional[Literal["ASYNC", "SYNC"]] = None
-    ) -> ResponseType:
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
+    ) -> ResponseT:
         """
         See https://redis.io/commands/script-flush
         """
 
         command: List = ["SCRIPT", "FLUSH"]
 
-        if mode:
-            command.append(mode)
+        if flush_type:
+            command.append(flush_type)
 
         return self.run(command)
 
-    def script_load(self, script: str) -> ResponseType:
+    def script_load(self, script: str) -> ResponseT:
         """
         See https://redis.io/commands/script-load
         """
@@ -2492,7 +2302,7 @@ class BitFieldCommands:
         self.client = client
         self.command: List = ["BITFIELD", key]
 
-    def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldCommands":
+    def get(self, encoding: str, offset: Union[int, str]) -> "BitFieldCommands":
         """
         Returns the specified bit field.
 
@@ -2505,7 +2315,7 @@ class BitFieldCommands:
         return self
 
     def set(
-        self, encoding: str, offset: BitFieldOffset, value: int
+        self, encoding: str, offset: Union[int, str], value: int
     ) -> "BitFieldCommands":
         """
         Set the specified bit field and returns its old value.
@@ -2519,7 +2329,7 @@ class BitFieldCommands:
         return self
 
     def incrby(
-        self, encoding: str, offset: BitFieldOffset, increment: int
+        self, encoding: str, offset: Union[int, str], increment: int
     ) -> "BitFieldCommands":
         """
         Increments or decrements (if a negative increment is given) the specified bit field and returns the new value.
@@ -2549,16 +2359,16 @@ class BitFieldCommands:
 
         return self
 
-    def execute(self) -> ResponseType:
+    def execute(self) -> ResponseT:
         return self.client.run(command=self.command)
 
 
-class BitFieldRO:
+class BitFieldROCommands:
     def __init__(self, client: Commands, key: str):
         self.client = client
         self.command: List = ["BITFIELD_RO", key]
 
-    def get(self, encoding: str, offset: BitFieldOffset) -> "BitFieldRO":
+    def get(self, encoding: str, offset: Union[int, str]) -> "BitFieldROCommands":
         """
         Returns the specified bit field.
 
@@ -2570,10 +2380,10 @@ class BitFieldRO:
 
         return self
 
-    def execute(self) -> ResponseType:
+    def execute(self) -> ResponseT:
         return self.client.run(command=self.command)
 
 
 AsyncCommands = Commands
 AsyncBitFieldCommands = BitFieldCommands
-AsyncBitFieldRO = BitFieldRO
+AsyncBitFieldROCommands = BitFieldROCommands

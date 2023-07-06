@@ -1,15 +1,15 @@
 from upstash_redis.format import (
-    _list_to_dict,
     format_bool_list,
     format_float_list,
-    format_geo_members_return,
-    format_geo_positions_return,
-    format_server_time_return,
+    format_geo_search_result,
+    format_geopos,
+    format_time,
+    list_to_dict,
 )
 
 
 def test_list_to_dict() -> None:
-    assert _list_to_dict(raw=["a", "1", "b", "2", "c", 3]) == {
+    assert list_to_dict(raw=["a", "1", "b", "2", "c", 3]) == {
         "a": "1",
         "b": "2",
         "c": 3,
@@ -25,7 +25,7 @@ def test_format_float_list() -> None:
 
 
 def test_format_geo_members_with_distance_and_hash_and_coordinates() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "2.51", "100", ["3.12", "4.23"]],
             ["b", "5.6", "200", ["7.1", "8.2"]],
@@ -52,7 +52,7 @@ def test_format_geo_members_with_distance_and_hash_and_coordinates() -> None:
 
 
 def test_format_geo_members_with_distance() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "2.51"],
             ["b", "5.6"],
@@ -67,7 +67,7 @@ def test_format_geo_members_with_distance() -> None:
 
 
 def test_format_geo_members_with_hash() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "100"],
             ["b", "200"],
@@ -82,7 +82,7 @@ def test_format_geo_members_with_hash() -> None:
 
 
 def test_format_geo_members_with_coordinates() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", ["3.12", "4.23"]],
             ["b", ["7.1", "8.2"]],
@@ -97,7 +97,7 @@ def test_format_geo_members_with_coordinates() -> None:
 
 
 def test_format_geo_members_with_distance_and_hash() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "2.51", "100"],
             ["b", "5.6", "200"],
@@ -112,7 +112,7 @@ def test_format_geo_members_with_distance_and_hash() -> None:
 
 
 def test_format_geo_members_with_distance_and_coordinates() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "2.51", ["3.12", "4.23"]],
             ["b", "5.6", ["7.1", "8.2"]],
@@ -127,7 +127,7 @@ def test_format_geo_members_with_distance_and_coordinates() -> None:
 
 
 def test_format_geo_members_with_hash_and_coordinates() -> None:
-    assert format_geo_members_return(
+    assert format_geo_search_result(
         raw=[
             ["a", "100", ["3.12", "4.23"]],
             ["b", "200", ["7.1", "8.2"]],
@@ -142,15 +142,12 @@ def test_format_geo_members_with_hash_and_coordinates() -> None:
 
 
 def test_format_geo_positions() -> None:
-    assert format_geo_positions_return(raw=[["1.0", "2.5"], ["3.1", "4.2"], None]) == [
-        {"longitude": 1.0, "latitude": 2.5},
-        {"longitude": 3.1, "latitude": 4.2},
+    assert format_geopos(raw=[["1.0", "2.5"], ["3.1", "4.2"], None]) == [
+        (1.0, 2.5),
+        (3.1, 4.2),
         None,
     ]
 
 
 def test_format_server_time() -> None:
-    assert format_server_time_return(raw=["1620752099", "12"]) == {
-        "seconds": 1620752099,
-        "microseconds": 12,
-    }
+    assert format_time(raw=["1620752099", "12"]) == (1620752099, 12)

@@ -26,18 +26,9 @@ async def test_with_replace(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_without_formatting(async_redis: AsyncRedis) -> None:
-    async_redis._format_return = False
-
-    assert (
-        await async_redis.copy(source="string", destination="copy_destination_2") == 1
-    )
-
-
-@mark.asyncio
 async def test_with_formatting(async_redis: AsyncRedis) -> None:
     await async_redis.copy(source="string", destination="copy_destination_2")
     assert (
         await async_redis.copy(source="string", destination="copy_destination_2")
-        == False
+        is False
     )

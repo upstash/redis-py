@@ -41,7 +41,7 @@ def test_hdel_with_pairs(redis: Redis):
     field2 = "field2"
     field3 = "field3"
 
-    redis.hset(hash_name, field_value_pairs=pairs)
+    redis.hset(hash_name, values=pairs)
 
     result = redis.hdel(hash_name, field3)
 

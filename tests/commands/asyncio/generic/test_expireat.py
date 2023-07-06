@@ -19,13 +19,3 @@ async def test(async_redis: AsyncRedis) -> None:
 
     await sleep(2)
     assert await execute_on_http("EXISTS", "string_for_expireat") == 0
-
-
-@mark.asyncio
-async def test_without_formatting(async_redis: AsyncRedis) -> None:
-    async_redis._format_return = False
-
-    assert (
-        await async_redis.expireat("non_existing_key", unix_time_seconds=1704067200)
-        == 0
-    )

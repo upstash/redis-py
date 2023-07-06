@@ -78,7 +78,7 @@ async def test_with_any(async_redis: AsyncRedis) -> None:
         200,
         unit="KM",
         count=1,
-        count_any=True,
+        any=True,
     ) == ["Palermo"]
 
 
@@ -89,7 +89,7 @@ async def test_with_sort(async_redis: AsyncRedis) -> None:
         "Catania",
         200,
         unit="KM",
-        sort="ASC",
+        order="ASC",
     ) == ["Catania", "Palermo"]
 
 
@@ -132,7 +132,7 @@ async def test_with_invalid_parameters(async_redis: AsyncRedis) -> None:
             200,
             unit="KM",
             count=None,
-            count_any=True,
+            any=True,
         )
 
-    assert str(exception.value) == '"count_any" can only be used together with "count".'
+    assert str(exception.value) == '"any" can only be used together with "count".'

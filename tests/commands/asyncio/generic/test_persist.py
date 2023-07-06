@@ -12,11 +12,3 @@ async def test(async_redis: AsyncRedis) -> None:
 
     # Check if the expiry was correctly removed.
     assert await execute_on_http("TTL", "string_for_persist") == -1
-
-
-@mark.asyncio
-async def test_without_formatting(async_redis: AsyncRedis) -> None:
-    async_redis._format_return = False
-
-    # "string" doesn't have an expiry time set.
-    assert await async_redis.persist("string") == 0

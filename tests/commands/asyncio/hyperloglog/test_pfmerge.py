@@ -10,7 +10,7 @@ async def test(async_redis: AsyncRedis) -> None:
         await async_redis.pfmerge(
             "pfmerge", "hyperloglog_for_pfmerge_1", "hyperloglog_for_pfmerge_2"
         )
-        == "OK"
+        is True
     )
 
     assert await execute_on_http("PFCOUNT", "pfmerge") == 4

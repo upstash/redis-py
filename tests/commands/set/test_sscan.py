@@ -18,7 +18,7 @@ def test_sscan_with_match_and_count(redis: Redis):
     redis.sadd(set_name, *members)
 
     # Use SSCAN to retrieve members matching a pattern with a count of 2
-    cursor, matching_members = redis.sscan(set_name, match_pattern="a*", count=2)
+    cursor, matching_members = redis.sscan(set_name, match="a*", count=2)
 
     # Assert that the matching members are returned with the specified count
     assert all(member in members for member in matching_members)

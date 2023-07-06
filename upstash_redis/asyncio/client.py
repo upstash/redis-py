@@ -1,12 +1,12 @@
 from os import environ
-from typing import Any, List, Optional, Type, Union
+from typing import Any, List, Literal, Optional, Type, Union
 
 from aiohttp import ClientSession
 
 from upstash_redis.commands import AsyncCommands
 from upstash_redis.format import FORMATTERS
 from upstash_redis.http import async_execute, make_headers
-from upstash_redis.typing import RESTEncoding, RESTResult
+from upstash_redis.typing import RESTResultT
 
 
 class Redis(AsyncCommands):
@@ -14,10 +14,9 @@ class Redis(AsyncCommands):
         self,
         url: str,
         token: str,
-        rest_encoding: RESTEncoding = "base64",
+        rest_encoding: Union[Literal["base64"], None] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
-        format_return: bool = True,
         allow_telemetry: bool = True,
     ):
         """
@@ -26,7 +25,6 @@ class Redis(AsyncCommands):
         :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
-        :param format_return: whether the raw, RESP2 result or a formatted response will be returned
         :param allow_telemetry: whether anonymous telemetry can be collected
         """
 
@@ -34,8 +32,6 @@ class Redis(AsyncCommands):
         self._token = token
 
         self._allow_telemetry = allow_telemetry
-
-        self._format_return = format_return
 
         self._rest_encoding = rest_encoding
         self._rest_retries = rest_retries
@@ -47,10 +43,9 @@ class Redis(AsyncCommands):
     @classmethod
     def from_env(
         cls,
-        rest_encoding: RESTEncoding = "base64",
+        rest_encoding: Union[Literal["base64"], None] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
-        format_return: bool = True,
         allow_telemetry: bool = True,
     ):
         """
@@ -59,7 +54,6 @@ class Redis(AsyncCommands):
         :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
-        :param format_return: whether the raw, RESP2 result or a formatted response will be returned
         :param allow_telemetry: whether anonymous telemetry can be collected
         """
 
@@ -69,7 +63,6 @@ class Redis(AsyncCommands):
             rest_encoding,
             rest_retries,
             rest_retry_interval,
-            format_return,
             allow_telemetry,
         )
 
@@ -91,7 +84,7 @@ class Redis(AsyncCommands):
         if self._session:
             await self._session.close()
 
-    async def run(self, command: List) -> RESTResult:
+    async def run(self, command: List) -> RESTResultT:
         """
         Specify the http options and execute the command.
         """
@@ -112,19 +105,10 @@ class Redis(AsyncCommands):
         )
 
         main_command = command[0]
-        if len(command) > 1 and (main_command == "PUBSUB" or main_command == "SCRIPT"):
+        if len(command) > 1 and main_command == "SCRIPT":
             main_command = f"{main_command} {command[1]}"
 
-        if (
-            self._format_return
-            or main_command == "HSCAN"
-            or main_command == "SMEMBERS"
-            or main_command == "SDIFF"
-            or main_command == "SINTER"
-            or main_command == "SSCAN"
-            or main_command == "SUNION"
-            or main_command == "ZSCAN"
-        ) and (main_command in FORMATTERS):
+        if main_command in FORMATTERS:
             return FORMATTERS[main_command](res, command)
 
         return res

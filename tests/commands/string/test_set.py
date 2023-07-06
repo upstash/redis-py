@@ -23,17 +23,6 @@ def test_set(redis: Redis):
     assert redis.ttl(key) == ex_seconds
 
 
-def test_set_without_formatting(redis: Redis):
-    redis._format_return = False
-    key = "mykey"
-    value = "myvalue"
-    ex_seconds = 10
-
-    result = redis.set(key, value, ex=ex_seconds)
-
-    assert result == "OK"
-
-
 def test_set_invalid_parameters(redis: Redis):
     key = "mykey"
     value = "myvalue"

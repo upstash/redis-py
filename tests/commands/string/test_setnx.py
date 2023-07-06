@@ -24,17 +24,3 @@ def test_setnx(redis: Redis):
     result = redis.setnx(key, "newvalue")
     assert result is False
     assert redis.get(key) == value
-
-
-def test_setnx_without_formatting(redis: Redis):
-    redis._format_return = False
-
-    key = "mykey"
-    value = "myvalue"
-
-    result = redis.setnx(key, value)
-
-    assert result is 1
-
-    result = redis.setnx(key, "newvalue")
-    assert result is 0

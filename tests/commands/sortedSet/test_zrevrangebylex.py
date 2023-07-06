@@ -20,9 +20,7 @@ def test_zrevrangebylex(redis: Redis):
     result = redis.zrevrangebylex(sorted_set, "[orange", "[cherry")
     assert result == ["orange", "mango", "cherry"]
 
-    result = redis.zrevrangebylex(
-        sorted_set, "[orange", "[cherry", limit_offset=1, limit_count=2
-    )
+    result = redis.zrevrangebylex(sorted_set, "[orange", "[cherry", offset=1, count=2)
     assert result == ["mango", "cherry"]
 
     result = redis.zrevrangebylex(sorted_set, "+", "-")

@@ -1,4 +1,4 @@
-from pytest import fixture, mark
+from pytest import fixture
 
 from upstash_redis import Redis
 

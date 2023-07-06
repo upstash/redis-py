@@ -1,5 +1,3 @@
-from typing import cast
-
 from pytest import mark
 
 from tests.execute_on_http import execute_on_http

@@ -42,9 +42,7 @@ def test_zscan(redis: Redis):
     matching_members = []
 
     while True:
-        cursor, scan_members = redis.zscan(
-            sorted_set, cursor=cursor, match_pattern=pattern
-        )
+        cursor, scan_members = redis.zscan(sorted_set, cursor=cursor, match=pattern)
 
         matching_members.extend(scan_members)
 

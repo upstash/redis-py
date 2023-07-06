@@ -1,6 +1,6 @@
 from typing import Any, Literal, Union
 
-from upstash_redis.typing import FloatMinMax
+from upstash_redis.typing import FloatMinMaxT
 
 
 def number_are_not_none(*parameters: Any, number: int) -> bool:
@@ -16,7 +16,7 @@ def handle_georadius_write_exceptions(
     withhash: bool = False,
     withcoord: bool = False,
     count: Union[int, None] = None,
-    count_any: bool = False,
+    any: bool = False,
     store: Union[str, None] = None,
     storedist: Union[str, None] = None,
 ) -> None:
@@ -24,8 +24,8 @@ def handle_georadius_write_exceptions(
     Handle exceptions for "GEORADIUS*" write commands.
     """
 
-    if count_any and count is None:
-        raise Exception('"count_any" can only be used together with "count".')
+    if any and count is None:
+        raise Exception('"any" can only be used together with "count".')
 
     if (withdist or withhash or withcoord) and (store or storedist):
         raise Exception(
@@ -35,46 +35,42 @@ def handle_georadius_write_exceptions(
 
 def handle_geosearch_exceptions(
     member: Union[str, None],
-    fromlonlat_longitude: Union[float, None],
-    fromlonlat_latitude: Union[float, None],
-    byradius: Union[float, None],
-    bybox_width: Union[float, None],
-    bybox_height: Union[float, None],
+    longitude: Union[float, None],
+    latitude: Union[float, None],
+    radius: Union[float, None],
+    width: Union[float, None],
+    height: Union[float, None],
     count: Union[int, None],
-    count_any: bool,
+    any: bool,
 ) -> None:
     """
     Handle exceptions for "GEOSEARCH*" commands.
     """
 
-    if number_are_not_none(fromlonlat_longitude, fromlonlat_latitude, number=1):
+    if number_are_not_none(longitude, latitude, number=1):
+        raise Exception('Both "longitude" and "latitude" must be specified.')
+
+    if number_are_not_none(width, height, number=1):
+        raise Exception('Both "width" and "height" must be specified.')
+
+    if not number_are_not_none(member, longitude, number=1):
         raise Exception(
-            'Both "fromlonlat_longitude" and "fromlonlat_latitude" must be specified.'
+            """Specify either the member's name with "member", or the "longitude" and "latitude", but not both."""
         )
 
-    if number_are_not_none(bybox_width, bybox_height, number=1):
-        raise Exception('Both "bybox_width" and "bybox_height" must be specified.')
-
-    if not number_are_not_none(member, fromlonlat_longitude, number=1):
+    if not number_are_not_none(radius, width, number=1):
         raise Exception(
-            """Specify either the member's name with "member",
-or the fromlonlat_longitude and fromlonlat_latitude with "fromlonlat_longitude" and "fromlonlat_latitude", but not both."""
+            """Specify either the "radius", or the "width" and "height", but not both."""
         )
 
-    if not number_are_not_none(byradius, bybox_width, number=1):
-        raise Exception(
-            """Specify either the byradius with "byradius",
-or the bybox_width and bybox_height with "bybox_width" and "bybox_height", but not both."""
-        )
-
-    if count_any and count is None:
-        raise Exception('"count_any" can only be used together with "count".')
+    if any and count is None:
+        raise Exception('"any" can only be used together with "count".')
 
 
 def handle_non_deprecated_zrange_exceptions(
-    range_method: Union[Literal["BYLEX", "BYSCORE"], None],
-    start: FloatMinMax,
-    stop: FloatMinMax,
+    sortby: Union[Literal["BYLEX", "BYSCORE"], None],
+    start: FloatMinMaxT,
+    stop: FloatMinMaxT,
     offset: Union[int, None],
     count: Union[int, None],
 ) -> None:
@@ -82,7 +78,7 @@ def handle_non_deprecated_zrange_exceptions(
     Handle exceptions for non-deprecated "ZRANGE*" commands.
     """
 
-    if range_method == "BYLEX" and (
+    if sortby == "BYLEX" and (
         not (isinstance(start, str) and isinstance(stop, str))
         or not (
             start.startswith(("(", "[", "+", "-"))
@@ -99,23 +95,20 @@ the ranging method is "BYLEX"."""
 
 
 def handle_zrangebylex_exceptions(
-    min_score: str,
-    max_score: str,
+    min: str,
+    max: str,
     offset: Union[int, None],
     count: Union[int, None],
 ) -> None:
     """
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.
-
-    :param min_score: replacement for "MIN"
-    :param max_score: replacement for "MAX"
     """
 
-    if not min_score.startswith(("(", "[", "+", "-")) or not max_score.startswith(
+    if not min.startswith(("(", "[", "+", "-")) or not max.startswith(
         ("(", "[", "+", "-")
     ):
         raise Exception(
-            "\"min_score\" and \"max_score\" must either start with '(' or '[' or be '+' or '-'."
+            "\"min\" and \"max\" must either start with '(' or '[' or be '+' or '-'."
         )
 
     if number_are_not_none(offset, count, number=1):

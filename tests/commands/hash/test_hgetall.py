@@ -15,23 +15,10 @@ def test_hgetall(redis: Redis):
     hash_name = "myhash"
     fields_values = {"field1": "value1", "field2": "value2"}
 
-    redis.hset(hash_name, field_value_pairs=fields_values)
+    redis.hset(hash_name, values=fields_values)
 
     result = redis.hgetall(hash_name)
 
     assert isinstance(result, dict)
 
     assert result == fields_values
-
-
-def test_hgetall_without_formatting(redis: Redis):
-    redis._format_return = False
-
-    hash_name = "myhash"
-    fields_values = {"field1": "value1", "field2": "value2"}
-
-    redis.hset(hash_name, field_value_pairs=fields_values)
-
-    result = redis.hgetall(hash_name)
-
-    assert isinstance(result, list)

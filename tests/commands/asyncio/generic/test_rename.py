@@ -6,6 +6,6 @@ from upstash_redis import AsyncRedis
 
 @mark.asyncio
 async def test(async_redis: AsyncRedis) -> None:
-    assert await async_redis.rename("string_for_rename", newkey="rename") == "OK"
+    assert await async_redis.rename("string_for_rename", newkey="rename") is True
 
     assert await execute_on_http("GET", "rename") == "test"
