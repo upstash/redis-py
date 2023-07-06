@@ -13,8 +13,8 @@ ResponseT = Union[Awaitable, Any]
 
 
 class Commands:
-    def run(self, command: List) -> ResponseT:
-        raise NotImplementedError("run")
+    def execute(self, command: List) -> ResponseT:
+        raise NotImplementedError("execute")
 
     def bitcount(
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
@@ -31,7 +31,7 @@ class Commands:
         if start is not None:
             command.extend([start, end])
 
-        return self.run(command)
+        return self.execute(command)
 
     def bitfield(self, key: str) -> "BitFieldCommands":
         """
@@ -64,7 +64,7 @@ class Commands:
 
         command: List = ["BITOP", operation, destkey, *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def bitpos(
         self,
@@ -88,7 +88,7 @@ class Commands:
         if end is not None:
             command.append(end)
 
-        return self.run(command)
+        return self.execute(command)
 
     def getbit(self, key: str, offset: int) -> ResponseT:
         """
@@ -97,7 +97,7 @@ class Commands:
 
         command: List = ["GETBIT", key, offset]
 
-        return self.run(command)
+        return self.execute(command)
 
     def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> ResponseT:
         """
@@ -106,7 +106,7 @@ class Commands:
 
         command: List = ["SETBIT", key, offset, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def ping(self, message: Union[str, None] = None) -> ResponseT:
         """
@@ -118,7 +118,7 @@ class Commands:
         if message is not None:
             command.append(message)
 
-        return self.run(command)
+        return self.execute(command)
 
     def echo(self, message: str) -> ResponseT:
         """
@@ -127,7 +127,7 @@ class Commands:
 
         command: List = ["ECHO", message]
 
-        return self.run(command)
+        return self.execute(command)
 
     def copy(
         self, source: str, destination: str, replace: bool = False
@@ -141,7 +141,7 @@ class Commands:
         if replace:
             command.append("REPLACE")
 
-        return self.run(command)
+        return self.execute(command)
 
     def delete(self, *keys: str) -> ResponseT:
         """
@@ -153,7 +153,7 @@ class Commands:
 
         command: List = ["DEL", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def exists(self, *keys: str) -> ResponseT:
         """
@@ -165,7 +165,7 @@ class Commands:
 
         command: List = ["EXISTS", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def expire(self, key: str, seconds: int) -> ResponseT:
         """
@@ -174,7 +174,7 @@ class Commands:
 
         command: List = ["EXPIRE", key, seconds]
 
-        return self.run(command)
+        return self.execute(command)
 
     def expireat(self, key: str, unix_time_seconds: int) -> ResponseT:
         """
@@ -183,7 +183,7 @@ class Commands:
 
         command: List = ["EXPIREAT", key, unix_time_seconds]
 
-        return self.run(command)
+        return self.execute(command)
 
     def keys(self, pattern: str) -> ResponseT:
         """
@@ -192,7 +192,7 @@ class Commands:
 
         command: List = ["KEYS", pattern]
 
-        return self.run(command)
+        return self.execute(command)
 
     def persist(self, key: str) -> ResponseT:
         """
@@ -201,7 +201,7 @@ class Commands:
 
         command: List = ["PERSIST", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pexpire(self, key: str, milliseconds: int) -> ResponseT:
         """
@@ -210,7 +210,7 @@ class Commands:
 
         command: List = ["PEXPIRE", key, milliseconds]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseT:
         """
@@ -219,7 +219,7 @@ class Commands:
 
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pttl(self, key: str) -> ResponseT:
         """
@@ -228,7 +228,7 @@ class Commands:
 
         command: List = ["PTTL", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def randomkey(self) -> ResponseT:
         """
@@ -237,7 +237,7 @@ class Commands:
 
         command: List = ["RANDOMKEY"]
 
-        return self.run(command)
+        return self.execute(command)
 
     def rename(self, key: str, newkey: str) -> ResponseT:
         """
@@ -246,7 +246,7 @@ class Commands:
 
         command: List = ["RENAME", key, newkey]
 
-        return self.run(command)
+        return self.execute(command)
 
     def renamenx(self, key: str, newkey: str) -> ResponseT:
         """
@@ -255,7 +255,7 @@ class Commands:
 
         command: List = ["RENAMENX", key, newkey]
 
-        return self.run(command)
+        return self.execute(command)
 
     def scan(
         self,
@@ -280,7 +280,7 @@ class Commands:
             command.extend(["TYPE", type])
 
         # The raw result is composed of the new cursor and the List of elements.
-        return self.run(command)
+        return self.execute(command)
 
     def touch(self, *keys: str) -> ResponseT:
         """
@@ -292,7 +292,7 @@ class Commands:
 
         command: List = ["TOUCH", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def ttl(self, key: str) -> ResponseT:
         """
@@ -301,7 +301,7 @@ class Commands:
 
         command: List = ["TTL", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def type(self, key: str) -> ResponseT:
         """
@@ -310,7 +310,7 @@ class Commands:
 
         command: List = ["TYPE", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def unlink(self, *keys: str) -> ResponseT:
         """
@@ -322,7 +322,7 @@ class Commands:
 
         command: List = ["UNLINK", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def geoadd(
         self,
@@ -358,7 +358,7 @@ class Commands:
         for member in members:
             command.extend(member)
 
-        return self.run(command)
+        return self.execute(command)
 
     def geodist(
         self,
@@ -373,7 +373,7 @@ class Commands:
 
         command: List = ["GEODIST", key, member1, member2, unit]
 
-        return self.run(command)
+        return self.execute(command)
 
     def geohash(self, key: str, *members: str) -> ResponseT:
         """
@@ -382,7 +382,7 @@ class Commands:
 
         command: List = ["GEOHASH", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def geopos(self, key: str, *members: str) -> ResponseT:
         """
@@ -391,7 +391,7 @@ class Commands:
 
         command: List = ["GEOPOS", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def georadius(
         self,
@@ -443,7 +443,7 @@ class Commands:
             command.extend(["STOREDIST", storedist])
 
         # If none of the additional properties are requested, the result will be "List[str]".
-        return self.run(command)
+        return self.execute(command)
 
     def georadius_ro(
         self,
@@ -486,7 +486,7 @@ class Commands:
             command.append(order)
 
         # If none of the additional properties are requested, the result will be "List[str]".
-        return self.run(command)
+        return self.execute(command)
 
     def georadiusbymember(
         self,
@@ -537,7 +537,7 @@ class Commands:
             command.extend(["STOREDIST", storedist])
 
         # If none of the additional properties are requested, the result will be "List[str]".
-        return self.run(command)
+        return self.execute(command)
 
     def georadiusbymember_ro(
         self,
@@ -579,7 +579,7 @@ class Commands:
             command.append(order)
 
         # If none of the additional properties are requested, the result will be "List[str]".
-        return self.run(command)
+        return self.execute(command)
 
     def geosearch(
         self,
@@ -647,7 +647,7 @@ class Commands:
             command.append("WITHCOORD")
 
         # If none of the additional properties are requested, the result will be "List[str]".
-        return self.run(command)
+        return self.execute(command)
 
     def geosearchstore(
         self,
@@ -707,7 +707,7 @@ class Commands:
         if storedist:
             command.append("STOREDIST")
 
-        return self.run(command)
+        return self.execute(command)
 
     def hdel(self, key: str, *fields: str) -> ResponseT:
         """
@@ -719,7 +719,7 @@ class Commands:
 
         command: List = ["HDEL", key, *fields]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hexists(self, key: str, field: str) -> ResponseT:
         """
@@ -728,7 +728,7 @@ class Commands:
 
         command: List = ["HEXISTS", key, field]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hget(self, key: str, field: str) -> ResponseT:
         """
@@ -737,7 +737,7 @@ class Commands:
 
         command: List = ["HGET", key, field]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hgetall(self, key: str) -> ResponseT:
         """
@@ -746,7 +746,7 @@ class Commands:
 
         command: List = ["HGETALL", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hincrby(self, key: str, field: str, increment: int) -> ResponseT:
         """
@@ -755,7 +755,7 @@ class Commands:
 
         command: List = ["HINCRBY", key, field, increment]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseT:
         """
@@ -764,7 +764,7 @@ class Commands:
 
         command: List = ["HINCRBYFLOAT", key, field, increment]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hkeys(self, key: str) -> ResponseT:
         """
@@ -773,7 +773,7 @@ class Commands:
 
         command: List = ["HKEYS", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hlen(self, key: str) -> ResponseT:
         """
@@ -782,7 +782,7 @@ class Commands:
 
         command: List = ["HLEN", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hmget(self, key: str, *fields: str) -> ResponseT:
         """
@@ -794,7 +794,7 @@ class Commands:
 
         command: List = ["HMGET", key, *fields]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hmset(self, key: str, values: Dict[str, str]) -> ResponseT:
         """
@@ -806,7 +806,7 @@ class Commands:
         for field, value in values.items():
             command.extend([field, value])
 
-        return self.run(command)
+        return self.execute(command)
 
     def hrandfield(
         self, key: str, count: Union[int, None] = None, withvalues: bool = False
@@ -826,7 +826,7 @@ class Commands:
             if withvalues:
                 command.append("WITHVALUES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def hscan(
         self,
@@ -848,7 +848,7 @@ class Commands:
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the List of elements.
-        return self.run(command)
+        return self.execute(command)
 
     def hset(
         self,
@@ -872,7 +872,7 @@ class Commands:
             for field, value in values.items():
                 command.extend([field, value])
 
-        return self.run(command)
+        return self.execute(command)
 
     def hsetnx(self, key: str, field: str, value: str) -> ResponseT:
         """
@@ -881,7 +881,7 @@ class Commands:
 
         command: List = ["HSETNX", key, field, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hstrlen(self, key: str, field: str) -> ResponseT:
         """
@@ -890,7 +890,7 @@ class Commands:
 
         command: List = ["HSTRLEN", key, field]
 
-        return self.run(command)
+        return self.execute(command)
 
     def hvals(self, key: str) -> ResponseT:
         """
@@ -899,7 +899,7 @@ class Commands:
 
         command: List = ["HVALS", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pfadd(self, key: str, *elements: Any) -> ResponseT:
         """
@@ -908,7 +908,7 @@ class Commands:
 
         command: List = ["PFADD", key, *elements]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pfcount(self, *keys: str) -> ResponseT:
         """
@@ -920,7 +920,7 @@ class Commands:
 
         command: List = ["PFCOUNT", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def pfmerge(self, destkey: str, *sourcekeys: str) -> ResponseT:
         """
@@ -929,7 +929,7 @@ class Commands:
 
         command: List = ["PFMERGE", destkey, *sourcekeys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lindex(self, key: str, index: int) -> ResponseT:
         """
@@ -938,7 +938,7 @@ class Commands:
 
         command: List = ["LINDEX", key, index]
 
-        return self.run(command)
+        return self.execute(command)
 
     def linsert(
         self,
@@ -953,7 +953,7 @@ class Commands:
 
         command: List = ["LINSERT", key, where, pivot, element]
 
-        return self.run(command)
+        return self.execute(command)
 
     def llen(self, key: str) -> ResponseT:
         """
@@ -962,7 +962,7 @@ class Commands:
 
         command: List = ["LLEN", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lmove(
         self,
@@ -983,7 +983,7 @@ class Commands:
             whereto,
         ]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -995,7 +995,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def lpos(
         self,
@@ -1020,7 +1020,7 @@ class Commands:
         if maxlen is not None:
             command.extend(["MAXLEN", maxlen])
 
-        return self.run(command)
+        return self.execute(command)
 
     def lpush(self, key: str, *elements: str) -> ResponseT:
         """
@@ -1032,7 +1032,7 @@ class Commands:
 
         command: List = ["LPUSH", key, *elements]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lpushx(self, key: str, *elements: str) -> ResponseT:
         """
@@ -1044,7 +1044,7 @@ class Commands:
 
         command: List = ["LPUSHX", key, *elements]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lrange(self, key: str, start: int, stop: int) -> ResponseT:
         """
@@ -1053,7 +1053,7 @@ class Commands:
 
         command: List = ["LRANGE", key, start, stop]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lrem(self, key: str, count: int, element: str) -> ResponseT:
         """
@@ -1062,7 +1062,7 @@ class Commands:
 
         command: List = ["LREM", key, count, element]
 
-        return self.run(command)
+        return self.execute(command)
 
     def lset(self, key: str, index: int, element: str) -> ResponseT:
         """
@@ -1071,7 +1071,7 @@ class Commands:
 
         command: List = ["LSET", key, index, element]
 
-        return self.run(command)
+        return self.execute(command)
 
     def ltrim(self, key: str, start: int, stop: int) -> ResponseT:
         """
@@ -1080,7 +1080,7 @@ class Commands:
 
         command: List = ["LTRIM", key, start, stop]
 
-        return self.run(command)
+        return self.execute(command)
 
     def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -1092,7 +1092,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def rpoplpush(self, source: str, destination: str) -> ResponseT:
         """
@@ -1101,7 +1101,7 @@ class Commands:
 
         command: List = ["RPOPLPUSH", source, destination]
 
-        return self.run(command)
+        return self.execute(command)
 
     def rpush(self, key: str, *elements: str) -> ResponseT:
         """
@@ -1113,7 +1113,7 @@ class Commands:
 
         command: List = ["RPUSH", key, *elements]
 
-        return self.run(command)
+        return self.execute(command)
 
     def rpushx(self, key: str, *elements: Any) -> ResponseT:
         """
@@ -1125,7 +1125,7 @@ class Commands:
 
         command: List = ["RPUSHX", key, *elements]
 
-        return self.run(command)
+        return self.execute(command)
 
     def publish(self, channel: str, message: str) -> ResponseT:
         """
@@ -1134,7 +1134,7 @@ class Commands:
 
         command: List = ["PUBLISH", channel, message]
 
-        return self.run(command)
+        return self.execute(command)
 
     def eval(
         self,
@@ -1158,7 +1158,7 @@ class Commands:
         if args:
             command.extend(args)
 
-        return self.run(command)
+        return self.execute(command)
 
     def evalsha(
         self,
@@ -1182,7 +1182,7 @@ class Commands:
         if args:
             command.extend(args)
 
-        return self.run(command)
+        return self.execute(command)
 
     def dbsize(self) -> ResponseT:
         """
@@ -1191,7 +1191,7 @@ class Commands:
 
         command: List = ["DBSIZE"]
 
-        return self.run(command)
+        return self.execute(command)
 
     def flushall(
         self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
@@ -1205,7 +1205,7 @@ class Commands:
         if flush_type:
             command.append(flush_type)
 
-        return self.run(command)
+        return self.execute(command)
 
     def flushdb(
         self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
@@ -1219,7 +1219,7 @@ class Commands:
         if flush_type:
             command.append(flush_type)
 
-        return self.run(command)
+        return self.execute(command)
 
     def time(self) -> ResponseT:
         """
@@ -1228,7 +1228,7 @@ class Commands:
 
         command: List = ["TIME"]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sadd(self, key: str, *members: str) -> ResponseT:
         """
@@ -1240,7 +1240,7 @@ class Commands:
 
         command: List = ["SADD", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def scard(self, key: str) -> ResponseT:
         """
@@ -1249,7 +1249,7 @@ class Commands:
 
         command: List = ["SCARD", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sdiff(self, *keys: str) -> ResponseT:
         """
@@ -1261,7 +1261,7 @@ class Commands:
 
         command: List = ["SDIFF", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sdiffstore(self, destination: str, *keys: str) -> ResponseT:
         """
@@ -1273,7 +1273,7 @@ class Commands:
 
         command: List = ["SDIFFSTORE", destination, *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sinter(self, *keys: str) -> ResponseT:
         """
@@ -1285,7 +1285,7 @@ class Commands:
 
         command: List = ["SINTER", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sinterstore(self, destination: str, *keys: str) -> ResponseT:
         """
@@ -1297,7 +1297,7 @@ class Commands:
 
         command: List = ["SINTERSTORE", destination, *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sismember(self, key: str, member: str) -> ResponseT:
         """
@@ -1306,7 +1306,7 @@ class Commands:
 
         command: List = ["SISMEMBER", key, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def smembers(self, key: str) -> ResponseT:
         """
@@ -1315,7 +1315,7 @@ class Commands:
 
         command: List = ["SMEMBERS", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def smismember(self, key: str, *members: str) -> ResponseT:
         """
@@ -1327,7 +1327,7 @@ class Commands:
 
         command: List = ["SMISMEMBER", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def smove(self, source: str, destination: str, member: str) -> ResponseT:
         """
@@ -1336,7 +1336,7 @@ class Commands:
 
         command: List = ["SMOVE", source, destination, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -1348,7 +1348,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -1360,7 +1360,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def srem(self, key: str, *members: str) -> ResponseT:
         """
@@ -1372,7 +1372,7 @@ class Commands:
 
         command: List = ["SREM", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sscan(
         self,
@@ -1394,7 +1394,7 @@ class Commands:
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the List of elements.
-        return self.run(command)
+        return self.execute(command)
 
     def sunion(self, *keys: str) -> ResponseT:
         """
@@ -1406,7 +1406,7 @@ class Commands:
 
         command: List = ["SUNION", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def sunionstore(self, destination: str, *keys: str) -> ResponseT:
         """
@@ -1418,7 +1418,7 @@ class Commands:
 
         command: List = ["SUNIONSTORE", destination, *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zadd(
         self,
@@ -1467,7 +1467,7 @@ class Commands:
         for name, score in scores.items():
             command.extend([score, name])
 
-        return self.run(command)
+        return self.execute(command)
 
     def zcard(self, key: str) -> ResponseT:
         """
@@ -1476,7 +1476,7 @@ class Commands:
 
         command: List = ["ZCARD", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zcount(self, key: str, min: FloatMinMaxT, max: FloatMinMaxT) -> ResponseT:
         """
@@ -1487,7 +1487,7 @@ class Commands:
 
         command: List = ["ZCOUNT", key, min, max]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseT:
         """
@@ -1504,7 +1504,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zdiffstore(self, destination: str, keys: List[str]) -> ResponseT:
         """
@@ -1518,7 +1518,7 @@ class Commands:
 
         command: List = ["ZDIFFSTORE", destination, len(keys), *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zincrby(self, key: str, increment: float, member: str) -> ResponseT:
         """
@@ -1527,7 +1527,7 @@ class Commands:
 
         command: List = ["ZINCRBY", key, increment, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zinter(
         self,
@@ -1556,7 +1556,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zinterstore(
         self,
@@ -1582,7 +1582,7 @@ class Commands:
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
 
-        return self.run(command)
+        return self.execute(command)
 
     def zlexcount(self, key: str, min: str, max: str) -> ResponseT:
         """
@@ -1598,7 +1598,7 @@ class Commands:
 
         command: List = ["ZLEXCOUNT", key, min, max]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zmscore(self, key: str, members: List[str]) -> ResponseT:
         """
@@ -1610,7 +1610,7 @@ class Commands:
 
         command: List = ["ZMSCORE", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -1622,7 +1622,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
@@ -1634,7 +1634,7 @@ class Commands:
         if count is not None:
             command.append(count)
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrandmember(
         self, key: str, count: Union[int, None] = None, withscores: bool = False
@@ -1654,7 +1654,7 @@ class Commands:
             if withscores:
                 command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrange(
         self,
@@ -1689,7 +1689,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrangebylex(
         self,
@@ -1710,7 +1710,7 @@ class Commands:
         if offset is not None:
             command.extend(["LIMIT", offset, count])
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrangebyscore(
         self,
@@ -1738,7 +1738,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrangestore(
         self,
@@ -1768,7 +1768,7 @@ class Commands:
         if offset is not None:
             command.extend(["LIMIT", offset, count])
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrank(self, key: str, member: str) -> ResponseT:
         """
@@ -1777,7 +1777,7 @@ class Commands:
 
         command: List = ["ZRANK", key, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrem(self, key: str, *members: str) -> ResponseT:
         """
@@ -1789,7 +1789,7 @@ class Commands:
 
         command: List = ["ZREM", key, *members]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zremrangebylex(self, key: str, min: str, max: str) -> ResponseT:
         """
@@ -1805,7 +1805,7 @@ class Commands:
 
         command: List = ["ZREMRANGEBYLEX", key, min, max]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zremrangebyrank(self, key: str, start: int, stop: int) -> ResponseT:
         """
@@ -1814,7 +1814,7 @@ class Commands:
 
         command: List = ["ZREMRANGEBYRANK", key, start, stop]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zremrangebyscore(
         self, key: str, min: FloatMinMaxT, max: FloatMinMaxT
@@ -1827,7 +1827,7 @@ class Commands:
 
         command: List = ["ZREMRANGEBYSCORE", key, min, max]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrevrange(
         self, key: str, start: int, stop: int, withscores: bool = False
@@ -1841,7 +1841,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrevrangebylex(
         self,
@@ -1862,7 +1862,7 @@ class Commands:
         if offset is not None:
             command.extend(["LIMIT", offset, count])
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrevrangebyscore(
         self,
@@ -1890,7 +1890,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zrevrank(self, key: str, member: str) -> ResponseT:
         """
@@ -1899,7 +1899,7 @@ class Commands:
 
         command: List = ["ZREVRANK", key, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zscan(
         self,
@@ -1921,7 +1921,7 @@ class Commands:
             command.extend(["COUNT", count])
 
         # The raw result is composed of the new cursor and the List of elements.
-        return self.run(command)
+        return self.execute(command)
 
     def zscore(self, key: str, member: str) -> ResponseT:
         """
@@ -1930,7 +1930,7 @@ class Commands:
 
         command: List = ["ZSCORE", key, member]
 
-        return self.run(command)
+        return self.execute(command)
 
     def zunion(
         self,
@@ -1959,7 +1959,7 @@ class Commands:
         if withscores:
             command.append("WITHSCORES")
 
-        return self.run(command)
+        return self.execute(command)
 
     def zunionstore(
         self,
@@ -1985,7 +1985,7 @@ class Commands:
         if aggregate:
             command.extend(["AGGREGATE", aggregate])
 
-        return self.run(command)
+        return self.execute(command)
 
     def append(self, key: str, value: str) -> ResponseT:
         """
@@ -1994,7 +1994,7 @@ class Commands:
 
         command: List = ["APPEND", key, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def decr(self, key: str) -> ResponseT:
         """
@@ -2003,7 +2003,7 @@ class Commands:
 
         command: List = ["DECR", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def decrby(self, key: str, decrement: int) -> ResponseT:
         """
@@ -2012,7 +2012,7 @@ class Commands:
 
         command: List = ["DECRBY", key, decrement]
 
-        return self.run(command)
+        return self.execute(command)
 
     def get(self, key: str) -> ResponseT:
         """
@@ -2021,7 +2021,7 @@ class Commands:
 
         command: List = ["GET", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def getdel(self, key: str) -> ResponseT:
         """
@@ -2030,7 +2030,7 @@ class Commands:
 
         command: List = ["GETDEL", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def getex(
         self,
@@ -2067,7 +2067,7 @@ class Commands:
         if persist is not None:
             command.append("PERSIST")
 
-        return self.run(command)
+        return self.execute(command)
 
     def getrange(self, key: str, start: int, end: int) -> ResponseT:
         """
@@ -2076,7 +2076,7 @@ class Commands:
 
         command: List = ["GETRANGE", key, start, end]
 
-        return self.run(command)
+        return self.execute(command)
 
     def getset(self, key: str, value: str) -> ResponseT:
         """
@@ -2085,7 +2085,7 @@ class Commands:
 
         command: List = ["GETSET", key, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def incr(self, key: str) -> ResponseT:
         """
@@ -2094,7 +2094,7 @@ class Commands:
 
         command: List = ["INCR", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def incrby(self, key: str, increment: int) -> ResponseT:
         """
@@ -2103,7 +2103,7 @@ class Commands:
 
         command: List = ["INCRBY", key, increment]
 
-        return self.run(command)
+        return self.execute(command)
 
     def incrbyfloat(self, key: str, increment: float) -> ResponseT:
         """
@@ -2112,7 +2112,7 @@ class Commands:
 
         command: List = ["INCRBYFLOAT", key, increment]
 
-        return self.run(command)
+        return self.execute(command)
 
     def mget(self, *keys: str) -> ResponseT:
         """
@@ -2124,7 +2124,7 @@ class Commands:
 
         command: List = ["MGET", *keys]
 
-        return self.run(command)
+        return self.execute(command)
 
     def mset(self, values: Dict[str, str]) -> ResponseT:
         """
@@ -2136,7 +2136,7 @@ class Commands:
         for key, value in values.items():
             command.extend([key, value])
 
-        return self.run(command)
+        return self.execute(command)
 
     def msetnx(self, values: Dict[str, str]) -> ResponseT:
         """
@@ -2148,7 +2148,7 @@ class Commands:
         for key, value in values.items():
             command.extend([key, value])
 
-        return self.run(command)
+        return self.execute(command)
 
     def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
         """
@@ -2157,7 +2157,7 @@ class Commands:
 
         command: List = ["PSETEX", key, milliseconds, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def set(
         self,
@@ -2213,7 +2213,7 @@ class Commands:
         if keepttl:
             command.append("KEEPTTL")
 
-        return self.run(command)
+        return self.execute(command)
 
     def setex(self, key: str, seconds: int, value: str) -> ResponseT:
         """
@@ -2222,7 +2222,7 @@ class Commands:
 
         command: List = ["SETEX", key, seconds, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def setnx(self, key: str, value: str) -> ResponseT:
         """
@@ -2231,7 +2231,7 @@ class Commands:
 
         command: List = ["SETNX", key, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def setrange(self, key: str, offset: int, value: str) -> ResponseT:
         """
@@ -2240,7 +2240,7 @@ class Commands:
 
         command: List = ["SETRANGE", key, offset, value]
 
-        return self.run(command)
+        return self.execute(command)
 
     def strlen(self, key: str) -> ResponseT:
         """
@@ -2249,7 +2249,7 @@ class Commands:
 
         command: List = ["STRLEN", key]
 
-        return self.run(command)
+        return self.execute(command)
 
     def substr(self, key: str, start: int, end: int) -> ResponseT:
         """
@@ -2258,7 +2258,7 @@ class Commands:
 
         command: List = ["SUBSTR", key, start, end]
 
-        return self.run(command)
+        return self.execute(command)
 
     def script_exists(self, *sha1: str) -> ResponseT:
         """
@@ -2270,7 +2270,7 @@ class Commands:
 
         command: List = ["SCRIPT", "EXISTS", *sha1]
 
-        return self.run(command)
+        return self.execute(command)
 
     def script_flush(
         self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
@@ -2284,7 +2284,7 @@ class Commands:
         if flush_type:
             command.append(flush_type)
 
-        return self.run(command)
+        return self.execute(command)
 
     def script_load(self, script: str) -> ResponseT:
         """
@@ -2293,7 +2293,7 @@ class Commands:
 
         command: List = ["SCRIPT", "LOAD", script]
 
-        return self.run(command)
+        return self.execute(command)
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
@@ -2360,7 +2360,7 @@ class BitFieldCommands:
         return self
 
     def execute(self) -> ResponseT:
-        return self.client.run(command=self.command)
+        return self.client.execute(command=self.command)
 
 
 class BitFieldROCommands:
@@ -2381,7 +2381,7 @@ class BitFieldROCommands:
         return self
 
     def execute(self) -> ResponseT:
-        return self.client.run(command=self.command)
+        return self.client.execute(command=self.command)
 
 
 AsyncCommands = Commands

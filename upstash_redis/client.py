@@ -83,9 +83,9 @@ class Redis(Commands):
         """
         self._session.close()
 
-    def run(self, command: List) -> RESTResultT:
+    def execute(self, command: List) -> RESTResultT:
         """
-        Specify the http options and execute the command.
+        Executes the given command.
         """
 
         res = sync_execute(

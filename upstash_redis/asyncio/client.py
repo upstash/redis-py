@@ -84,9 +84,9 @@ class Redis(AsyncCommands):
         if self._session:
             await self._session.close()
 
-    async def run(self, command: List) -> RESTResultT:
+    async def execute(self, command: List) -> RESTResultT:
         """
-        Specify the http options and execute the command.
+        Executes the given command.
         """
         if not self._session:
             # We had to initialize session here, under an

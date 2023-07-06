@@ -109,11 +109,11 @@ the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` funct
 ```
 
 ### Custom commands
-If you want to run a command that hasn't been implemented, you can use the `run` function of your client instance
-and pass the command as `list`
+If you want to run a command that hasn't been implemented, you can use the `execute` function of your client instance
+and pass the command as a `list`.
 
 ```python
-redis.run(command=["XLEN", "test_stream"])
+redis.execute(command=["XLEN", "test_stream"])
 ```
 
 # Encoding
