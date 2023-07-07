@@ -38,7 +38,7 @@ class Redis(AsyncCommands):
         self._rest_retry_interval = rest_retry_interval
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
-        self._session: Optional[ClientSession] = None
+        self._context_manager: Optional[_SessionContextManager] = None
 
     @classmethod
     def from_env(
@@ -67,6 +67,9 @@ class Redis(AsyncCommands):
         )
 
     async def __aenter__(self) -> "Redis":
+        self._context_manager = _SessionContextManager(
+            ClientSession(), close_session=False
+        )
         return self
 
     async def __aexit__(
@@ -75,34 +78,37 @@ class Redis(AsyncCommands):
         exc_val: Union[BaseException, None],
         exc_tb: Any,
     ) -> None:
+        assert self._context_manager is not None
         await self.close()
 
     async def close(self) -> None:
         """
         Closes the resources associated with the client.
         """
-        if self._session:
-            await self._session.close()
+        if self._context_manager:
+            await self._context_manager.close_session()
+            self._context_manager = None
 
     async def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
         """
-        if not self._session:
-            # We had to initialize session here, under an
-            # async method, so that the session can bind
-            # to the running event loop.
-            self._session = ClientSession()
+        context_manager = self._context_manager
+        if not context_manager:
+            context_manager = _SessionContextManager(
+                ClientSession(), close_session=True
+            )
 
-        res = await async_execute(
-            session=self._session,
-            url=self._url,
-            headers=self._headers,
-            encoding=self._rest_encoding,
-            retries=self._rest_retries,
-            retry_interval=self._rest_retry_interval,
-            command=command,
-        )
+        async with context_manager:
+            res = await async_execute(
+                session=context_manager.session,
+                url=self._url,
+                headers=self._headers,
+                encoding=self._rest_encoding,
+                retries=self._rest_retries,
+                retry_interval=self._rest_retry_interval,
+                command=command,
+            )
 
         main_command = command[0]
         if len(command) > 1 and main_command == "SCRIPT":
@@ -112,3 +118,36 @@ class Redis(AsyncCommands):
             return FORMATTERS[main_command](res, command)
 
         return res
+
+
+class _SessionContextManager:
+    """
+    Allows a session to be re-used in multiple async with
+    blocks when the `close_session` is False.
+
+    Main use case is to re-use sessions in multiple HTTP
+    requests when the client is used in an async with block.
+
+    The logic around the places in which we use this class is
+    required so that the same client can be re-used even in
+    different event loops, one after another.
+    """
+
+    def __init__(self, session: ClientSession, close_session: bool) -> None:
+        self.session = session
+        self._close_session = close_session
+
+    async def close_session(self) -> None:
+        await self.session.close()
+
+    async def __aenter__(self) -> ClientSession:
+        return self.session
+
+    async def __aexit__(
+        self,
+        exc_type: Union[Type[BaseException], None],
+        exc_val: Union[BaseException, None],
+        exc_tb: Any,
+    ) -> None:
+        if self._close_session:
+            await self.close_session()
