@@ -16,7 +16,7 @@ The SDK is currently compatible with Python 3.8 and above.
 - [Upstash Redis Python SDK](#upstash-redis-python-sdk)
 - [Quick Start](#quick-start)
   - [Install](#install)
-    - [PyPi](#pypi)
+    - [PyPI](#pypi)
   - [Usage](#usage)
     - [BITFIELD and BITFIELD\_RO](#bitfield-and-bitfield_ro)
     - [Custom commands](#custom-commands)

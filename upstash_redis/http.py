@@ -25,7 +25,7 @@ def make_headers(
         headers["Upstash-Encoding"] = encoding
 
     if allow_telemetry:
-        headers["Upstash-Telemetry-Sdk"] = f"upstash-redis@python@{__version__}"
+        headers["Upstash-Telemetry-Sdk"] = f"py-upstash-redis@v{__version__}"
         headers["Upstash-Telemetry-Runtime"] = f"python@v{python_version()}"
 
         if os.getenv("VERCEL"):
