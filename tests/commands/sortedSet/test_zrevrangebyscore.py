@@ -24,7 +24,7 @@ def test_zrevrangebyscore(redis: Redis):
     assert result == ["mango", "cherry", "banana"]
 
     result = redis.zrevrangebyscore(
-        sorted_set, 4, 2, withscores=True, limit_offset=1, limit_count=2
+        sorted_set, 4, 2, withscores=True, offset=1, count=2
     )
     assert result == [("cherry", 3.0), ("banana", 2.0)]
 

@@ -1,13 +1,11 @@
-from typing import cast
-
 from pytest import mark
 
 from tests.execute_on_http import execute_on_http
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test(async_redis: AsyncRedis) -> None:
+async def test(async_redis: Redis) -> None:
     sha1_digest = await execute_on_http("SCRIPT", "LOAD", 'return "hello world"')
 
     assert isinstance(sha1_digest, str)
@@ -15,7 +13,7 @@ async def test(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_keys(async_redis: AsyncRedis) -> None:
+async def test_with_keys(async_redis: Redis) -> None:
     sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {KEYS[1], KEYS[2]}")
 
     assert isinstance(sha1_digest, str)
@@ -23,7 +21,7 @@ async def test_with_keys(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_arguments(async_redis: AsyncRedis) -> None:
+async def test_with_arguments(async_redis: Redis) -> None:
     sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {ARGV[1], ARGV[2]}")
 
     assert isinstance(sha1_digest, str)
@@ -31,7 +29,7 @@ async def test_with_arguments(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_keys_and_arguments(async_redis: AsyncRedis) -> None:
+async def test_with_keys_and_arguments(async_redis: Redis) -> None:
     sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {ARGV[1], KEYS[1]}")
 
     assert isinstance(sha1_digest, str)

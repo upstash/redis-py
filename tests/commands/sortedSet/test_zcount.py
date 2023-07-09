@@ -21,10 +21,10 @@ def test_zcount(redis: Redis):
     )
 
     # Perform a range query using ZCOUNT
-    result = redis.zcount(sorted_set, min_score=20, max_score=40)
+    result = redis.zcount(sorted_set, min=20, max=40)
 
     # Assert that the result is the correct count
     assert result == 3
 
-    result = redis.zcount(sorted_set, min_score="-inf", max_score="+inf")
+    result = redis.zcount(sorted_set, min="-inf", max="+inf")
     assert result == 5

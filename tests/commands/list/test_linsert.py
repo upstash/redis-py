@@ -17,7 +17,7 @@ def test_linsert_before_existing_value(redis: Redis):
 
     redis.rpush(mylist, *values)
 
-    result = redis.linsert(mylist, "before", "value2", "new_value")
+    result = redis.linsert(mylist, "BEFORE", "value2", "new_value")
     assert result == 4
     assert redis.lrange(mylist, 0, -1) == ["value1", "new_value", "value2", "value3"]
 
@@ -28,7 +28,7 @@ def test_linsert_after_existing_value(redis: Redis):
 
     redis.rpush(mylist, *values)
 
-    result = redis.linsert(mylist, "after", "value2", "new_value")
+    result = redis.linsert(mylist, "AFTER", "value2", "new_value")
     assert result == 4
     assert redis.lrange(mylist, 0, -1) == ["value1", "value2", "new_value", "value3"]
 
@@ -39,7 +39,7 @@ def test_linsert_before_nonexistent_value(redis: Redis):
 
     redis.rpush(mylist, *values)
 
-    result = redis.linsert(mylist, "before", "value4", "new_value")
+    result = redis.linsert(mylist, "BEFORE", "value4", "new_value")
     assert result == -1
     assert redis.lrange(mylist, 0, -1) == ["value1", "value2", "value3"]
 
@@ -50,6 +50,6 @@ def test_linsert_after_nonexistent_value(redis: Redis):
 
     redis.rpush(mylist, *values)
 
-    result = redis.linsert(mylist, "after", "value4", "new_value")
+    result = redis.linsert(mylist, "AFTER", "value4", "new_value")
     assert result == -1
     assert redis.lrange(mylist, 0, -1) == ["value1", "value2", "value3"]

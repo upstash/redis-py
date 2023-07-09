@@ -4,17 +4,17 @@ from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from aiohttp import ClientSession
 from requests import Session
 
 from upstash_redis.errors import UpstashError
-from upstash_redis.typing import RESTEncoding, RESTResult
+from upstash_redis.typing import RESTResultT
 
 
 def make_headers(
-    token: str, encoding: RESTEncoding, allow_telemetry: bool
+    token: str, encoding: Union[Literal["base64"], None], allow_telemetry: bool
 ) -> Dict[str, str]:
     headers = {
         "Authorization": f"Bearer {token}",
@@ -43,11 +43,11 @@ async def async_execute(
     session: ClientSession,
     url: str,
     headers: Dict[str, str],
-    encoding: RESTEncoding,
+    encoding: Union[Literal["base64"], None],
     retries: int,
     retry_interval: float,
     command: List,
-) -> RESTResult:
+) -> RESTResultT:
     """
     Execute the given command over the REST API.
 
@@ -104,11 +104,11 @@ def sync_execute(
     session: Session,
     url: str,
     headers: Dict[str, str],
-    encoding: RESTEncoding,
+    encoding: Union[Literal["base64"], None],
     retries: int,
     retry_interval: float,
     command: List[Any],
-) -> RESTResult:
+) -> RESTResultT:
     command = [
         element
         if (
@@ -150,7 +150,7 @@ def sync_execute(
     return result
 
 
-def decode(raw: RESTResult) -> RESTResult:
+def decode(raw: RESTResultT) -> RESTResultT:
     """
     Decode the response received from the REST API.
     """

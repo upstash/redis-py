@@ -22,6 +22,7 @@ def test_spop_existing_member(redis: Redis):
 
     # Assert that the result is not None
     assert result is not None
+    assert isinstance(result, str)
 
     # Assert that the popped member is not present in the set anymore
     assert not redis.sismember(set_name, result)

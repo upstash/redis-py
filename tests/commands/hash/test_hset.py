@@ -26,7 +26,7 @@ def test_hset(redis: Redis):
 
     # Use HSET command to set multiple field-value pairs at once
     field_value_pairs = {"field2": "value2", "field3": "value3"}
-    result = redis.hset(hash_name, field_value_pairs=field_value_pairs)
+    result = redis.hset(hash_name, values=field_value_pairs)
     assert result == 2  # Number of fields added to the hash
     assert redis.hget(hash_name, "field2") == "value2"
     assert redis.hget(hash_name, "field3") == "value3"

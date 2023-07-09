@@ -18,7 +18,7 @@ def test_sismember(redis: Redis):
     redis.sadd(set_name, "element1", "element2", "element3")
 
     # Check if elements are members of the set
-    assert redis.sismember(set_name, "element1") == True
+    assert redis.sismember(set_name, "element1") is True
     assert redis.sismember(set_name, "element2") == 1
     assert redis.sismember(set_name, "element3") == 1
     assert redis.sismember(set_name, "element4") == 0

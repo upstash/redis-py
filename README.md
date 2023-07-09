@@ -22,7 +22,6 @@ The SDK is currently compatible with python 3.8 and above.
     - [Custom commands](#custom-commands)
 - [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
-- [Formatting returns](#formatting-returns)
 - [Contributing](#contributing)
   - [Preparing the environment](#preparing-the-environment)
   - [Running tests](#running-tests)
@@ -110,11 +109,11 @@ the `BITFIELD` and, respectively, `BITFIELD_RO` classes. Use the `execute` funct
 ```
 
 ### Custom commands
-If you want to run a command that hasn't been implemented, you can use the `run` function of your client instance
-and pass the command as `list`
+If you want to run a command that hasn't been implemented, you can use the `execute` function of your client instance
+and pass the command as a `list`.
 
 ```python
-redis.run(command=["XLEN", "test_stream"])
+redis.execute(command=["XLEN", "test_stream"])
 ```
 
 # Encoding
@@ -128,11 +127,6 @@ For very large data, this can add a few milliseconds in latency. So, if you're s
 # Retry mechanism
 upstash-redis has a fallback mechanism in case of network or API issues. By default, if a request fails it'll retry once, 3 seconds 
 after the error. If you want to customize that, set `rest_retries` and `rest_retry_interval` (in seconds).
-
-# Formatting returns
-The SDK relies on the Upstash REST proxy, which returns the `RESP2` responses of the given commands.
-By default, we apply formatting to some of them to provide a better developer experience.
-If you want the commands to output the raw return, set `format_return` to `False`.
 
 # Contributing
 

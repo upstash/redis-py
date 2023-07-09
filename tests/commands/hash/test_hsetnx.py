@@ -13,9 +13,9 @@ def test_hsetnx(redis: Redis):
     hash_name = "myhash"
 
     result = redis.hsetnx(hash_name, "field1", "value1")
-    assert result == True
+    assert result is True
     assert redis.hget(hash_name, "field1") == "value1"
 
     result = redis.hsetnx(hash_name, "field1", "new_value")
-    assert result == False
+    assert result is False
     assert redis.hget(hash_name, "field1") == "value1"

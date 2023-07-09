@@ -19,10 +19,3 @@ def test_flushdb(redis: Redis):
     assert redis.get("key1") is None
     assert redis.get("key2") is None
     assert redis.get("key3") is None
-
-
-def test_flushdb_without_formatting(redis: Redis):
-    redis._format_return = False
-
-    result = redis.flushdb()
-    assert result is "OK"

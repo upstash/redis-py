@@ -1,7 +1,7 @@
 import asyncio
-import typing as t
 from os import environ
 from platform import python_version
+from typing import Any, Dict, Literal, Union
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -11,7 +11,6 @@ from requests import Session
 
 from upstash_redis.errors import UpstashError
 from upstash_redis.http import async_execute, decode, make_headers, sync_execute
-from upstash_redis.typing import RESTEncoding
 
 
 @mark.asyncio
@@ -169,7 +168,7 @@ def test_sync_execute_with_invalid_command() -> None:
     ],
     ids=["simple string", "ok", "integer", "none", "list", "2d list", "3d list"],
 )
-def test_decode(arg: t.Any, expected: t.Any) -> None:
+def test_decode(arg: Any, expected: Any) -> None:
     assert decode(arg) == expected
 
 
@@ -216,9 +215,9 @@ def test_decode(arg: t.Any, expected: t.Any) -> None:
 )
 def test_make_headers(
     token: str,
-    encoding: RESTEncoding,
+    encoding: Union[Literal["base64"], None],
     allow_telemetry: bool,
-    expected: t.Dict[str, str],
+    expected: Dict[str, str],
 ) -> None:
     # Make sure that we use "unknown" for the platform no matter where the test is run
     with patch("os.getenv", return_value=None):
@@ -291,7 +290,7 @@ def test_sync_execute_retry_on_post_request_error(retry_count) -> None:
 async def test_async_execute_no_retry_on_success(retry_count: int) -> None:
     session = MagicMock()
     response = MagicMock()
-    f: asyncio.Future[t.Dict] = asyncio.Future()
+    f: asyncio.Future[Dict] = asyncio.Future()
     f.set_result({"result": "OK"})
     response.json = MagicMock(return_value=f)
     session.post = MagicMock(return_value=response)
@@ -306,7 +305,7 @@ async def test_async_execute_no_retry_on_success(retry_count: int) -> None:
 async def test_async_execute_no_retry_on_error_response_from_server() -> None:
     session = MagicMock()
     response = MagicMock()
-    f: asyncio.Future[t.Dict] = asyncio.Future()
+    f: asyncio.Future[Dict] = asyncio.Future()
     f.set_result({"error": "expected error"})
     response.json = MagicMock(return_value=f)
     session.post = MagicMock(return_value=response)

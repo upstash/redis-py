@@ -1,15 +1,16 @@
+from os import environ
+from typing import Dict, List
+
 import pytest
 import pytest_asyncio
 import requests
 
+from upstash_redis import Redis
+from upstash_redis.asyncio import Redis as AsyncRedis
+
 """
 Flush and fill the testing database with the necessary data.
 """
-
-from os import environ
-from typing import Dict, List
-
-from upstash_redis import AsyncRedis, Redis
 
 url: str = environ["UPSTASH_REDIS_REST_URL"] + "/pipeline"
 token: str = environ["UPSTASH_REDIS_REST_TOKEN"]

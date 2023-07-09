@@ -17,20 +17,18 @@ def test_zrangebyscore(redis: Redis):
         sorted_set, {"apple": 10, "banana": 20, "cherry": 30, "mango": 40, "orange": 50}
     )
 
-    result = redis.zrangebyscore(sorted_set, min_score=20, max_score=40)
+    result = redis.zrangebyscore(sorted_set, min=20, max=40)
     assert result == ["banana", "cherry", "mango"]
 
-    result = redis.zrangebyscore(
-        sorted_set, min_score=20, max_score=40, limit_offset=1, limit_count=2
-    )
+    result = redis.zrangebyscore(sorted_set, min=20, max=40, offset=1, count=2)
     assert result == ["cherry", "mango"]
 
     result = redis.zrangebyscore(
         sorted_set,
-        min_score=20,
-        max_score=40,
-        limit_offset=1,
-        limit_count=2,
+        min=20,
+        max=40,
+        offset=1,
+        count=2,
         withscores=True,
     )
     assert result == [("cherry", 30.0), ("mango", 40.0)]

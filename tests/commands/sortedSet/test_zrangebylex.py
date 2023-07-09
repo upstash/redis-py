@@ -17,10 +17,8 @@ def test_zrangebylex(redis: Redis):
         sorted_set, {"apple": 1, "banana": 2, "cherry": 3, "mango": 4, "orange": 5}
     )
 
-    result = redis.zrangebylex(sorted_set, min_score="-", max_score="(c")
+    result = redis.zrangebylex(sorted_set, min="-", max="(c")
     assert result == ["apple", "banana"]
 
-    result = redis.zrangebylex(
-        sorted_set, min_score="(b", max_score="+", limit_offset=1, limit_count=2
-    )
+    result = redis.zrangebylex(sorted_set, min="(b", max="+", offset=1, count=2)
     assert result == ["cherry", "mango"]

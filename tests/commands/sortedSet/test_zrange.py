@@ -25,16 +25,16 @@ def test_zrange(redis: Redis):
     assert all(isinstance(member[1], float) for member in result)
 
 
-def test_zrange_with_range_method(redis: Redis):
+def test_zrange_with_sortby(redis: Redis):
     sorted_set = "sorted_set"
 
     redis.zadd(sorted_set, {"member1": 10, "member2": 20, "member3": 30, "member4": 40})
 
     with pytest.raises(Exception):
-        redis.zrange(sorted_set, start=0, stop=2, withscores=True, range_method="BYLEX")
+        redis.zrange(sorted_set, start=0, stop=2, withscores=True, sortby="BYLEX")
 
     result = redis.zrange(
-        sorted_set, start=0, stop=2, withscores=True, range_method="BYSCORE"
+        sorted_set, start=0, stop=2, withscores=True, sortby="BYSCORE"
     )
 
     assert isinstance(result, list)
@@ -50,7 +50,7 @@ def test_zrange_with_bylex(redis: Redis):
 
     redis.zadd(sorted_set, {"apple": 1, "banana": 2, "cherry": 3, "date": 4})
 
-    result = redis.zrange(sorted_set, start="[a", stop="[d", range_method="BYLEX")
+    result = redis.zrange(sorted_set, start="[a", stop="[d", sortby="BYLEX")
     assert isinstance(result, list)
 
     assert set(result) == {"apple", "banana", "cherry"}

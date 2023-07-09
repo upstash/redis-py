@@ -28,14 +28,3 @@ def test_psetex(redis: Redis):
     time.sleep(2)
 
     assert redis.get(key) is None
-
-
-def test_psetex_without_formatting(redis: Redis):
-    redis._format_return = False
-    key = "mykey"
-    value = "myvalue"
-    expiration_ms = 1000
-
-    result = redis.psetex(key, expiration_ms, value)
-
-    assert result == "OK"

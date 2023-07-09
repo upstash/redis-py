@@ -23,13 +23,11 @@ def test_hscan_with_match(redis: Redis):
     # Use HSCAN command with match parameter to filter field-value pairs
     cursor = 0
     count = 2  # Maximum number of elements to retrieve per iteration
-    match_pattern = "field*"  # Pattern to match field names
+    pattern = "field*"  # Pattern to match field names
     result = {}
 
     while True:
-        cursor, data = redis.hscan(
-            hash_name, cursor, count=count, match_pattern=match_pattern
-        )
+        cursor, data = redis.hscan(hash_name, cursor, count=count, match=pattern)
         result.update(data)
 
         if cursor == 0:
