@@ -5,7 +5,8 @@ import pytest
 import pytest_asyncio
 import requests
 
-from upstash_redis import AsyncRedis, Redis
+from upstash_redis import Redis
+from upstash_redis.asyncio import Redis as AsyncRedis
 
 """
 Flush and fill the testing database with the necessary data.

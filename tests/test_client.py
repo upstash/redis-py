@@ -2,7 +2,8 @@ import asyncio
 
 import pytest
 
-from upstash_redis import AsyncRedis, Redis
+from upstash_redis import Redis
+from upstash_redis.asyncio import Redis as AsyncRedis
 
 
 def test_redis() -> None:

@@ -1,11 +1,11 @@
 from pytest import mark
 
 from tests.execute_on_http import execute_on_http
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test_get(async_redis: AsyncRedis) -> None:
+async def test_get(async_redis: Redis) -> None:
     # With integer offset.
     assert await async_redis.bitfield("string").get(
         encoding="u8", offset=0
@@ -18,7 +18,7 @@ async def test_get(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_set(async_redis: AsyncRedis) -> None:
+async def test_set(async_redis: Redis) -> None:
     # With integer offset.
     assert await async_redis.bitfield("string_for_bitfield_set").set(
         encoding="u8", offset=0, value=97
@@ -41,7 +41,7 @@ async def test_set(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_incrby(async_redis: AsyncRedis) -> None:
+async def test_incrby(async_redis: Redis) -> None:
     # With integer offset.
     assert await (
         async_redis.bitfield("string_for_bitfield_incrby")
@@ -66,7 +66,7 @@ async def test_incrby(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_chained_commands(async_redis: AsyncRedis) -> None:
+async def test_chained_commands(async_redis: Redis) -> None:
     assert await (
         async_redis.bitfield("string_for_bitfield_chained_commands")
         .set(encoding="u8", offset=0, value=97)
@@ -80,7 +80,7 @@ async def test_chained_commands(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_overflow(async_redis: AsyncRedis) -> None:
+async def test_overflow(async_redis: Redis) -> None:
     assert await (
         async_redis.bitfield("string_for_bitfield_overflow")
         .incrby(encoding="i8", offset=100, increment=100)

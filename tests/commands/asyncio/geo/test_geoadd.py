@@ -1,11 +1,11 @@
 from pytest import mark, raises
 
 from tests.execute_on_http import execute_on_http
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test(async_redis: AsyncRedis) -> None:
+async def test(async_redis: Redis) -> None:
     assert (
         await async_redis.geoadd(
             "Geo",
@@ -22,7 +22,7 @@ async def test(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_nx(async_redis: AsyncRedis) -> None:
+async def test_with_nx(async_redis: Redis) -> None:
     assert (
         await async_redis.geoadd(
             "test_geo_index",
@@ -34,7 +34,7 @@ async def test_with_nx(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_xx(async_redis: AsyncRedis) -> None:
+async def test_with_xx(async_redis: Redis) -> None:
     assert (
         await async_redis.geoadd(
             "test_geo_index",
@@ -46,7 +46,7 @@ async def test_with_xx(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_ch(async_redis: AsyncRedis) -> None:
+async def test_with_ch(async_redis: Redis) -> None:
     assert (
         await async_redis.geoadd(
             "test_geo_index",
@@ -58,7 +58,7 @@ async def test_with_ch(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_without_members(async_redis: AsyncRedis) -> None:
+async def test_without_members(async_redis: Redis) -> None:
     with raises(Exception) as exception:
         await async_redis.geoadd("test_geo_index")
 
@@ -66,7 +66,7 @@ async def test_without_members(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_nx_and_xx(async_redis: AsyncRedis) -> None:
+async def test_with_nx_and_xx(async_redis: Redis) -> None:
     with raises(Exception) as exception:
         await async_redis.geoadd(
             "test_geo_index",

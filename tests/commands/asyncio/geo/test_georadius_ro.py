@@ -1,17 +1,17 @@
 from pytest import mark, raises
 
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test(async_redis: AsyncRedis) -> None:
+async def test(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index", longitude=15, latitude=37, radius=200, unit="KM"
     ) == ["Palermo", "Catania"]
 
 
 @mark.asyncio
-async def test_with_distance(async_redis: AsyncRedis) -> None:
+async def test_with_distance(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index",
         longitude=15,
@@ -26,7 +26,7 @@ async def test_with_distance(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_hash(async_redis: AsyncRedis) -> None:
+async def test_with_hash(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index",
         longitude=15,
@@ -41,7 +41,7 @@ async def test_with_hash(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_coordinates(async_redis: AsyncRedis) -> None:
+async def test_with_coordinates(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index",
         longitude=15,
@@ -64,14 +64,14 @@ async def test_with_coordinates(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_count(async_redis: AsyncRedis) -> None:
+async def test_with_count(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index", longitude=15, latitude=37, radius=200, unit="KM", count=1
     ) == ["Catania"]
 
 
 @mark.asyncio
-async def test_with_any(async_redis: AsyncRedis) -> None:
+async def test_with_any(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index",
         longitude=15,
@@ -84,7 +84,7 @@ async def test_with_any(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_sort(async_redis: AsyncRedis) -> None:
+async def test_with_sort(async_redis: Redis) -> None:
     assert await async_redis.georadius_ro(
         "test_geo_index",
         longitude=15,
@@ -96,7 +96,7 @@ async def test_with_sort(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_with_invalid_parameters(async_redis: AsyncRedis) -> None:
+async def test_with_invalid_parameters(async_redis: Redis) -> None:
     with raises(Exception) as exception:
         await async_redis.georadius_ro(
             "test_geo_index",

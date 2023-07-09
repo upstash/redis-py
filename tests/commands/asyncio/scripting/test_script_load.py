@@ -1,17 +1,17 @@
 import pytest
 
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @pytest.fixture(autouse=True)
-async def flush_scripts(async_redis: AsyncRedis):
+async def flush_scripts(async_redis: Redis):
     await async_redis.script_flush()
     yield
     await async_redis.script_flush()
 
 
 @pytest.mark.asyncio
-async def test_script_load(async_redis: AsyncRedis):
+async def test_script_load(async_redis: Redis):
     script1 = "return 1"
     script2 = "return 2"
 

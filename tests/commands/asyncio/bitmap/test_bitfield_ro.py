@@ -1,10 +1,10 @@
 from pytest import mark
 
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test_get(async_redis: AsyncRedis) -> None:
+async def test_get(async_redis: Redis) -> None:
     # With integer offset.
     assert await async_redis.bitfield_ro("string").get(
         encoding="u8", offset=0
@@ -17,7 +17,7 @@ async def test_get(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_chained_commands(async_redis: AsyncRedis) -> None:
+async def test_chained_commands(async_redis: Redis) -> None:
     assert await (
         async_redis.bitfield_ro("string")
         .get(encoding="u8", offset=0)

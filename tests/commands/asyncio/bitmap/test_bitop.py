@@ -2,11 +2,11 @@ from aiohttp import ClientSession
 from pytest import mark, raises
 
 from tests.execute_on_http import execute_on_http
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @mark.asyncio
-async def test_not_not_operation(async_redis: AsyncRedis) -> None:
+async def test_not_not_operation(async_redis: Redis) -> None:
     assert (
         await async_redis.bitop(
             "AND",
@@ -21,7 +21,7 @@ async def test_not_not_operation(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_without_source_keys(async_redis: AsyncRedis) -> None:
+async def test_without_source_keys(async_redis: Redis) -> None:
     with raises(Exception) as exception:
         await async_redis.bitop("AND", "bitop_destination_1")
 
@@ -29,7 +29,7 @@ async def test_without_source_keys(async_redis: AsyncRedis) -> None:
 
 
 @mark.asyncio
-async def test_not_with_more_than_one_source_key(async_redis: AsyncRedis) -> None:
+async def test_not_with_more_than_one_source_key(async_redis: Redis) -> None:
     with raises(Exception) as exception:
         await async_redis.bitop(
             "NOT",
@@ -45,7 +45,7 @@ async def test_not_with_more_than_one_source_key(async_redis: AsyncRedis) -> Non
 
 
 @mark.asyncio
-async def test_not(async_redis: AsyncRedis) -> None:
+async def test_not(async_redis: Redis) -> None:
     assert (
         await async_redis.bitop(
             "NOT", "bitop_destination_4", "string_as_bitop_source_1"

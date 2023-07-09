@@ -1,17 +1,17 @@
 import pytest
 
-from upstash_redis import AsyncRedis
+from upstash_redis.asyncio import Redis
 
 
 @pytest.fixture(autouse=True)
-async def flush_scripts(async_redis: AsyncRedis):
+async def flush_scripts(async_redis: Redis):
     await async_redis.script_flush()
     yield
     await async_redis.script_flush()
 
 
 @pytest.mark.asyncio
-async def test_script_exists(async_redis: AsyncRedis):
+async def test_script_exists(async_redis: Redis):
     sha1 = await async_redis.script_load("return 1")
     sha2 = await async_redis.script_load("return 2")
 
