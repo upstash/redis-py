@@ -78,7 +78,6 @@ class Redis(AsyncCommands):
         exc_val: Union[BaseException, None],
         exc_tb: Any,
     ) -> None:
-        assert self._context_manager is not None
         await self.close()
 
     async def close(self) -> None:
