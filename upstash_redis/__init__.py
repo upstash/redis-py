@@ -1,4 +1,4 @@
-__version__ = "0.14.5"
+__version__ = "0.15.0"
 
 from upstash_redis.client import Redis
 
