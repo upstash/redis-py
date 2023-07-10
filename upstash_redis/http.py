@@ -9,6 +9,7 @@ from typing import Any, Dict, List, Literal, Optional, Union
 from aiohttp import ClientSession
 from requests import Session
 
+from upstash_redis import __version__
 from upstash_redis.errors import UpstashError
 from upstash_redis.typing import RESTResultT
 
@@ -24,7 +25,7 @@ def make_headers(
         headers["Upstash-Encoding"] = encoding
 
     if allow_telemetry:
-        headers["Upstash-Telemetry-Sdk"] = "upstash_redis@python"
+        headers["Upstash-Telemetry-Sdk"] = f"py-upstash-redis@v{__version__}"
         headers["Upstash-Telemetry-Runtime"] = f"python@v{python_version()}"
 
         if os.getenv("VERCEL"):

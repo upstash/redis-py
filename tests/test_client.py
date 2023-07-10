@@ -39,3 +39,17 @@ def test_async_redis_init_outside_coroutine() -> None:
         return result
 
     assert asyncio.run(coro()) == "hey"
+
+
+def test_async_redis_reuse_in_different_event_loops() -> None:
+    redis = AsyncRedis.from_env(allow_telemetry=False)
+
+    async def coro(close: bool) -> str:
+        result = await redis.ping("hey")
+        if close:
+            await redis.close()
+
+        return result
+
+    assert asyncio.run(coro(False)) == "hey"
+    assert asyncio.run(coro(True)) == "hey"

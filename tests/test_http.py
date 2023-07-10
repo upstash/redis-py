@@ -9,6 +9,7 @@ from aiohttp import ClientSession
 from pytest import mark, raises
 from requests import Session
 
+from upstash_redis import __version__
 from upstash_redis.errors import UpstashError
 from upstash_redis.http import async_execute, decode, make_headers, sync_execute
 
@@ -188,7 +189,7 @@ def test_decode(arg: Any, expected: Any) -> None:
             True,
             {
                 "Authorization": "Bearer token",
-                "Upstash-Telemetry-Sdk": "upstash_redis@python",
+                "Upstash-Telemetry-Sdk": f"py-upstash-redis@v{__version__}",
                 "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
                 "Upstash-Telemetry-Platform": "unknown",
             },
@@ -200,7 +201,7 @@ def test_decode(arg: Any, expected: Any) -> None:
             {
                 "Authorization": "Bearer token",
                 "Upstash-Encoding": "base64",
-                "Upstash-Telemetry-Sdk": "upstash_redis@python",
+                "Upstash-Telemetry-Sdk": f"py-upstash-redis@v{__version__}",
                 "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
                 "Upstash-Telemetry-Platform": "unknown",
             },
@@ -228,7 +229,7 @@ def test_make_headers_on_vercel() -> None:
     with patch("os.getenv", side_effect=lambda arg: arg if arg == "VERCEL" else None):
         assert make_headers("token", None, True) == {
             "Authorization": "Bearer token",
-            "Upstash-Telemetry-Sdk": "upstash_redis@python",
+            "Upstash-Telemetry-Sdk": f"py-upstash-redis@v{__version__}",
             "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
             "Upstash-Telemetry-Platform": "vercel",
         }
@@ -240,7 +241,7 @@ def test_make_headers_on_aws() -> None:
     ):
         assert make_headers("token", None, True) == {
             "Authorization": "Bearer token",
-            "Upstash-Telemetry-Sdk": "upstash_redis@python",
+            "Upstash-Telemetry-Sdk": f"py-upstash-redis@v{__version__}",
             "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
             "Upstash-Telemetry-Platform": "aws",
         }
