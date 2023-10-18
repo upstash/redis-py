@@ -20,6 +20,8 @@ class Redis(Commands):
         allow_telemetry: bool = True,
     ):
         """
+        Creates a new Redis client.
+
         :param url: UPSTASH_REDIS_REST_URL in the console
         :param token: UPSTASH_REDIS_REST_TOKEN in the console
         :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
