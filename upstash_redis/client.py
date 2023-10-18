@@ -35,7 +35,7 @@ class Redis(Commands):
 
         self._allow_telemetry = allow_telemetry
 
-        self._rest_encoding = rest_encoding
+        self._rest_encoding: Union[Literal["base64"], None] = rest_encoding
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
