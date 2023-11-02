@@ -171,7 +171,7 @@ class Commands:
         Sets a timeout on a key in seconds.
         After the timeout has expired, the key will automatically be deleted.
 
-        :param seconds: the timeout in seconds as int or datetime.timedelta.
+        :param seconds: the timeout in seconds as int or datetime.timedelta object
 
         Example
         ```python
@@ -200,10 +200,29 @@ class Commands:
 
         return self.execute(command)
 
-    def expireat(self, key: str, unix_time_seconds: int) -> ResponseT:
+    def expireat(self, key: str, unix_time_seconds: Union[int, datetime.datetime]) -> ResponseT:
         """
+        Expires a key at a specific unix timestamp (seconds).
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param seconds: the timeout in unix seconds timestamp as int or a datetime.datetime object.
+
+        Example
+        ```python
+        # With a datetime object
+        redis.set("mykey", "Hello")
+        redis.expireat("mykey", datetime.datetime.now() + datetime.timedelta(seconds=5))
+
+        # With a unix timestamp
+        redis.set("mykey", "Hello")
+        redis.expireat("mykey", int(time.time()) + 5)
+        ```
+
         See https://redis.io/commands/expireat
         """
+
+        if isinstance(unix_time_seconds, datetime.datetime):
+            unix_time_seconds = int(unix_time_seconds.timestamp())
 
         command: List = ["EXPIREAT", key, unix_time_seconds]
 
@@ -227,19 +246,58 @@ class Commands:
 
         return self.execute(command)
 
-    def pexpire(self, key: str, milliseconds: int) -> ResponseT:
+    def pexpire(self, key: str, milliseconds: Union[int, datetime.timedelta]) -> ResponseT:
         """
+        Sets a timeout on a key in milliseconds.
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param milliseconds: the timeout in milliseconds as int or datetime.timedelta.
+
+        Example
+        ```python
+        # With milliseconds
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", 500)
+
+        # With a timedelta
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", datetime.timedelta(milliseconds=500))
+        ```
+
         See https://redis.io/commands/pexpire
         """
+
+        if isinstance(milliseconds, datetime.timedelta):
+            # Total seconds returns float, so this is OK.
+            milliseconds = int(milliseconds.total_seconds() * 1000)
 
         command: List = ["PEXPIRE", key, milliseconds]
 
         return self.execute(command)
 
-    def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseT:
+    def pexpireat(self, key: str, unix_time_milliseconds: Union[int, datetime.datetime]) -> ResponseT:
         """
+        Expires a key at a specific unix timestamp (milliseconds).
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param unix_time_milliseconds: the timeout in unix miliseconds timestamp as int or a datetime.datetime object.
+
+        Example
+        ```python
+        # With a unix timestamp
+        redis.set("mykey", "Hello")
+        redis.pexpireat("mykey", int(time.time() * 1000) )
+
+        # With a datetime object
+        redis.set("mykey", "Hello")
+        redis.pexpireat("mykey", datetime.datetime.now() + datetime.timedelta(seconds=5))
+        ```
+
         See https://redis.io/commands/pexpireat
         """
+
+        if isinstance(unix_time_milliseconds, datetime.datetime):
+            unix_time_milliseconds = int(unix_time_milliseconds.timestamp() * 1000)
 
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
 
