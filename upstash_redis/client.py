@@ -10,6 +10,23 @@ from upstash_redis.typing import RESTResultT
 
 
 class Redis(Commands):
+    """
+    A Redis client that uses the Upstash REST API.
+
+    Blocking example:
+    
+    ```python
+    from upstash_redis import Redis
+
+    redis = Redis.from_env()
+
+    redis.set("key", "value")
+    redis.get("key")
+    ```
+
+    To use the async client, use `upstash_redis.asyncio.Redis`.
+    """
+
     def __init__(
         self,
         url: str,
@@ -20,7 +37,7 @@ class Redis(Commands):
         allow_telemetry: bool = True,
     ):
         """
-        Creates a new Redis client.
+        Creates a new blocking Redis client.
 
         :param url: UPSTASH_REDIS_REST_URL in the console
         :param token: UPSTASH_REDIS_REST_TOKEN in the console
