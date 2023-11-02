@@ -477,6 +477,30 @@ class Commands:
         type: Union[str, None] = None,
     ) -> ResponseT:
         """
+        Return a paginated list of keys matching the pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+        :param type: the type of keys to match. Can be "string", "list", "set", "zset", "hash", or None.
+
+        :return: a tuple of the new cursor and the list of keys.
+
+        Example:
+        ```python
+        # Get all keys
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.scan(cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/scan
         """
 
@@ -1048,6 +1072,29 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Return a paginated list of keys in a hash matching the pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and the list of keys.
+
+        Example:
+        ```python
+        # Get all members of a hash.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.hscan("myhash", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/hscan
         """
 
@@ -1594,6 +1641,29 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Return a paginated list of members of a set matching a pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and the list of elements.
+
+        Example:
+        ```python
+        # Get all members of a set.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.sscan("myset", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/sscan
         """
 
@@ -2121,6 +2191,32 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Return a paginated list of members and their scores of an ordered set matching a pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and a list of (key, score) tuples.
+
+        Example:
+        ```python
+        # Get all elements of an ordered set.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.zscan("myzset", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+
+        for key, score in results:
+            print(key, score)
+        ```
+
         See https://redis.io/commands/zscan
         """
 
