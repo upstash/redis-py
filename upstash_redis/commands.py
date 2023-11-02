@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT
@@ -165,10 +166,35 @@ class Commands:
 
         return self.execute(command)
 
-    def expire(self, key: str, seconds: int) -> ResponseT:
+    def expire(self, key: str, seconds: Union[int, datetime.timedelta]) -> ResponseT:
         """
+        Sets a timeout on a key in seconds.
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param seconds: the timeout in seconds as int or datetime.timedelta.
+
+        Example
+        ```python
+        # With seconds
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", 5)
+
+        assert redis.get("mykey") == "Hello"
+
+        time.sleep(5)
+
+        assert redis.get("mykey") is None
+
+        # With a timedelta
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", datetime.timedelta(seconds=5))
+        ```
+
         See https://redis.io/commands/expire
         """
+
+        if isinstance(seconds, datetime.timedelta):
+            seconds = int(seconds.total_seconds())
 
         command: List = ["EXPIRE", key, seconds]
 
