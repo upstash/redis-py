@@ -20,6 +20,17 @@ class Commands:
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
     ) -> ResponseT:
         """
+        Returns the number of bits set to 1 in a given range.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+        redis.setbit("mykey", 8, 1)
+        redis.setbit("mykey", 9, 1)
+
+        assert redis.bitcount("mykey", 0, 10) == 3
+        ```
+
         See https://redis.io/commands/bitcount
         """
 
@@ -35,6 +46,19 @@ class Commands:
 
     def bitfield(self, key: str) -> "BitFieldCommands":
         """
+        Returns a BitFieldCommands instance that can be used to execute BITFIELD commands on one key.
+
+        Example:
+        ```python
+        redis.set("mykey", 0)
+        result = redis.bitfield("mykey")
+                .set("u4", 0, 16)
+                .incr("u4", 4, 1)
+                .execute()
+
+        assert result == [0, 1]
+        ```
+
         See https://redis.io/commands/bitfield
         """
 
@@ -42,6 +66,18 @@ class Commands:
 
     def bitfield_ro(self, key: str) -> "BitFieldROCommands":
         """
+        Returns a BitFieldROCommands instance that can be used to execute BITFIELD_RO commands on one key.
+
+        Example:
+        ```python
+        redis.set("mykey", 0)
+        result = redis.bitfield_ro("mykey")
+                .get("u4", 0)
+                .execute()
+
+        assert result == [0]
+        ```
+
         See https://redis.io/commands/bitfield_ro
         """
 
@@ -51,6 +87,20 @@ class Commands:
         self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
     ) -> ResponseT:
         """
+        Performs a bitwise operation between multiple keys (containing string values) and stores the result in the
+        destination key.
+
+        Example:
+        ```python
+        redis.setbit("key1", 0, 1)
+        redis.setbit("key2", 0, 0)
+        redis.setbit("key2", 1, 1)
+
+        assert redis.bitop("AND", "dest", "key1", "key2") == 1
+        assert redis.getbit("dest", 0) == 0
+        assert redis.getbit("dest", 1) == 0
+        ```
+
         See https://redis.io/commands/bitop
         """
 
@@ -74,6 +124,22 @@ class Commands:
         end: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the position of the first bit set to 1 or 0 in a string.
+        If no bit is set, -1 is returned.
+        
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+        redis.setbit("mykey", 8, 1)
+
+        assert redis.bitpos("mykey", 1) == 7
+        assert redis.bitpos("mykey", 0) == 0
+
+        # With a range
+        assert redis.bitpos("mykey", 1, 0, 2) == 0
+        assert redis.bitpos("mykey", 1, 2, 3) == -1
+        ```
+
         See https://redis.io/commands/bitpos
         """
 
@@ -92,6 +158,15 @@ class Commands:
 
     def getbit(self, key: str, offset: int) -> ResponseT:
         """
+        Returns the bit value at offset in the string value stored at key.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+
+        assert redis.getbit("mykey", 7) == 1
+        ```
+
         See https://redis.io/commands/getbit
         """
 
@@ -101,6 +176,19 @@ class Commands:
 
     def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> ResponseT:
         """
+        Sets or clears the bit at offset in the string value stored at key.
+        If the offset is larger than the current length of the string,
+        the string is padded with zero-bytes to make offset fit.
+
+        Returns the original bit value stored at offset.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+
+        assert redis.getbit("mykey", 7) == 1
+        ```
+
         See https://redis.io/commands/setbit
         """
 
@@ -110,6 +198,14 @@ class Commands:
 
     def ping(self, message: Union[str, None] = None) -> ResponseT:
         """
+        Returns PONG if no argument is provided, otherwise return a copy of the argument as a bulk.
+
+        Example:
+        ```python
+        assert redis.ping() == "PONG"
+        assert redis.ping("Hello") == "Hello"
+        ```
+
         See https://redis.io/commands/ping
         """
 
@@ -122,6 +218,13 @@ class Commands:
 
     def echo(self, message: str) -> ResponseT:
         """
+        Returns the message.
+
+        Example:
+        ```python
+        assert redis.echo("Hello") == "Hello"
+        ```
+
         See https://redis.io/commands/echo
         """
 
@@ -131,6 +234,19 @@ class Commands:
 
     def copy(self, source: str, destination: str, replace: bool = False) -> ResponseT:
         """
+        Copies the value stored at the source key to the destination key.
+        By default, the destination key is created only when the source key exists.
+
+        :param replace: if True, the destination key is deleted before copying the value.
+
+        Example:
+        ```python
+        redis.set("mykey", "Hello")
+        redis.copy("mykey", "myotherkey")
+
+        assert redis.get("myotherkey") == "Hello"
+        ```
+
         See https://redis.io/commands/copy
         """
 
@@ -143,6 +259,19 @@ class Commands:
 
     def delete(self, *keys: str) -> ResponseT:
         """
+        Deletes one or more keys.
+        Returns the number of keys that were removed.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+        redis.delete("key1", "key2")
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") is None
+        ```
+
         See https://redis.io/commands/del
         """
 
@@ -155,6 +284,20 @@ class Commands:
 
     def exists(self, *keys: str) -> ResponseT:
         """
+        Returns the number of keys existing among the ones specified as arguments.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.exists("key1", "key2") == 2
+
+        redis.delete("key1")
+
+        assert redis.exists("key1", "key2") == 1
+        ```
+
         See https://redis.io/commands/exists
         """
 
