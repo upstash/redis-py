@@ -328,6 +328,16 @@ class Commands:
 
     def keys(self, pattern: str) -> ResponseT:
         """
+        Returns all keys matching pattern.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.keys("key*") == ["key1", "key2"]
+        ```
+
         See https://redis.io/commands/keys
         """
 
@@ -337,6 +347,23 @@ class Commands:
 
     def persist(self, key: str) -> ResponseT:
         """
+        Removes the expiration from a key.
+
+        Returns True if the timeout was removed,
+        False if key does not exist or does not have an associated timeout.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.expire("key1", 10)
+
+        assert redis.ttl("key1") == 10
+
+        redis.persist("key1")
+
+        assert redis.ttl("key1") == -1
+        ```
+
         See https://redis.io/commands/persist
         """
 
@@ -373,6 +400,18 @@ class Commands:
 
     def randomkey(self) -> ResponseT:
         """
+        Returns a random key.
+
+        Example:
+        ```
+        assert redis.randomkey() is None
+
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.randomkey() is not None
+        ```
+
         See https://redis.io/commands/randomkey
         """
 
@@ -382,6 +421,19 @@ class Commands:
 
     def rename(self, key: str, newkey: str) -> ResponseT:
         """
+        Renames a key and overwrites the new key if it already exists.
+
+        Throws an exception if the key does not exist.
+        
+        Example:
+        ```
+        redis.set("key1", "Hello")
+        redis.rename("key1", "key2")
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") == "Hello"
+        ```
+
         See https://redis.io/commands/rename
         """
 
@@ -391,6 +443,25 @@ class Commands:
 
     def renamenx(self, key: str, newkey: str) -> ResponseT:
         """
+        Renames a key, only if the new key does not exist.
+
+        Throws an exception if the key does not exist.
+
+        Example:
+        ```
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        # Rename failed because "key2" already exists.
+        assert redis.renamenx("key1", "key2") == False
+
+        assert redis.renamenx("key1", "key3") == True
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") == "World"
+        assert redis.get("key3") == "Hello"
+        ```
+
         See https://redis.io/commands/renamenx
         """
 
