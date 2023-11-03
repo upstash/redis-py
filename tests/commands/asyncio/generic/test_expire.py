@@ -23,3 +23,13 @@ async def test_with_datetime(async_redis: Redis) -> None:
     # Check if the expiry was correctly set.
     await sleep(1)
     assert await execute_on_http("EXISTS", "string_for_expire_dt") == 0
+
+@mark.asyncio
+async def test_xx(async_redis: Redis) -> None:
+    # Must fail since it does not have an expiry.
+    assert await async_redis.expire("string_without_expire", 1, xx=True) is False
+
+@mark.asyncio
+async def test_gt(async_redis: Redis) -> None:
+    # Must fail since it 1 is not greater than infinity.
+    assert await async_redis.expire("string_without_expire", 1, gt=True) is False

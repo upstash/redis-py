@@ -70,6 +70,8 @@ commands: List[List] = [
         "a",
         "string_for_pexpireat_dt",
         "a",
+        "string_without_expire",
+        "a",
         #Other expire stuff
         "string_for_persist",
         "a",
