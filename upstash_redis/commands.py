@@ -166,12 +166,24 @@ class Commands:
 
         return self.execute(command)
 
-    def expire(self, key: str, seconds: Union[int, datetime.timedelta]) -> ResponseT:
+    def expire(
+        self,
+        key: str,
+        seconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
         Sets a timeout on a key in seconds.
         After the timeout has expired, the key will automatically be deleted.
 
         :param seconds: the timeout in seconds as int or datetime.timedelta object
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
         Example
         ```python
@@ -198,14 +210,35 @@ class Commands:
 
         command: List = ["EXPIRE", key, seconds]
 
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
         return self.execute(command)
 
-    def expireat(self, key: str, unix_time_seconds: Union[int, datetime.datetime]) -> ResponseT:
+    def expireat(
+        self,
+        key: str,
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
         Expires a key at a specific unix timestamp (seconds).
         After the timeout has expired, the key will automatically be deleted.
 
         :param seconds: the timeout in unix seconds timestamp as int or a datetime.datetime object.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
         Example
         ```python
@@ -225,6 +258,15 @@ class Commands:
             unix_time_seconds = int(unix_time_seconds.timestamp())
 
         command: List = ["EXPIREAT", key, unix_time_seconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
@@ -246,12 +288,24 @@ class Commands:
 
         return self.execute(command)
 
-    def pexpire(self, key: str, milliseconds: Union[int, datetime.timedelta]) -> ResponseT:
+    def pexpire(
+        self,
+        key: str,
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
         Sets a timeout on a key in milliseconds.
         After the timeout has expired, the key will automatically be deleted.
 
         :param milliseconds: the timeout in milliseconds as int or datetime.timedelta.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
         Example
         ```python
@@ -273,14 +327,35 @@ class Commands:
 
         command: List = ["PEXPIRE", key, milliseconds]
 
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
         return self.execute(command)
 
-    def pexpireat(self, key: str, unix_time_milliseconds: Union[int, datetime.datetime]) -> ResponseT:
+    def pexpireat(
+        self,
+        key: str,
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
         Expires a key at a specific unix timestamp (milliseconds).
         After the timeout has expired, the key will automatically be deleted.
 
         :param unix_time_milliseconds: the timeout in unix miliseconds timestamp as int or a datetime.datetime object.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
         Example
         ```python
@@ -300,6 +375,15 @@ class Commands:
             unix_time_milliseconds = int(unix_time_milliseconds.timestamp() * 1000)
 
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
