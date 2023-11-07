@@ -1,3 +1,4 @@
+import base64
 from aiohttp import ClientSession
 from pytest import mark, raises
 
@@ -57,8 +58,11 @@ async def test_not(async_redis: Redis) -> None:
     async with ClientSession() as session:
         async with session.post(
             url=async_redis._url,
-            headers={"Authorization": f"Bearer {async_redis._token}"},
+            headers={
+                "Authorization": f"Bearer {async_redis._token}",
+                "Upstash-Encoding": "base64"
+            },
             json=["GET", "bitop_destination_4"],
         ) as response:
             # Prevent Python from interpreting escape characters.
-            assert await response.text() == r'{"result":"\x9e\x9d\x9c\x9b"}'
+            assert await response.text() == '{"result":"np2cmw=="}'
