@@ -1212,7 +1212,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hmset(self, key: str, values: Dict[str, str]) -> ResponseT:
+    def hmset(self, key: str, values: Dict[str, Any]) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
 
@@ -1307,7 +1307,7 @@ class Commands:
         key: str,
         field: Optional[str] = None,
         value: Optional[Any] = None,
-        values: Optional[Dict[str, str]] = None,
+        values: Optional[Dict[str, Any]] = None,
     ) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
@@ -2646,7 +2646,7 @@ class Commands:
 
         return self.execute(command)
 
-    def mset(self, values: Dict[str, str]) -> ResponseT:
+    def mset(self, values: Dict[str, Any]) -> ResponseT:
         """
         See https://redis.io/commands/mset
         """
@@ -2658,7 +2658,7 @@ class Commands:
 
         return self.execute(command)
 
-    def msetnx(self, values: Dict[str, str]) -> ResponseT:
+    def msetnx(self, values: Dict[str, Any]) -> ResponseT:
         """
         See https://redis.io/commands/msetnx
         """
