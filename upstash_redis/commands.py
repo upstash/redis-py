@@ -391,6 +391,23 @@ class Commands:
 
     def pttl(self, key: str) -> ResponseT:
         """
+        The milliseconds remaining until the key expires.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.pttl("key1") == -1
+
+        redis.expire("key1", 1000)
+
+        assert redis.pttl("key1") > 0
+
+        redis.persist("key1")
+
+        assert redis.pttl("key1") == -1
+        ```
+
         See https://redis.io/commands/pttl
         """
 
