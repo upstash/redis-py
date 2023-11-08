@@ -42,5 +42,11 @@ async def test_not_with_more_than_one_source_key(async_redis: Redis) -> None:
         == 'The "NOT " operation takes only one source key as argument.'
     )
 
-# Removed the test for not because
-# the returned value was not valid utf8
+@mark.asyncio
+async def test_not(async_redis: Redis) -> None:
+    assert (
+        await async_redis.bitop(
+            "NOT", "bitop_destination_4", "string_as_bitop_source_1"
+        )
+        == 4
+    )
