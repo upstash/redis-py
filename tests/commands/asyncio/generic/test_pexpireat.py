@@ -1,4 +1,5 @@
 from asyncio import sleep
+import datetime
 from time import time
 
 from pytest import mark
@@ -19,3 +20,11 @@ async def test(async_redis: Redis) -> None:
 
     await sleep(2)
     assert await execute_on_http("EXISTS", "string_for_pexpireat") == 0
+
+@mark.asyncio
+async def test_with_datetime(async_redis: Redis) -> None:
+    assert await async_redis.pexpireat("string_for_pexpireat_dt", datetime.datetime.now() + datetime.timedelta(milliseconds=200)) is True
+
+    # Check if the expiry was correctly set.
+    await sleep(0.2)
+    assert await execute_on_http("EXISTS", "string_for_pexpireat_dt") == 0

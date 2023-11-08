@@ -61,6 +61,18 @@ commands: List[List] = [
         "a",
         "string_for_pexpireat",
         "a",
+        # Strings for testing datetime with expire
+        "string_for_expire_dt",
+        "a",
+        "string_for_expireat_dt",
+        "a",
+        "string_for_pexpire_dt",
+        "a",
+        "string_for_pexpireat_dt",
+        "a",
+        "string_without_expire",
+        "a",
+        #Other expire stuff
         "string_for_persist",
         "a",
         "string_for_ttl",
