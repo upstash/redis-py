@@ -1188,6 +1188,20 @@ class Commands:
 
     def hmget(self, key: str, *fields: str) -> ResponseT:
         """
+        Returns the values of all specified fields in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hmget("myhash", "field1", "field2") == ["Hello", "World"]
+        ```
+
         See https://redis.io/commands/hmget
         """
 
@@ -1200,6 +1214,19 @@ class Commands:
 
     def hmset(self, key: str, values: Dict[str, str]) -> ResponseT:
         """
+        Sets the value of one or multiple fields in a hash.
+
+        Returns the number of fields that were added.
+
+        Example:
+        ```python
+        # Set multiple fields
+        assert redis.hmset("myhash"{
+            "field1": "Hello",
+            "field2": "World"
+        }) == 2
+        ```
+
         See https://redis.io/commands/hmset
         """
 
@@ -1283,6 +1310,25 @@ class Commands:
         values: Optional[Dict[str, str]] = None,
     ) -> ResponseT:
         """
+        Sets the value of one or multiple fields in a hash.
+
+        Returns the number of fields that were added.
+
+        `hmset` can be used to set multiple fields at once too.
+
+        Example:
+        ```python
+
+        # Set a single field
+        assert redis.hset("myhash", "field1", "Hello") == 1
+
+        # Set multiple fields
+        assert redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        }) == 2
+        ```
+
         See https://redis.io/commands/hset
         """
         command: List = ["HSET", key]
