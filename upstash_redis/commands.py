@@ -537,6 +537,16 @@ class Commands:
 
     def touch(self, *keys: str) -> ResponseT:
         """
+        Alters the last access time of one or more keys
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.touch("key1") == 1
+        
+        ```
+
         See https://redis.io/commands/touch
         """
 
@@ -549,6 +559,23 @@ class Commands:
 
     def ttl(self, key: str) -> ResponseT:
         """
+        The seconds remaining until the key expires.
+        Negative if the key does not exist or does not have an associated timeout.
+
+        ```python
+        # Get the TTL of a key
+        redis.set("my-key", "value")
+
+        assert redis.ttl("my-key") == -1
+
+        redis.expire("my-key", 10)
+
+        assert redis.ttl("my-key") > 0
+
+        # Non existent key
+        assert redis.ttl("non-existent-key") == -2
+        ```
+
         See https://redis.io/commands/ttl
         """
 
@@ -558,6 +585,23 @@ class Commands:
 
     def type(self, key: str) -> ResponseT:
         """
+        Returns the type of the value stored at key.
+
+        Can be "string", "list", "set", "zset", "hash", or "none".
+
+        Example:
+        ```
+        redis.set("key1", "Hello")
+
+        assert redis.type("key1") == "string"
+
+        redis.lpush("key2", "Hello")
+
+        assert redis.type("key2") == "list"
+
+        assert redis.type("non-existent-key") == "none"
+        ```
+
         See https://redis.io/commands/type
         """
 
@@ -567,6 +611,17 @@ class Commands:
 
     def unlink(self, *keys: str) -> ResponseT:
         """
+        Deletes one or more keys in a non-blocking way.
+
+        :return: The number of keys that were removed.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.unlink("key1") == 1
+        ```
+
         See https://redis.io/commands/unlink
         """
 
