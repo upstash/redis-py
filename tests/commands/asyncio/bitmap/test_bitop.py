@@ -1,5 +1,3 @@
-import base64
-from aiohttp import ClientSession
 from pytest import mark, raises
 
 from tests.execute_on_http import execute_on_http
