@@ -1241,6 +1241,41 @@ class Commands:
         self, key: str, count: Union[int, None] = None, withvalues: bool = False
     ) -> ResponseT:
         """
+        Returns one or more random fields from a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        If no count is specified, a single field is returned.
+        If a count is specified, a list of fields is returned.
+        If "withvalues" is True, a dictionary of fields and values is returned.
+
+        :param key: the key of the hash.
+        :param count: the number of fields to return.
+        :param withvalues: if True, the keys and values are returned as a dictionary.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        # Without count
+        assert redis.hrandfield("myhash") in ["field1", "field2"]
+
+        # With count
+        assert redis.hrandfield("myhash", count=2) in [
+            ["field1", "field2"],
+            ["field2", "field1"]
+        ]
+
+        # With values
+        assert redis.hrandfield("myhash", count=1, withvalues=True) in [
+            {"field1": "Hello"},
+            {"field2": "World"}
+        ]
+        ```
+
         See https://redis.io/commands/hrandfield
         """
 
@@ -1345,8 +1380,18 @@ class Commands:
 
         return self.execute(command)
 
-    def hsetnx(self, key: str, field: str, value: str) -> ResponseT:
+    def hsetnx(self, key: str, field: str, value: Any) -> ResponseT:
         """
+        Sets the value of a field in a hash, only if the field does not exist.
+
+        Returns True if the field was set, False if it was not set.
+
+        Example:
+        ```python
+        assert redis.hsetnx("myhash", "field1", "Hello") == True
+        assert redis.hsetnx("myhash", "field1", "World") == False
+        ```
+
         See https://redis.io/commands/hsetnx
         """
 
@@ -1356,6 +1401,18 @@ class Commands:
 
     def hstrlen(self, key: str, field: str) -> ResponseT:
         """
+        Returns the length of a value in a hash.
+
+        Returns 0 if the field does not exist or the key does not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+
+        assert redis.hstrlen("myhash", "field1") == 5
+        assert redis.hstrlen("myhash", "field2") == 0
+        ```
+
         See https://redis.io/commands/hstrlen
         """
 
@@ -1365,6 +1422,20 @@ class Commands:
 
     def hvals(self, key: str) -> ResponseT:
         """
+        Returns all values in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hvals("myhash") == ["Hello", "World"]
+        ```
+
         See https://redis.io/commands/hvals
         """
 
