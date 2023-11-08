@@ -1279,7 +1279,7 @@ class Commands:
         self,
         key: str,
         field: Optional[str] = None,
-        value: Optional[str] = None,
+        value: Optional[Any] = None,
         values: Optional[Dict[str, str]] = None,
     ) -> ResponseT:
         """
