@@ -1,13 +1,11 @@
 from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT
-from upstash_redis.utils import (
-    handle_georadius_write_exceptions,
-    handle_geosearch_exceptions,
-    handle_non_deprecated_zrange_exceptions,
-    handle_zrangebylex_exceptions,
-    number_are_not_none,
-)
+from upstash_redis.utils import (handle_georadius_write_exceptions,
+                                 handle_geosearch_exceptions,
+                                 handle_non_deprecated_zrange_exceptions,
+                                 handle_zrangebylex_exceptions,
+                                 number_are_not_none)
 
 ResponseT = Union[Awaitable, Any]
 
@@ -1019,6 +1017,18 @@ class Commands:
 
     def hdel(self, key: str, *fields: str) -> ResponseT:
         """
+        Deletes one or more fields from a hash.
+
+        Returns the number of fields that were removed.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+        redis.hset("myhash", "field2", "World")
+
+        assert redis.hdel("myhash", "field1", "field2") == 2
+        ```
+
         See https://redis.io/commands/hdel
         """
 
@@ -1031,6 +1041,10 @@ class Commands:
 
     def hexists(self, key: str, field: str) -> ResponseT:
         """
+        Checks if a field exists in a hash.
+
+        Returns True if the field exists, False if it does not.
+
         See https://redis.io/commands/hexists
         """
 
@@ -1040,6 +1054,18 @@ class Commands:
 
     def hget(self, key: str, field: str) -> ResponseT:
         """
+        Retrieves the value of a field in a hash.
+
+        Returns None if the field or the key does not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+
+        assert redis.hget("myhash", "field1") == "Hello"
+        assert redis.hget("myhash", "field2") is None
+        ```
+
         See https://redis.io/commands/hget
         """
 
@@ -1049,6 +1075,18 @@ class Commands:
 
     def hgetall(self, key: str) -> ResponseT:
         """
+        Returns all fields and values of a hash.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hgetall("myhash") == {"field1": "Hello", "field2": "World"}
+        ```
+
         See https://redis.io/commands/hgetall
         """
 
@@ -1058,6 +1096,19 @@ class Commands:
 
     def hincrby(self, key: str, field: str, increment: int) -> ResponseT:
         """
+        Increments the value of a field in a hash by a given amount.
+
+        If the field does not exist, it is set to 0 before performing the operation.
+
+        Returns the new value.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", 5)
+
+        assert redis.hincrby("myhash", "field1", 10) == 15
+        ```
+
         See https://redis.io/commands/hincrby
         """
 
@@ -1067,6 +1118,19 @@ class Commands:
 
     def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseT:
         """
+        Increments the value of a field in a hash by a given amount.
+
+        If the field does not exist, it is set to 0 before performing the operation.
+
+        Returns the new value.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", 5.5)
+
+        assert redis.hincrbyfloat("myhash", "field1", 10.1) - 15.6 < 0.0001
+        ```
+
         See https://redis.io/commands/hincrbyfloat
         """
 
@@ -1076,6 +1140,20 @@ class Commands:
 
     def hkeys(self, key: str) -> ResponseT:
         """
+        Returns all fields in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hkeys("myhash") == ["field1", "field2"]
+        ```
+
         See https://redis.io/commands/hkeys
         """
 
@@ -1085,6 +1163,22 @@ class Commands:
 
     def hlen(self, key: str) -> ResponseT:
         """
+        Returns the number of fields in a hash.
+
+        If the hash is empty or does not exist, 0 is returned.
+
+        Example:
+        ```python
+        assert redis.hlen("myhash") == 0
+
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hlen("myhash") == 2
+        ```
+
         See https://redis.io/commands/hlen
         """
 
