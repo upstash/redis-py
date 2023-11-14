@@ -1799,6 +1799,26 @@ class Commands:
 
     def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Remove and return the last element of a list.
+
+        If count is specified, multiple elements are popped from the right side of the list.
+
+        Returns a single element if count is not specified.
+        Returns a list of elements if count is specified.
+
+        Example:
+        ```python
+        # Single
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.rpop("mylist") == "three"
+
+        # Multiple
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.rpop("mylist", 2) == ["three", "two"]
+        ```
+
         See https://redis.io/commands/rpop
         """
 
@@ -1811,6 +1831,19 @@ class Commands:
 
     def rpoplpush(self, source: str, destination: str) -> ResponseT:
         """
+        Delete an element from the right side of a list and push it to the left side of another list.
+
+        Deprecated since Redis 6. Use `lmove` with `wherefrom="RIGHT"` and `whereto="LEFT"` instead.
+
+        Example:
+        ```py
+        redis.rpush("source", "one", "two", "three")
+
+        assert redis.rpoplpush("source", "destination") == "three"
+
+        assert redis.lrange("source", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/rpoplpush
         """
 
@@ -1820,6 +1853,17 @@ class Commands:
 
     def rpush(self, key: str, *elements: str) -> ResponseT:
         """
+        Push an element to the right side of a list.
+
+        Returns the new length of the list.
+
+        Example:
+        ```python
+        assert redis.rpush("mylist", "one", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/rpush
         """
 
@@ -1832,6 +1876,18 @@ class Commands:
 
     def rpushx(self, key: str, *elements: Any) -> ResponseT:
         """
+        Push an element to the right side of a list only if the list exists.
+
+        Returns the new length of the list.
+        Returns 0 if the list does not exist.
+
+        Example:
+        ```python
+        assert redis.rpushx("mylist", "one", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/rpushx
         """
 
