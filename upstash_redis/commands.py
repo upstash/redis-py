@@ -1475,6 +1475,8 @@ class Commands:
 
     def lindex(self, key: str, index: int) -> ResponseT:
         """
+        Returns the element at index in the list stored at key.o
+
         See https://redis.io/commands/lindex
         """
 
@@ -1486,10 +1488,17 @@ class Commands:
         self,
         key: str,
         where: Literal["BEFORE", "AFTER"],
-        pivot: str,
+        pivot: Any,
         element: str,
     ) -> ResponseT:
         """
+        Insert an element before or after another element in a list.
+
+        :param key: the key of the list.
+        :param where: whether to insert before or after the pivot.
+        :param pivot: the element to insert before or after.
+        :param element: the element to insert.
+
         See https://redis.io/commands/linsert
         """
 
@@ -1499,6 +1508,8 @@ class Commands:
 
     def llen(self, key: str) -> ResponseT:
         """
+        Returns the length of a list.
+
         See https://redis.io/commands/llen
         """
 
@@ -1514,6 +1525,23 @@ class Commands:
         whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
     ) -> ResponseT:
         """
+        Move an element from one list to another atomically.
+
+        :param source: the source list.
+        :param destination: the destination list.
+        :param wherefrom: The side to pop from. Can be "LEFT" or "RIGHT".
+        :param whereto: The side to push to. Can be "LEFT" or "RIGHT".
+
+        Example:
+        ```python
+        redis.rpush("source", "one", "two", "three")
+        redis.lpush("destination", "four", "five", "six")
+
+        assert redis.lmove("source", "destination", "RIGHT", "LEFT") == "three"
+
+        assert redis.lrange("source", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/lmove
         """
 
@@ -1529,6 +1557,27 @@ class Commands:
 
     def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Remove and return the first element of a list.
+
+        If count is specified, multiple elements are popped from the left side of the list.
+
+        Returns a single element if count is not specified.
+        Returns a list of elements if count is specified.
+        If the list is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lpop("mylist") == "one"
+
+        # Multiple
+        redis.rpush("mylist", "one", "two", "three")
+        
+        assert redis.lpop("mylist", 2) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/lpop
         """
 
@@ -1548,6 +1597,34 @@ class Commands:
         maxlen: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the index of matching elements inside a list.
+
+        :param key: the key of the list.
+        :param element: the element to search for.
+        :param rank: which match to return. 1 to return the first match, 0 to return the second match, and so on.
+        :param count: the maximum number of matches to return.
+        :param maxlen: the maximum number of elements to scan.
+
+        Returns the index of the matching element or array of indexes if count is specified.
+        If the element does not exist, None is returned.
+
+        Example:
+        ```py 
+        redis.rpush("key", "a", "b", "c"); 
+
+        assert redis.lpos("key", "b") == 1
+
+        # With Rank 
+        redis.rpush("key", "a", "b", "c", "b"); 
+
+        assert redis.lpos("key", "b", rank=2) == 3
+
+        # With Count
+        redis.rpush("key", "a", "b", "b")
+
+        assert redis.lpos("key", "b", count=2) == [1, 2]
+        ```
+
         See https://redis.io/commands/lpos
         """
 
@@ -1566,6 +1643,17 @@ class Commands:
 
     def lpush(self, key: str, *elements: str) -> ResponseT:
         """
+        Push an element to the left side of a list.
+
+        Returns the new length of the list.
+
+        Example:
+        ```python
+        assert redis.lpush("mylist", "one", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["three", "two", "one"]
+        ```
+
         See https://redis.io/commands/lpush
         """
 
@@ -1578,6 +1666,21 @@ class Commands:
 
     def lpushx(self, key: str, *elements: str) -> ResponseT:
         """
+        Push an element to the left side of a list, only if the list exists.
+
+        Returns the new length of the list.
+        If the list does not exist, 0 is returned.
+
+        Example:
+        ```python
+        # Initialize the list
+        redis.lpush("mylist", "one")
+
+        assert redis.lpushx("mylist", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["three", "two", "one"]
+        ```
+
         See https://redis.io/commands/lpushx
         """
 
@@ -1590,6 +1693,25 @@ class Commands:
 
     def lrange(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Returns a range of elements from a list.
+
+        If start or stop are negative, the index is calculated from the end of the list.
+
+        :param key: the key of the list.
+        :param start: the index of the first element to return.
+        :param stop: the index of the last element to return.
+
+        Returns a list of elements.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lrange("mylist", 0, 1) == ["one", "two"]
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/lrange
         """
 
@@ -1599,6 +1721,23 @@ class Commands:
 
     def lrem(self, key: str, count: int, element: str) -> ResponseT:
         """
+        Remove the first `count` occurrences of an element from a list.
+
+        :param key: the key of the list.
+        :param count: the number of occurrences to remove.
+        :param element: the element to remove.
+
+        Returns the number of elements that were removed.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three", "two", "one")
+
+        assert redis.lrem("mylist", 2, "two") == 2
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "three", "one"]
+        ```
+
         See https://redis.io/commands/lrem
         """
 
@@ -1608,6 +1747,23 @@ class Commands:
 
     def lset(self, key: str, index: int, element: str) -> ResponseT:
         """
+        Set the value of an element in a list by its index.
+
+        Returns True if the element was set, False if the index is out of range.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lset("mylist", 1, "Hello") == True
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
+
+        assert redis.lset("mylist", 5, "Hello") == False
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
+        ```
+
         See https://redis.io/commands/lset
         """
 
@@ -1617,6 +1773,23 @@ class Commands:
 
     def ltrim(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Trim a list to the specified range.
+
+        :param key: the key of the list.
+        :param start: the index of the first element to keep.
+        :param stop: the index of the last element to keep.
+
+        Returns True if the list was trimmed, False if the key does not exist.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.ltrim("mylist", 0, 1) == True
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/ltrim
         """
 
