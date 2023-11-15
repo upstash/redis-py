@@ -1900,6 +1900,15 @@ class Commands:
 
     def publish(self, channel: str, message: str) -> ResponseT:
         """
+        Publish a message to a channel.
+
+        Returns the number of clients that received the message.
+
+        Example:
+        ```python
+        redis.publish("mychannel", "Hello")
+        ```
+
         See https://redis.io/commands/publish
         """
 
@@ -1914,6 +1923,32 @@ class Commands:
         args: Union[List, None] = None,
     ) -> ResponseT:
         """
+        Evaluate a Lua script in the server
+
+        :param script: the Lua script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        assert redis.eval("return 1 + 1") == 2
+
+        assert redis.eval("return KEYS[1]", keys=["mykey"]) == "mykey"
+
+        assert redis.eval("return ARGV[1]", args=["Hello"]) == "Hello"
+
+        script = \"\"\"
+        local value = redis.call("GET", KEYS[1])
+        return value
+        \"\"\"
+
+        redis.set("mykey", "Hello")
+
+        assert redis.eval(script, keys=["mykey"]) == "Hello"
+        ```
+
         See https://redis.io/commands/eval
 
         The number of keys is calculated automatically.
@@ -1935,9 +1970,23 @@ class Commands:
         self,
         sha1: str,
         keys: Union[List[str], None] = None,
-        args: Union[List, None] = None,
+        args: Union[List[str], None] = None,
     ) -> ResponseT:
         """
+        Evaluate a Lua script in the server, cached by its SHA1 digest.
+
+        :param sha1: the SHA1 digest of the script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        result = redis.eval("fb67a0c03b48ddbf8b4c9b011e779563bdbc28cb", args=["hello"])
+        assert result = "hello"
+        ```
+
         See https://redis.io/commands/evalsha
 
         The number of keys is calculated automatically.
@@ -1957,6 +2006,8 @@ class Commands:
 
     def dbsize(self) -> ResponseT:
         """
+        Returns the number of keys in the database.
+
         See https://redis.io/commands/dbsize
         """
 
@@ -2003,6 +2054,18 @@ class Commands:
 
     def sadd(self, key: str, *members: str) -> ResponseT:
         """
+        Adds one or more members to a set.
+
+        Returns the number of members that were added.
+
+        Example:
+        ```python
+        assert redis.sadd("myset", "one", "two", "three") == 3
+
+        # Only newly added members are counted
+        assert redis.sadd("myset", "one", "two", "four") == 1
+        ```
+
         See https://redis.io/commands/sadd
         """
 
@@ -2015,6 +2078,10 @@ class Commands:
 
     def scard(self, key: str) -> ResponseT:
         """
+        Returns how many members are in a set
+
+        If the set does not exist, 0 is returned.
+
         See https://redis.io/commands/scard
         """
 
@@ -2024,6 +2091,19 @@ class Commands:
 
     def sdiff(self, *keys: str) -> ResponseT:
         """
+        Returns the difference between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sdiff("key1", "key2") == {"a", "b"}
+        ```
+
         See https://redis.io/commands/sdiff
         """
 
@@ -2036,6 +2116,24 @@ class Commands:
 
     def sdiffstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Returns the difference between multiple sets and stores it in a new set.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        # Store the result in a new set
+        assert redis.sdiffstore("res", "key1", "key2") == 2
+
+        assert redis.smembers("set") == {"a", "b"}
+        ```
+
         See https://redis.io/commands/sdiffstore
         """
 
@@ -2048,6 +2146,18 @@ class Commands:
 
     def sinter(self, *keys: str) -> ResponseT:
         """
+        Returns the intersection between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("set1", "a", "b", "c"); 
+        redis.sadd("set2", "c", "d", "e"); 
+
+        assert redis.sinter("set1", "set2") == {"c"}
+        ```
+
         See https://redis.io/commands/sinter
         """
 
@@ -2060,6 +2170,21 @@ class Commands:
 
     def sinterstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Calculates the intersection between multiple sets and stores it in a new set.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```
+        redis.sadd("set1", "a", "b", "c"); 
+
+        redis.sadd("set2", "c", "d", "e"); 
+
+        assert redis.sinter("destination", "set1", "set2") == 1
+        ```
+
         See https://redis.io/commands/sinterstore
         """
 
@@ -2072,6 +2197,12 @@ class Commands:
 
     def sismember(self, key: str, member: str) -> ResponseT:
         """
+        Check if a member is in a set.
+
+        Returns True if the member is in the set, False if it is not.
+
+        If the set does not exist, False is returned.
+
         See https://redis.io/commands/sismember
         """
 
@@ -2081,6 +2212,8 @@ class Commands:
 
     def smembers(self, key: str) -> ResponseT:
         """
+        Return all members of a set.
+
         See https://redis.io/commands/smembers
         """
 
@@ -2090,6 +2223,21 @@ class Commands:
 
     def smismember(self, key: str, *members: str) -> ResponseT:
         """
+        Check if multiple members are in a set.
+
+        Returns a list of booleans indicating whether the members are in the set.
+
+        If the set does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.smismember("myset", "one", "four") == [True, False]
+
+        assert redis.smismember("myset", "four", "five") == [False, False]
+        ```
+
         See https://redis.io/commands/smismember
         """
 
@@ -2102,6 +2250,23 @@ class Commands:
 
     def smove(self, source: str, destination: str, member: str) -> ResponseT:
         """
+        Move a member from one set to another atomically.
+
+        Returns True if the member was moved, False if it was not.
+
+        Example:
+        ```python
+        redis.sadd("src", "one", "two", "three")
+
+        redis.sadd("dest", "four")
+
+        assert redis.smove("src", "dest", "three") == True
+
+        assert redis.smembers("source") == {"one", "two"}
+
+        assert redis.smembers("destination") == {"three", "four"}
+        ```
+
         See https://redis.io/commands/smove
         """
 
@@ -2111,6 +2276,29 @@ class Commands:
 
     def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Remove and return one or more random members from a set.
+
+        If count is specified, multiple members are popped from the set.
+
+        Returns a single member if count is not specified.
+        
+        Returns a list of members if count is specified.
+
+        If the set is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.spop("myset") in {"one", "two", "three"}
+
+        # Multiple
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.spop("myset", 2) in {"one", "two", "three"}
+        ```
+
         See https://redis.io/commands/spop
         """
 
@@ -2123,6 +2311,29 @@ class Commands:
 
     def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Return one or more random members from a set.
+
+        If count is specified, multiple members are returned from the set.
+
+        Returns a single member if count is not specified.
+
+        Returns a list of members if count is specified.
+
+        If the set is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srandmember("myset") in {"one", "two", "three"}
+
+        # Multiple
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srandmember("myset", 2) in {"one", "two", "three"}
+        ```
+        
         See https://redis.io/commands/srandmember
         """
 
@@ -2135,6 +2346,17 @@ class Commands:
 
     def srem(self, key: str, *members: str) -> ResponseT:
         """
+        Remove one or more members from a set.
+
+        Returns the number of members that were removed.
+
+        Example:
+        ```python
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srem("myset", "one", "four") == 1
+        ```
+
         See https://redis.io/commands/srem
         """
 
@@ -2192,6 +2414,19 @@ class Commands:
 
     def sunion(self, *keys: str) -> ResponseT:
         """
+        Returns the union between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sunion("key1", "key2") == {"a", "b", "c", "d", "e"}
+        ```
+
         See https://redis.io/commands/sunion
         """
 
@@ -2204,6 +2439,19 @@ class Commands:
 
     def sunionstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Calculates the union between multiple sets and stores it in a new set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sunionstore("destination", "key1", "key2") == 5
+        ```
+
         See https://redis.io/commands/sunionstore
         """
 
@@ -3082,6 +3330,10 @@ class Commands:
 
     def script_exists(self, *sha1: str) -> ResponseT:
         """
+        Check if the given sha1 digests exist in the script cache.
+
+        Returns a list of booleans indicating which scripts exist.
+
         See https://redis.io/commands/script-exists
         """
 
@@ -3096,6 +3348,10 @@ class Commands:
         self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
+        Removes all the scripts from the script cache.
+
+        Flush type can be "ASYNC" or "SYNC".
+
         See https://redis.io/commands/script-flush
         """
 
@@ -3108,6 +3364,17 @@ class Commands:
 
     def script_load(self, script: str) -> ResponseT:
         """
+        Load the given script into the script cache
+
+        Returns the sha1 digest of the script.
+
+        Example:
+        ```python
+        sha1 = redis.script_load("return 1")
+
+        assert redis.evalsha(sha1) == 1
+        ```
+
         See https://redis.io/commands/script-load
         """
 
