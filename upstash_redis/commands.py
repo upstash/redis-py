@@ -3057,6 +3057,21 @@ class Commands:
 
     def append(self, key: str, value: str) -> ResponseT:
         """
+        Append a value to a string stored at a key.
+
+        If the key does not exist, it is created.
+
+        Returns the length of the string after the append operation.
+
+        Example:
+        ```python
+        redis.set("key", "Hello")
+
+        assert redis.append("key", " World") == 11
+
+        assert redis.get("key") == "Hello World"
+        ```
+
         See https://redis.io/commands/append
         """
 
@@ -3066,6 +3081,19 @@ class Commands:
 
     def decr(self, key: str) -> ResponseT:
         """
+        Decrement the integer value of a key by one.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the decrement operation.
+
+        Example:
+        ```
+        redis.set("key", 10)
+
+        assert redis.decr("key") == 9
+        ```
+
         See https://redis.io/commands/decr
         """
 
@@ -3075,6 +3103,19 @@ class Commands:
 
     def decrby(self, key: str, decrement: int) -> ResponseT:
         """
+        Decrement the integer value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the decrement operation.
+
+        Example:
+        ```
+        redis.set("key", 10)
+
+        assert redis.decrby("key", 5) == 5
+        ```
+
         See https://redis.io/commands/decrby
         """
 
@@ -3084,6 +3125,15 @@ class Commands:
 
     def get(self, key: str) -> ResponseT:
         """
+        Return the value of a key or None if the key does not exist.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.get("key") == "value"
+        ```
+
         See https://redis.io/commands/get
         """
 
@@ -3093,6 +3143,19 @@ class Commands:
 
     def getdel(self, key: str) -> ResponseT:
         """
+        Get the value of a key and delete the key atomically.
+
+        Returns the value of the key or None if the key does not exist.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.getdel("key") == "value"
+
+        assert redis.get("key") == None
+        ```
+
         See https://redis.io/commands/getdel
         """
 
@@ -3110,6 +3173,25 @@ class Commands:
         persist: Union[bool, None] = None,
     ) -> ResponseT:
         """
+        Get the value of a key and optionally set its expiration.
+
+        Returns the value of the key or None if the key does not exist.
+
+        :param ex: the number of seconds until the key expires.
+        :param px: the number of milliseconds until the key expires.
+        :param exat: the UNIX timestamp in seconds until the key expires.
+        :param pxat: the UNIX timestamp in milliseconds until the key expires.
+        :param persist: Remove the expiration from the key.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.getex("key", ex=60) == "value"
+
+        # The key will expire in 60 seconds.
+        ```
+
         See https://redis.io/commands/getex
         """
 
@@ -3139,6 +3221,19 @@ class Commands:
 
     def getrange(self, key: str, start: int, end: int) -> ResponseT:
         """
+        Return a substring of a string stored at a key.
+
+        The substring is inclusive of the start and end indices.
+
+        Negative indices can be used to specify offsets starting at the end of the string.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.getrange("key", 0, 4) == "Hello"
+        ```
+
         See https://redis.io/commands/getrange
         """
 
@@ -3148,6 +3243,17 @@ class Commands:
 
     def getset(self, key: str, value: str) -> ResponseT:
         """
+        Set the value of a key and return its old value.
+
+        If the key does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.set("key", "old-value")
+
+        assert redis.getset("key", "newvalue") == "old-value"
+        ```
+
         See https://redis.io/commands/getset
         """
 
@@ -3157,6 +3263,19 @@ class Commands:
 
     def incr(self, key: str) -> ResponseT:
         """
+        Increment the integer value of a key by one.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10)
+
+        assert redis.incr("key") == 11
+        ```
+
         See https://redis.io/commands/incr
         """
 
@@ -3166,6 +3285,19 @@ class Commands:
 
     def incrby(self, key: str, increment: int) -> ResponseT:
         """
+        Increment the integer value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10)
+
+        assert redis.incrby("key", 5) == 15
+        ```
+
         See https://redis.io/commands/incrby
         """
 
@@ -3175,6 +3307,20 @@ class Commands:
 
     def incrbyfloat(self, key: str, increment: float) -> ResponseT:
         """
+        Increment the float value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10.50)
+
+        # 10.60
+        result = redis.incrbyfloat("key", 0.1)
+        ```
+
         See https://redis.io/commands/incrbyfloat
         """
 
@@ -3184,6 +3330,19 @@ class Commands:
 
     def mget(self, *keys: str) -> ResponseT:
         """
+        Return the values of all the given keys.
+
+        If a key does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.set("key1", "value1")
+
+        redis.set("key2", "value2")
+
+        assert redis.mget("key1", "key2") == ["value1", "value2"]
+        ```
+
         See https://redis.io/commands/mget
         """
 
@@ -3196,6 +3355,18 @@ class Commands:
 
     def mset(self, values: Dict[str, Any]) -> ResponseT:
         """
+        Set multiple keys to multiple values.
+
+        Returns "OK" if all the keys were set.
+
+        Example:
+        ```python
+        redis.mset({
+            "key1": "value1",
+            "key2": "value2"
+        })
+        ```
+
         See https://redis.io/commands/mset
         """
 
@@ -3208,6 +3379,17 @@ class Commands:
 
     def msetnx(self, values: Dict[str, Any]) -> ResponseT:
         """
+        Set multiple keys to multiple values, only if none of the keys exist.
+
+        Returns `True` if all the keys were set, `False` otherwise.
+
+        Example:
+        ```python
+        redis.msetnx({
+            "key1": "value1",
+            "key2": "value2"
+        })
+        ```
         See https://redis.io/commands/msetnx
         """
 
@@ -3220,6 +3402,18 @@ class Commands:
 
     def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
         """
+        Set the value of a key and set its expiration in milliseconds.
+
+        If the key does not exist, it is created.
+
+        DEPRECATED: Use "set" with "px" option instead.
+
+        Example:
+        ```python
+        # The key will expire in 1000 milliseconds.
+        redis.psetex("key", 1000, "value")
+        ```
+
         See https://redis.io/commands/psetex
         """
 
