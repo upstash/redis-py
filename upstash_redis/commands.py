@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT
@@ -306,21 +307,107 @@ class Commands:
 
         return self.execute(command)
 
-    def expire(self, key: str, seconds: int) -> ResponseT:
+    def expire(
+        self,
+        key: str,
+        seconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
+        Sets a timeout on a key in seconds.
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param seconds: the timeout in seconds as int or datetime.timedelta object
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
+
+        Example
+        ```python
+        # With seconds
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", 5)
+
+        assert redis.get("mykey") == "Hello"
+
+        time.sleep(5)
+
+        assert redis.get("mykey") is None
+
+        # With a timedelta
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", datetime.timedelta(seconds=5))
+        ```
+
         See https://redis.io/commands/expire
         """
 
+        if isinstance(seconds, datetime.timedelta):
+            seconds = int(seconds.total_seconds())
+
         command: List = ["EXPIRE", key, seconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
-    def expireat(self, key: str, unix_time_seconds: int) -> ResponseT:
+    def expireat(
+        self,
+        key: str,
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
+        Expires a key at a specific unix timestamp (seconds).
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param seconds: the timeout in unix seconds timestamp as int or a datetime.datetime object.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
+
+        Example
+        ```python
+        # With a datetime object
+        redis.set("mykey", "Hello")
+        redis.expireat("mykey", datetime.datetime.now() + datetime.timedelta(seconds=5))
+
+        # With a unix timestamp
+        redis.set("mykey", "Hello")
+        redis.expireat("mykey", int(time.time()) + 5)
+        ```
+
         See https://redis.io/commands/expireat
         """
 
+        if isinstance(unix_time_seconds, datetime.datetime):
+            unix_time_seconds = int(unix_time_seconds.timestamp())
+
         command: List = ["EXPIREAT", key, unix_time_seconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
@@ -369,21 +456,102 @@ class Commands:
 
         return self.execute(command)
 
-    def pexpire(self, key: str, milliseconds: int) -> ResponseT:
+    def pexpire(
+        self,
+        key: str,
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
+        Sets a timeout on a key in milliseconds.
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param milliseconds: the timeout in milliseconds as int or datetime.timedelta.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
+
+        Example
+        ```python
+        # With milliseconds
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", 500)
+
+        # With a timedelta
+        redis.set("mykey", "Hello")
+        redis.expire("mykey", datetime.timedelta(milliseconds=500))
+        ```
+
         See https://redis.io/commands/pexpire
         """
 
+        if isinstance(milliseconds, datetime.timedelta):
+            # Total seconds returns float, so this is OK.
+            milliseconds = int(milliseconds.total_seconds() * 1000)
+
         command: List = ["PEXPIRE", key, milliseconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
-    def pexpireat(self, key: str, unix_time_milliseconds: int) -> ResponseT:
+    def pexpireat(
+        self,
+        key: str,
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
         """
+        Expires a key at a specific unix timestamp (milliseconds).
+        After the timeout has expired, the key will automatically be deleted.
+
+        :param unix_time_milliseconds: the timeout in unix miliseconds timestamp as int or a datetime.datetime object.
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
+
+        Example
+        ```python
+        # With a unix timestamp
+        redis.set("mykey", "Hello")
+        redis.pexpireat("mykey", int(time.time() * 1000) )
+
+        # With a datetime object
+        redis.set("mykey", "Hello")
+        redis.pexpireat("mykey", datetime.datetime.now() + datetime.timedelta(seconds=5))
+        ```
+
         See https://redis.io/commands/pexpireat
         """
 
+        if isinstance(unix_time_milliseconds, datetime.datetime):
+            unix_time_milliseconds = int(unix_time_milliseconds.timestamp() * 1000)
+
         command: List = ["PEXPIREAT", key, unix_time_milliseconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
 
         return self.execute(command)
 
