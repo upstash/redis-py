@@ -24,8 +24,8 @@ def test_set(redis: Redis):
 
 def test_set_with_get(redis: Redis):
     key = "mykey"
-    old_value = "myvalue"
-    value = "myvalue"
+    old_value = "old-value"
+    value = "new-value"
 
     redis.set(key, old_value)
 
