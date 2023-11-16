@@ -3435,6 +3435,38 @@ class Commands:
         keepttl: Union[bool, None] = None,
     ) -> ResponseT:
         """
+        Set the value of a key and optionally set its expiration.
+
+        Returns `True` if the key was set.
+
+        :param nx: Only set the key if it does not already exist.
+        :param xx: Only set the key if it already exists.
+
+        :param get: Return the old value stored at the key.
+
+        :param ex: Set the number of seconds until the key expires.
+        :param px: Set the number of milliseconds until the key expires.
+        :param exat: Set the UNIX timestamp in seconds until the key expires.
+        :param pxat: Set the UNIX timestamp in milliseconds until the key expires.
+
+        :param keepttl: Don't reset the ttl of the key.
+
+        Example:
+        ```python
+        assert redis.set("key", "value") == True
+
+        assert redis.get("key") == "value"
+
+        # Only set the key if it does not already exist.
+        assert redis.set("key", "value", nx=True) == False
+
+        # Only set the key if it already exists.
+        assert redis.set("key", "value", xx=True) == True
+
+        # Get the old value stored at the key.
+        assert redis.set("key", "new-value", get=True) == "value"
+        ```
+
         See https://redis.io/commands/set
         """
 
