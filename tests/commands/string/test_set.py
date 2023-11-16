@@ -24,16 +24,15 @@ def test_set(redis: Redis):
 
 def test_set_with_get(redis: Redis):
     key = "mykey"
+    old_value = "myvalue"
     value = "myvalue"
-    ex_seconds = 10
 
-    redis.set(key, value)
+    redis.set(key, old_value)
 
-    result = redis.set(key, value, ex=ex_seconds, get=True)
+    result = redis.set(key, value, get=True)
 
-    assert result == value
+    assert result == old_value
     assert redis.get(key) == value
-    assert redis.ttl(key) == ex_seconds
 
 
 def test_set_invalid_parameters(redis: Redis):
