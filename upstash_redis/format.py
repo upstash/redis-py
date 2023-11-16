@@ -128,6 +128,12 @@ def format_float_list(
 
     return [float(value) if value is not None else None for value in raw]
 
+def set_formatter(res, command):
+    options = command[3:]
+
+    if "GET" in options:
+        return res
+    return res == "OK"
 
 def to_set(res, command):
     return set(res)
@@ -316,7 +322,7 @@ FORMATTERS: Dict[str, Callable] = {
     "FLUSHALL": ok_to_bool,
     "FLUSHDB": ok_to_bool,
     "PSETEX": ok_to_bool,
-    "SET": ok_to_bool,
+    "SET": set_formatter,
     "SETEX": ok_to_bool,
     "SETNX": to_bool,
     "MSET": ok_to_bool,
