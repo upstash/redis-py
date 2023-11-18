@@ -2642,6 +2642,37 @@ class Commands:
         incr: bool = False,
     ) -> ResponseT:
         """
+        Add one or more members to a sorted set, or update its score if it already exists.
+
+        Returns the number of elements that were added.
+
+        :param key: the key of the sorted set.
+        :param scores: a dictionary of members and their scores.
+        :param nx: only add new members, do not update scores for members that already exist.
+        :param xx: only update scores for members that already exist, do not add new members.
+        :param gt: only update scores if the new score is greater than the current score.
+        :param lt: only update scores if the new score is less than the current score.
+        :param ch: return the number of elements that were changed instead of the number of elements that were added.
+        :param incr: when this option is specified, the score is used as an increment instead of being set to the specified value. Only one score can be specified in this mode.
+
+        Example:
+        ```python
+        # Add three elements
+        assert redis.zadd("myset", {"one": 1, "two": 2, "three": 3}) == 3
+
+        # No element is added since "one" and "two" already exist
+        assert redis.zadd("myset", {"one": 1, "two": 2}, nx=True) == 0
+
+        # New element is not added since it does not exist
+        assert redis.zadd("myset", {"new-element": 1}, xx=True) == 0
+
+        # Only "three" is updated since new score was greater
+        assert redis.zadd("myset", {"three": 10, "two": 0}, gt=True) == 1
+
+        # Only "three" is updated since new score was greater
+        assert redis.zadd("myset", {"three": 10, "two": 0}, gt=True) == 1
+        ```
+
         See https://redis.io/commands/zadd
         """
 
@@ -2681,6 +2712,15 @@ class Commands:
 
     def zcard(self, key: str) -> ResponseT:
         """
+        Returns the number of elements in a sorted set.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zcard("myset") == 3
+        ```
+
         See https://redis.io/commands/zcard
         """
 
@@ -2690,9 +2730,24 @@ class Commands:
 
     def zcount(self, key: str, min: FloatMinMaxT, max: FloatMinMaxT) -> ResponseT:
         """
-        See https://redis.io/commands/zcount
+        Counts the number of elements in a sorted set with scores within the given values.
 
         If you need to use "-inf" and "+inf", please write them as strings.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum score to include.
+        :param max: the maximum score to include.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zcount("myset", 1, 2) == 2
+
+        assert redis.zcount("myset", "-inf", "+inf") == 3
+        ```
+
+        See https://redis.io/commands/zcount
         """
 
         command: List = ["ZCOUNT", key, min, max]
@@ -2701,9 +2756,26 @@ class Commands:
 
     def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseT:
         """
-        See https://redis.io/commands/zdiff
+        Returns the difference between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If a key does not exist, it is treated as an empty sorted set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zdiff(["key1", "key2"])
+
+        assert result == ["a", "b"]
+
+        result = redis.zdiff(["key1", "key2"], withscores=True)
+
+        assert result == [("a", 1), ("b", 2)]
+        ```
+
+        See https://redis.io/commands/zdiff
         """
 
         if len(keys) == 0:
@@ -2718,9 +2790,20 @@ class Commands:
 
     def zdiffstore(self, destination: str, keys: List[str]) -> ResponseT:
         """
-        See https://redis.io/commands/zdiffstore
+        Calculates the difference between multiple sorted sets and stores it in a new sorted set.
 
-        The number of keys is calculated automatically.
+
+        Example:
+        ```py
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        # a and b
+        assert redis.zdiffstore("dest", ["key1", "key2"]) == 2
+        ```
+
+        See https://redis.io/commands/zdiffstore
         """
 
         if len(keys) == 0:
@@ -2732,6 +2815,17 @@ class Commands:
 
     def zincrby(self, key: str, increment: float, member: str) -> ResponseT:
         """
+        Increment the score of a member in a sorted set.
+
+        Returns the new score of the member.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zincrby("myset", 2, "one") == 3
+        ```
+
         See https://redis.io/commands/zincrby
         """
 
@@ -2747,9 +2841,31 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zinter
+        Returns the intersection between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns a list of members or a list of (member, score) tuples if withscores is True.
+
+        If an aggregate method is specified, the scores are aggregated.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zinter(["key1", "key2"])
+
+        assert result == ["c"]
+        ```
+
+        See https://redis.io/commands/zinter
         """
 
         if len(keys) == 0:
@@ -2776,9 +2892,29 @@ class Commands:
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zinterstore
+        Calculates the intersection between multiple sorted sets and stores it in a key.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns the number of elements in the resulting sorted set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zinterstore("dest", ["key1", "key2"])
+
+        assert result == 1
+        ```
+
+        See https://redis.io/commands/zinterstore
         """
 
         if len(keys) == 0:
@@ -2796,6 +2932,19 @@ class Commands:
 
     def zlexcount(self, key: str, min: str, max: str) -> ResponseT:
         """
+        Counts the number of elements in a sorted set between a min and max value.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum value to include.
+        :param max: the maximum value to include.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zlexcount("myset", "-", "+") == 3
+        ```
+
         See https://redis.io/commands/zlexcount
         """
 
@@ -2812,6 +2961,17 @@ class Commands:
 
     def zmscore(self, key: str, members: List[str]) -> ResponseT:
         """
+        Returns the scores associated with the specified members in a sorted set.
+
+        If a member does not exist, None is returned for it.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zmscore("myset", ["a", "b", "c", "d"]) == [1, 2, 3, None]
+        ```
+
         See https://redis.io/commands/zmscore
         """
 
@@ -2824,6 +2984,17 @@ class Commands:
 
     def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the members with the highest scores in a sorted set.
+
+        Returns a list member score tuples.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zpopmax("myset") == [("c", 3)]
+        ```
+
         See https://redis.io/commands/zpopmax
         """
 
@@ -2836,6 +3007,17 @@ class Commands:
 
     def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the members with the lowest scores in a sorted set.
+
+        Returns a list member score tuples.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zpopmin("myset") == [("a", 1)]
+        ```
+
         See https://redis.io/commands/zpopmin
         """
 
@@ -2850,6 +3032,25 @@ class Commands:
         self, key: str, count: Union[int, None] = None, withscores: bool = False
     ) -> ResponseT:
         """
+        Returns one or more random members from a sorted set.
+
+        If count is specified, multiple members are returned from the set.
+
+        Returns a single member if count is not specified.
+
+        If withscores is True, the scores are returned along with the members as a tuple.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        # "one"
+        redis.zrandmember("myset")
+
+        # ["one", "three"]
+        redis.zrandmember("myset", 2)
+        ```
+
         See https://redis.io/commands/zrandmember
         """
 
@@ -3176,9 +3377,29 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zunion
+        Returns the union between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns a list of members or a list of (member, score) tuples if withscores is True.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zunion(["key1", "key2"])
+
+        assert result == ["a", "b", "c", "d", "e"]
+        ```
+
+        See https://redis.io/commands/zunion
         """
 
         if len(keys) == 0:
@@ -3205,9 +3426,30 @@ class Commands:
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zunionstore
+        Returns the union between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param destination: the key of the sorted set to store the result in.
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.unionstore("dest", ["key1", "key2"])
+
+        assert result == 5
+        ```
+
+        See https://redis.io/commands/zunionstore
         """
 
         if len(keys) == 0:
