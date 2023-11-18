@@ -3765,6 +3765,27 @@ class Commands:
 
     def substr(self, key: str, start: int, end: int) -> ResponseT:
         """
+        Return a substring of a string stored at a key.
+
+        The substring is inclusive of the start and end indices.
+
+        Negative indices can be used to specify offsets starting at the end of the string.
+
+        Deprecated: Use "getrange" instead.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.substr("key", 0, 4) == "Hello"
+
+        assert redis.substr("key", -5, -1) == "World"
+
+        assert redis.substr("key", 6, -1) == "World"
+
+        assert redis.substr("key", 6, 11) == "World"
+        ```
+
         See https://redis.io/commands/substr
         """
 
