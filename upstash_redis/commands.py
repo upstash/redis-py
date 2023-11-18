@@ -3679,6 +3679,16 @@ class Commands:
 
     def setex(self, key: str, seconds: int, value: str) -> ResponseT:
         """
+        Set the value of a key and set its expiration in seconds.
+
+        Deprecated: Use "set" with "ex" option instead.
+
+        Example:
+        ```python
+        # The key will expire in 60 seconds.
+        redis.setex("key", 60, "value")
+        ```
+
         See https://redis.io/commands/setex
         """
 
@@ -3688,6 +3698,21 @@ class Commands:
 
     def setnx(self, key: str, value: str) -> ResponseT:
         """
+        Set the value of a key, only if the key does not already exist.
+
+        Returns `True` if the key was set.
+
+        Deprecated: Use "set" with "nx" option instead.
+
+        Example:
+        ```python
+        # The key does not exist, so it will be set.
+        assert redis.setnx("key", "value") == True
+
+        # The key already exists, so it will not be set.
+        assert redis.setnx("key", "value") == False
+        ```
+
         See https://redis.io/commands/setnx
         """
 
@@ -3697,6 +3722,22 @@ class Commands:
 
     def setrange(self, key: str, offset: int, value: str) -> ResponseT:
         """
+        Overwrite part of a string at key starting at the specified offset.
+
+        If the offset is larger than the current length of the string at key,
+        the string is padded with zero-bytes to make offset fit.
+
+        Returns the length of the string after it was modified by the command.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.setrange("key", 6, "Redis") == 11
+
+        assert redis.get("key") == "Hello Redis"
+        ```
+
         See https://redis.io/commands/setrange
         """
 
@@ -3706,6 +3747,15 @@ class Commands:
 
     def strlen(self, key: str) -> ResponseT:
         """
+        Return the length of the string stored at a key.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.strlen("key") == 11
+        ```
+
         See https://redis.io/commands/strlen
         """
 
