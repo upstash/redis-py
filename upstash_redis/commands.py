@@ -3079,9 +3079,32 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrange
+        Return the members of a sorted set between a min and max value.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        :param key: the key of the sorted set.
+        :param start: the minimum value to include.
+        :param stop: the maximum value to include.
+        :param sortby: whether to sort by score or lexicographically.
+        :param rev: whether to reverse the results.
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+        :param withscores: whether to return the scores along with the members.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrange("myset", 0, 1) == ["a", "b"]
+
+        assert redis.zrange("myset", 0, 1, rev=True) == ["c", "b"]
+
+        assert redis.zrange("myset", 0, 1, sortby="BYSCORE") == ["a", "b"]
+
+        # With scores
+        assert redis.zrange("myset", 0, 1, withscores=True) == [("a", 1), ("b", 2)]
+        ```
+
+        See https://redis.io/commands/zrange
         """
 
         handle_non_deprecated_zrange_exceptions(sortby, start, stop, offset, count)
@@ -3111,6 +3134,23 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the members of a sorted set between a min and max value ordered lexicographically.
+
+        Deprecated: use zrange with sortby="BYLEX" instead.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum value to include. Can be "[a", "(a", "+", or "-".
+        :param max: the maximum value to include. Can be "[a", "(a", "+", or "-".
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangebylex("myset", "-", "+") == ["a", "b", "c"]
+        ```
+
         See https://redis.io/commands/zrangebylex
         """
 
@@ -3133,9 +3173,20 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrangebyscore
+        Returns the members of a sorted which have scores between a min and max value.
+        
+        Deprecated: use zrange with sortby="BYSCORE" instead.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangebyscore("myset", 1, 2) == ["a", "b"]
+
+        assert redis.zrangebyscore("myset", "-inf", "+inf") == ["a", "b", "c"]
+        ```
+
+        See https://redis.io/commands/zrangebyscore
         """
 
         if number_are_not_none(offset, count, number=1):
@@ -3163,6 +3214,26 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Stores the result of a zrange command in a new sorted set.
+
+        :param dst: the key of the new sorted set.
+        :param src: the key of the source sorted set.
+        :param min: the minimum value to include.
+        :param max: the maximum value to include.
+        :param sortby: whether to sort by score or lexicographically.
+        :param rev: whether to reverse the results.
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+
+        Returns the number of elements in the new sorted set.
+
+        Example:
+        ```python
+        redis.zadd("src", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangestore("dest", "src", 1, 2) == 2
+        ```
+
         See https://redis.io/commands/zrangestore
         """
 
@@ -3183,6 +3254,25 @@ class Commands:
 
     def zrank(self, key: str, member: str) -> ResponseT:
         """
+        Returns the rank of a member in a sorted set.
+
+        The rank is 0-based, with the member with the lowest score being rank 0.
+
+        If the member does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrank("myset", "a") == 0
+
+        assert redis.zrank("myset", "d") == None
+
+        assert redis.zrank("myset", "b") == 1
+
+        assert redis.zrank("myset", "c") == 2
+        ```
+
         See https://redis.io/commands/zrank
         """
 
@@ -3192,6 +3282,17 @@ class Commands:
 
     def zrem(self, key: str, *members: str) -> ResponseT:
         """
+        Remove one or more members from a sorted set.
+
+        Returns the number of members that were removed.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zrem("myset", "one", "four") == 1
+        ```
+
         See https://redis.io/commands/zrem
         """
 
@@ -3204,6 +3305,8 @@ class Commands:
 
     def zremrangebylex(self, key: str, min: str, max: str) -> ResponseT:
         """
+        Removes all members in a sorted set between a min and max value lexicographically.
+
         See https://redis.io/commands/zremrangebylex
         """
 
@@ -3220,6 +3323,8 @@ class Commands:
 
     def zremrangebyrank(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Removes all members in a sorted set between a rank range.
+
         See https://redis.io/commands/zremrangebyrank
         """
 
@@ -3231,6 +3336,8 @@ class Commands:
         self, key: str, min: FloatMinMaxT, max: FloatMinMaxT
     ) -> ResponseT:
         """
+        Removes all members in a sorted set between a min and max score.
+
         See https://redis.io/commands/zremrangebyscore\
 
         If you need to use "-inf" and "+inf", please write them as strings.
@@ -3244,6 +3351,10 @@ class Commands:
         self, key: str, start: int, stop: int, withscores: bool = False
     ) -> ResponseT:
         """
+        Return the members of a sorted set between a min and max value in reverse order.
+
+        Deprecated: use zrange with rev=True instead.
+
         See https://redis.io/commands/zrevrange
         """
 
@@ -3263,6 +3374,10 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the members of a sorted set between a min and max value ordered lexicographically in reverse order.
+
+        Deprecated: use zrange with sortby="BYLEX" and rev=True instead.
+
         See https://redis.io/commands/zrevrangebylex
         """
 
@@ -3285,9 +3400,11 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrevrangebyscore
+        Returns the members of a sorted set whose scores are between a min and max value in reverse order.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        Deprecated: use zrange with sortby="BYSCORE" and rev=True instead.
+
+        See https://redis.io/commands/zrevrangebyscore
         """
 
         if number_are_not_none(offset, count, number=1):
@@ -3305,6 +3422,15 @@ class Commands:
 
     def zrevrank(self, key: str, member: str) -> ResponseT:
         """
+        Returns the rank of a member in a sorted set in reverse order.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrevrank("myset", "a") == 2
+        ```
+
         See https://redis.io/commands/zrevrank
         """
 
@@ -3362,6 +3488,17 @@ class Commands:
 
     def zscore(self, key: str, member: str) -> ResponseT:
         """
+        Returns the score of a member in a sorted set.
+
+        If the member does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zscore("myset", "a") == 1
+        ```
+
         See https://redis.io/commands/zscore
         """
 
