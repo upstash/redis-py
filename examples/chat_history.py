@@ -32,9 +32,7 @@ class ChatModel:
     def create_chat(self, user_id: str):
         # A unique incrementing id for the chat
         # Since increment is atomic and returns the new value
-        chat_id = self.redis.incr("chat:next_id")
-
-        chat_id = str(chat_id)
+        chat_id = str(self.redis.incr("chat:next_id"))
 
         # Add the chat to the user's chat list
         self.redis.sadd(f"user:{user_id}:chats", chat_id)
