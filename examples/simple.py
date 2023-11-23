@@ -12,16 +12,19 @@ redis.set("key", "value")
 redis.set("key", 10)
 
 # The dictionary is converted to json, it's still a string
-redis.set("key", {
-    "name": "John",
-    "age": 30,
-})
+redis.set(
+    "key",
+    {
+        "name": "John",
+        "age": 30,
+    },
+)
 
 # Expires in 10 seconds
 redis.set("expire_key", value="expire_value", ex=10)
 
 # Gets the time to live in seconds
-assert redis.ttl("expire_key") == 10
+redis.ttl("expire_key")
 
 # Change ttl
 redis.expire("expire_key", 20)

@@ -1,8 +1,8 @@
 import datetime
-import time
-from upstash_redis import Redis
-from uuid import uuid4
 import json
+from uuid import uuid4
+
+from upstash_redis import Redis
 
 # A simple twitter clone in redis
 
@@ -24,11 +24,14 @@ import json
 # user:id:followers -> set of user ids
 # user:id:following -> set of user ids
 
+
 class UserError(Exception):
     pass
 
+
 def timestamp():
     return datetime.datetime.now().isoformat()
+
 
 class TwitterModel:
     def __init__(self, redis: Redis):
@@ -38,10 +41,10 @@ class TwitterModel:
         # Check if the username is taken
         if self.redis.exists(f"user:{username}"):
             raise UserError("Username already taken")
-        
+
         self.redis.set(f"user:{username}", timestamp())
         self.redis.set(f"user:{username}:password", password)
-    
+
     def sign_in(self, username: str, password: str):
         correct_password = self.redis.get(f"user:{username}:password")
 
@@ -51,13 +54,13 @@ class TwitterModel:
 
         if correct_password != password:
             raise UserError("Incorrect password")
-        
+
         # Generate a random token
         token = str(uuid4())
 
         # Token expires in 24 hours
-        self.redis.set(f"tokens:{token}", ex=24*60*60, value=username)
-        
+        self.redis.set(f"tokens:{token}", ex=24 * 60 * 60, value=username)
+
         return token
 
     def check_token(self, token: str):
@@ -66,7 +69,7 @@ class TwitterModel:
         user = self.redis.get(f"tokens:{token}")
         if user is None:
             raise UserError("Invalid token")
-        
+
         return user
 
     def create_tweet(self, user: str, text: str):
@@ -125,12 +128,13 @@ class TwitterModel:
 
     def get_followed(self, user: str):
         return list(self.redis.smembers(f"user:{user}:following"))
-    
+
     def get_is_following(self, user: str, user_to_check: str):
         return self.redis.sismember(f"user:{user}:following", user_to_check)
-    
+
     def get_is_followed(self, user: str, user_to_check: str):
         return self.redis.sismember(f"user:{user}:followers", user_to_check)
+
 
 def test_model():
     # Initialize the TwitterModel with a Redis instance
@@ -184,15 +188,14 @@ def test_model():
     tw.follow_user(token_user1, token_user2)
     assert tw.get_followers(token_user2) == [token_user1]
 
-    assert tw.get_is_following(token_user1, token_user2) == True
-    assert tw.get_is_followed(token_user2, token_user1) == True
-
+    assert tw.get_is_following(token_user1, token_user2) is True
+    assert tw.get_is_followed(token_user2, token_user1) is True
 
     tw.unfollow_user(token_user1, token_user2)
     assert tw.get_followers(token_user2) == []
 
-
     print("All tests passed!")
+
 
 if __name__ == "__main__":
     test_model()

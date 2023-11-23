@@ -1,5 +1,7 @@
+from threading import Thread
+from typing import List, Tuple
+
 from upstash_redis import Redis
-from typing import List
 
 # A simple task queue for scanning websites
 
@@ -8,18 +10,15 @@ from typing import List
 
 # Scan the website and store the results in list
 
-# scan:waiting -> list of tasks with 
+# scan:waiting -> list of tasks with
 
 # scan:running -> a set of running tasks,
 # since a task must be popped from the waiting list by its id,
 # we use a set
 
 # scan:completed:123 -> a list of completed tasks for the client
-
-redis = Redis.from_env()
-
 class TaskQueue:
-    def __init__(self, redis: Redis) -> None:
+    def __init__(self, redis: Redis):
         self.redis = redis
 
     def add_scan_task(self, clientid: str, website: str):
@@ -34,12 +33,11 @@ class TaskQueue:
         # pop all elements from a list by specifying a large count
 
         # Ignore type since if count is specified, this method returns a list
-        return self.redis.rpop(f"scan:completed:{clientid}", 99999) # type: ignore
+        return self.redis.rpop(f"scan:completed:{clientid}", 99999)  # type: ignore
 
-    def start_scan(self):
+    def start_scan(self) -> Tuple[str, str]:
         # Pop task from the waiting list and add it to the running list
-
-        task: str | None = self.redis.rpop("scan:waiting") # type: ignore
+        task: str | None = self.redis.rpop("scan:waiting")  # type: ignore
 
         if task is None:
             # No task to run
@@ -58,30 +56,36 @@ class TaskQueue:
         # Remove the task from the running list
         self.redis.srem("scan:running", f"{clientid}:{website}")
 
+
+redis = Redis.from_env()
 queue = TaskQueue(redis)
 
 queue.add_scan_task("client1", "https://example.com")
 
 queue.add_scan_task("client1", "https://google.com")
 
-# This code will be run by multiple worker
+# This code will be run by multiple workers
 def work():
     task = queue.start_scan()
 
     if task is None:
         return
-    
+
     [client, website] = task
 
     # scan the website and store the result in a list
     queue.complete_scan(client, website, f"results for {website}")
 
-work()
-work()
+
+t1 = Thread(target=work)
+t2 = Thread(target=work)
+
+t1.start()
+t2.start()
+
+t1.join()
+t2.join()
 
 completed = queue.consume_completed_tasks("client1")
 
 print("completed: ", completed)
-
-
-
