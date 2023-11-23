@@ -1,4 +1,5 @@
 from upstash_redis import Redis
+from typing import List
 
 # An example chat history model for storing
 # messages of different users with the chatbot
@@ -16,12 +17,12 @@ class ChatModel:
     def __init__(self, redis: Redis) -> None:
         self.redis = redis
 
-    def get_user_chats(self, user_id: str) -> list[str]:
+    def get_user_chats(self, user_id: str) -> List[str]:
         # A set of chat ids for a user, stores which chats belong to the user
 
         return list(self.redis.smembers(f"user:{user_id}:chats"))
 
-    def get_chat_messages(self, chat_id: str) -> list[str]:
+    def get_chat_messages(self, chat_id: str) -> List[str]:
         return list(self.redis.lrange(f"chat:{chat_id}", 0, -1))
 
     def add_message(self, chat_id: str, message: str):
