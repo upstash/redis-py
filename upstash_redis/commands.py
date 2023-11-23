@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT, Value
 from upstash_redis.utils import (handle_georadius_write_exceptions,
@@ -1380,7 +1380,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hmset(self, key: str, values: Dict[str, Value]) -> ResponseT:
+    def hmset(self, key: str, values: Mapping[str, Value]) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
 
@@ -1510,7 +1510,7 @@ class Commands:
         key: str,
         field: Optional[str] = None,
         value: Optional[Value] = None,
-        values: Optional[Dict[str, Value]] = None,
+        values: Optional[Mapping[str, Value]] = None,
     ) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
@@ -3900,7 +3900,7 @@ class Commands:
 
         return self.execute(command)
 
-    def mset(self, values: Dict[str, Value]) -> ResponseT:
+    def mset(self, values: Mapping[str, Value]) -> ResponseT:
         """
         Sets multiple keys to multiple values.
 
@@ -3924,7 +3924,7 @@ class Commands:
 
         return self.execute(command)
 
-    def msetnx(self, values: Dict[str, Value]) -> ResponseT:
+    def msetnx(self, values: Mapping[str, Value]) -> ResponseT:
         """
         Sets multiple keys to multiple values, only if none of the keys exist.
 
