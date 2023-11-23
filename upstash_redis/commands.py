@@ -557,7 +557,7 @@ class Commands:
 
     def pttl(self, key: str) -> ResponseT:
         """
-        The milliseconds remaining until the key expires.
+        Returns the milliseconds remaining until the key expires.
 
         Example:
         ```python
@@ -660,7 +660,7 @@ class Commands:
         type: Union[str, None] = None,
     ) -> ResponseT:
         """
-        Return a paginated list of keys matching the pattern.
+        Returns a paginated list of keys matching the pattern.
 
         :param cursor: the cursor to use for the scan, 0 to start a new scan.
         :param match: a pattern to match.
@@ -725,7 +725,7 @@ class Commands:
 
     def ttl(self, key: str) -> ResponseT:
         """
-        The seconds remaining until the key expires.
+        Returns the seconds remaining until the key expires.
         Negative if the key does not exist or does not have an associated timeout.
 
         ```python
@@ -1468,7 +1468,7 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        Return a paginated list of keys in a hash matching the pattern.
+        Returns a paginated list of keys in a hash matching the pattern.
 
         :param cursor: the cursor to use for the scan, 0 to start a new scan.
         :param match: a pattern to match.
@@ -1660,7 +1660,7 @@ class Commands:
         element: str,
     ) -> ResponseT:
         """
-        Insert an element before or after another element in a list.
+        Inserts an element before or after another element in a list.
 
         :param key: the key of the list.
         :param where: whether to insert before or after the pivot.
@@ -1693,7 +1693,7 @@ class Commands:
         whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
     ) -> ResponseT:
         """
-        Move an element from one list to another atomically.
+        Moves an element from one list to another atomically.
 
         :param source: the source list.
         :param destination: the destination list.
@@ -1725,7 +1725,7 @@ class Commands:
 
     def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
-        Remove and return the first element of a list.
+        Removes and returns the first element of a list.
 
         If count is specified, multiple elements are popped from the left side of the list.
 
@@ -1811,7 +1811,7 @@ class Commands:
 
     def lpush(self, key: str, *elements: str) -> ResponseT:
         """
-        Push an element to the left side of a list.
+        Pushes an element to the left side of a list.
 
         Returns the new length of the list.
 
@@ -1834,7 +1834,7 @@ class Commands:
 
     def lpushx(self, key: str, *elements: str) -> ResponseT:
         """
-        Push an element to the left side of a list, only if the list exists.
+        Pushes an element to the left side of a list, only if the list exists.
 
         Returns the new length of the list.
         If the list does not exist, 0 is returned.
@@ -1889,7 +1889,7 @@ class Commands:
 
     def lrem(self, key: str, count: int, element: str) -> ResponseT:
         """
-        Remove the first `count` occurrences of an element from a list.
+        Removes the first `count` occurrences of an element from a list.
 
         :param key: the key of the list.
         :param count: the number of occurrences to remove.
@@ -1915,7 +1915,7 @@ class Commands:
 
     def lset(self, key: str, index: int, element: str) -> ResponseT:
         """
-        Set the value of an element in a list by its index.
+        Sets the value of an element in a list by its index.
 
         Returns True if the element was set, False if the index is out of range.
 
@@ -1941,7 +1941,7 @@ class Commands:
 
     def ltrim(self, key: str, start: int, stop: int) -> ResponseT:
         """
-        Trim a list to the specified range.
+        Trims a list to the specified range.
 
         :param key: the key of the list.
         :param start: the index of the first element to keep.
@@ -1967,7 +1967,7 @@ class Commands:
 
     def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
-        Remove and return the last element of a list.
+        Removes and returns the last element of a list.
 
         If count is specified, multiple elements are popped from the right side of the list.
 
@@ -1999,7 +1999,7 @@ class Commands:
 
     def rpoplpush(self, source: str, destination: str) -> ResponseT:
         """
-        Delete an element from the right side of a list and push it to the left side of another list.
+        Deletes an element from the right side of a list and pushes it to the left side of another list.
 
         Deprecated since Redis 6. Use `lmove` with `wherefrom="RIGHT"` and `whereto="LEFT"` instead.
 
@@ -2021,7 +2021,7 @@ class Commands:
 
     def rpush(self, key: str, *elements: str) -> ResponseT:
         """
-        Push an element to the right side of a list.
+        Pushes an element to the right side of a list.
 
         Returns the new length of the list.
 
@@ -2029,7 +2029,7 @@ class Commands:
         ```python
         assert redis.rpush("mylist", "one", "two", "three") == 3
 
-        assert lrange("mylist", 0, -1) == ["one", "two", "three"]
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
         ```
 
         See https://redis.io/commands/rpush
@@ -2044,7 +2044,7 @@ class Commands:
 
     def rpushx(self, key: str, *elements: Any) -> ResponseT:
         """
-        Push an element to the right side of a list only if the list exists.
+        Pushes an element to the right side of a list only if the list exists.
 
         Returns the new length of the list.
         Returns 0 if the list does not exist.
@@ -2053,7 +2053,7 @@ class Commands:
         ```python
         assert redis.rpushx("mylist", "one", "two", "three") == 3
 
-        assert lrange("mylist", 0, -1) == ["one", "two", "three"]
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
         ```
 
         See https://redis.io/commands/rpushx
@@ -2068,7 +2068,7 @@ class Commands:
 
     def publish(self, channel: str, message: str) -> ResponseT:
         """
-        Publish a message to a channel.
+        Publishes a message to a channel.
 
         Returns the number of clients that received the message.
 
@@ -2091,7 +2091,7 @@ class Commands:
         args: Union[List, None] = None,
     ) -> ResponseT:
         """
-        Evaluate a Lua script in the server
+        Evaluates a Lua script in the server
 
         :param script: the Lua script.
         :param keys: the list of keys that can be referenced in the script.
@@ -2141,7 +2141,7 @@ class Commands:
         args: Union[List[str], None] = None,
     ) -> ResponseT:
         """
-        Evaluate a Lua script in the server, cached by its SHA1 digest.
+        Evaluates a Lua script in the server, cached by its SHA1 digest.
 
         :param sha1: the SHA1 digest of the script.
         :param keys: the list of keys that can be referenced in the script.
@@ -2365,7 +2365,7 @@ class Commands:
 
     def sismember(self, key: str, member: str) -> ResponseT:
         """
-        Check if a member is in a set.
+        Checks if a member is in a set.
 
         Returns True if the member is in the set, False if it is not.
 
@@ -2380,7 +2380,7 @@ class Commands:
 
     def smembers(self, key: str) -> ResponseT:
         """
-        Return all members of a set.
+        Returns all members of a set.
 
         See https://redis.io/commands/smembers
         """
@@ -2391,7 +2391,7 @@ class Commands:
 
     def smismember(self, key: str, *members: str) -> ResponseT:
         """
-        Check if multiple members are in a set.
+        Checks if multiple members are in a set.
 
         Returns a list of booleans indicating whether the members are in the set.
 
@@ -2418,7 +2418,7 @@ class Commands:
 
     def smove(self, source: str, destination: str, member: str) -> ResponseT:
         """
-        Move a member from one set to another atomically.
+        Moves a member from one set to another atomically.
 
         Returns True if the member was moved, False if it was not.
 
@@ -2444,7 +2444,7 @@ class Commands:
 
     def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
-        Remove and return one or more random members from a set.
+        Removes and returns one or more random members from a set.
 
         If count is specified, multiple members are popped from the set.
 
@@ -2479,7 +2479,7 @@ class Commands:
 
     def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
-        Return one or more random members from a set.
+        Returns one or more random members from a set.
 
         If count is specified, multiple members are returned from the set.
 
@@ -2514,7 +2514,7 @@ class Commands:
 
     def srem(self, key: str, *members: str) -> ResponseT:
         """
-        Remove one or more members from a set.
+        Removes one or more members from a set.
 
         Returns the number of members that were removed.
 
@@ -2543,7 +2543,7 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        Return a paginated list of members of a set matching a pattern.
+        Returns a paginated list of members of a set matching a pattern.
 
         :param cursor: the cursor to use for the scan, 0 to start a new scan.
         :param match: a pattern to match.
@@ -2642,7 +2642,7 @@ class Commands:
         incr: bool = False,
     ) -> ResponseT:
         """
-        Add one or more members to a sorted set, or update its score if it already exists.
+        Adds one or more members to a sorted set, or updates its score if it already exists.
 
         Returns the number of elements that were added.
 
@@ -2815,7 +2815,7 @@ class Commands:
 
     def zincrby(self, key: str, increment: float, member: str) -> ResponseT:
         """
-        Increment the score of a member in a sorted set.
+        Increments the score of a member in a sorted set.
 
         Returns the new score of the member.
 
@@ -3079,7 +3079,7 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        Return the members of a sorted set between a min and max value.
+        Returns the members of a sorted set between a min and max value.
 
         :param key: the key of the sorted set.
         :param start: the minimum value to include.
@@ -3282,7 +3282,7 @@ class Commands:
 
     def zrem(self, key: str, *members: str) -> ResponseT:
         """
-        Remove one or more members from a sorted set.
+        Removes one or more members from a sorted set.
 
         Returns the number of members that were removed.
 
@@ -3351,7 +3351,7 @@ class Commands:
         self, key: str, start: int, stop: int, withscores: bool = False
     ) -> ResponseT:
         """
-        Return the members of a sorted set between a min and max value in reverse order.
+        Returns the members of a sorted set between a min and max value in reverse order.
 
         Deprecated: use zrange with rev=True instead.
 
@@ -3446,7 +3446,7 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        Return a paginated list of members and their scores of an ordered set matching a pattern.
+        Returns a paginated list of members and their scores of an ordered set matching a pattern.
 
         :param cursor: the cursor to use for the scan, 0 to start a new scan.
         :param match: a pattern to match.
@@ -3604,7 +3604,7 @@ class Commands:
 
     def append(self, key: str, value: str) -> ResponseT:
         """
-        Append a value to a string stored at a key.
+        Appends a value to a string stored at a key.
 
         If the key does not exist, it is created.
 
@@ -3628,7 +3628,7 @@ class Commands:
 
     def decr(self, key: str) -> ResponseT:
         """
-        Decrement the integer value of a key by one.
+        Decrements the integer value of a key by one.
 
         If the key does not exist, it is set to 0 before performing the operation.
 
@@ -3650,7 +3650,7 @@ class Commands:
 
     def decrby(self, key: str, decrement: int) -> ResponseT:
         """
-        Decrement the integer value of a key by the given number.
+        Decrements the integer value of a key by the given number.
 
         If the key does not exist, it is set to 0 before performing the operation.
 
@@ -3672,7 +3672,7 @@ class Commands:
 
     def get(self, key: str) -> ResponseT:
         """
-        Return the value of a key or None if the key does not exist.
+        Returns the value of a key or None if the key does not exist.
 
         Example:
         ```python
@@ -3690,7 +3690,7 @@ class Commands:
 
     def getdel(self, key: str) -> ResponseT:
         """
-        Get the value of a key and delete the key atomically.
+        Gets the value of a key and delete the key atomically.
 
         Returns the value of the key or None if the key does not exist.
 
@@ -3720,7 +3720,7 @@ class Commands:
         persist: Union[bool, None] = None,
     ) -> ResponseT:
         """
-        Get the value of a key and optionally set its expiration.
+        Gets the value of a key and optionally set its expiration.
 
         Returns the value of the key or None if the key does not exist.
 
@@ -3768,7 +3768,7 @@ class Commands:
 
     def getrange(self, key: str, start: int, end: int) -> ResponseT:
         """
-        Return a substring of a string stored at a key.
+        Returns a substring of a string stored at a key.
 
         The substring is inclusive of the start and end indices.
 
@@ -3790,7 +3790,7 @@ class Commands:
 
     def getset(self, key: str, value: str) -> ResponseT:
         """
-        Set the value of a key and return its old value.
+        Sets the value of a key and return its old value.
 
         If the key does not exist, None is returned.
 
@@ -3810,7 +3810,7 @@ class Commands:
 
     def incr(self, key: str) -> ResponseT:
         """
-        Increment the integer value of a key by one.
+        Increments the integer value of a key by one.
 
         If the key does not exist, it is set to 0 before performing the operation.
 
@@ -3832,7 +3832,7 @@ class Commands:
 
     def incrby(self, key: str, increment: int) -> ResponseT:
         """
-        Increment the integer value of a key by the given number.
+        Increments the integer value of a key by the given number.
 
         If the key does not exist, it is set to 0 before performing the operation.
 
@@ -3854,7 +3854,7 @@ class Commands:
 
     def incrbyfloat(self, key: str, increment: float) -> ResponseT:
         """
-        Increment the float value of a key by the given number.
+        Increments the float value of a key by the given number.
 
         If the key does not exist, it is set to 0 before performing the operation.
 
@@ -3877,7 +3877,7 @@ class Commands:
 
     def mget(self, *keys: str) -> ResponseT:
         """
-        Return the values of all the given keys.
+        Returns the values of all the given keys.
 
         If a key does not exist, None is returned.
 
@@ -3902,7 +3902,7 @@ class Commands:
 
     def mset(self, values: Dict[str, Any]) -> ResponseT:
         """
-        Set multiple keys to multiple values.
+        Sets multiple keys to multiple values.
 
         Returns "OK" if all the keys were set.
 
@@ -3926,7 +3926,7 @@ class Commands:
 
     def msetnx(self, values: Dict[str, Any]) -> ResponseT:
         """
-        Set multiple keys to multiple values, only if none of the keys exist.
+        Sets multiple keys to multiple values, only if none of the keys exist.
 
         Returns `True` if all the keys were set, `False` otherwise.
 
@@ -3949,7 +3949,7 @@ class Commands:
 
     def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
         """
-        Set the value of a key and set its expiration in milliseconds.
+        Sets the value of a key and set its expiration in milliseconds.
 
         If the key does not exist, it is created.
 
@@ -3982,7 +3982,7 @@ class Commands:
         keepttl: Union[bool, None] = None,
     ) -> ResponseT:
         """
-        Set the value of a key and optionally set its expiration.
+        Sets the value of a key and optionally set its expiration.
 
         Returns `True` if the key was set.
 
@@ -4058,7 +4058,7 @@ class Commands:
 
     def setex(self, key: str, seconds: int, value: str) -> ResponseT:
         """
-        Set the value of a key and set its expiration in seconds.
+        Sets the value of a key and set its expiration in seconds.
 
         Deprecated: Use "set" with "ex" option instead.
 
@@ -4077,7 +4077,7 @@ class Commands:
 
     def setnx(self, key: str, value: str) -> ResponseT:
         """
-        Set the value of a key, only if the key does not already exist.
+        Sets the value of a key, only if the key does not already exist.
 
         Returns `True` if the key was set.
 
@@ -4101,7 +4101,7 @@ class Commands:
 
     def setrange(self, key: str, offset: int, value: str) -> ResponseT:
         """
-        Overwrite part of a string at key starting at the specified offset.
+        Overwrites part of a string at key starting at the specified offset.
 
         If the offset is larger than the current length of the string at key,
         the string is padded with zero-bytes to make offset fit.
@@ -4126,7 +4126,7 @@ class Commands:
 
     def strlen(self, key: str) -> ResponseT:
         """
-        Return the length of the string stored at a key.
+        Returns the length of the string stored at a key.
 
         Example:
         ```python
@@ -4144,7 +4144,7 @@ class Commands:
 
     def substr(self, key: str, start: int, end: int) -> ResponseT:
         """
-        Return a substring of a string stored at a key.
+        Returns a substring of a string stored at a key.
 
         The substring is inclusive of the start and end indices.
 
@@ -4174,7 +4174,7 @@ class Commands:
 
     def script_exists(self, *sha1: str) -> ResponseT:
         """
-        Check if the given sha1 digests exist in the script cache.
+        Checks if the given sha1 digests exist in the script cache.
 
         Returns a list of booleans indicating which scripts exist.
 
@@ -4208,7 +4208,7 @@ class Commands:
 
     def script_load(self, script: str) -> ResponseT:
         """
-        Load the given script into the script cache
+        Loads the given script into the script cache
 
         Returns the sha1 digest of the script.
 
