@@ -1,4 +1,5 @@
 from upstash_redis import Redis
+from typing import List
 
 # A simple task queue for scanning websites
 
@@ -25,7 +26,7 @@ class TaskQueue:
         # Add the task to the waiting list
         self.redis.rpush("scan:waiting", f"{clientid}:{website}")
 
-    def consume_completed_tasks(self, clientid: str) -> list[str]:
+    def consume_completed_tasks(self, clientid: str) -> List[str]:
         # Consume all completed tasks for the client
         # and return them
 
