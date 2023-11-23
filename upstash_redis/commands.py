@@ -2,13 +2,11 @@ import datetime
 from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT
-from upstash_redis.utils import (
-    handle_georadius_write_exceptions,
-    handle_geosearch_exceptions,
-    handle_non_deprecated_zrange_exceptions,
-    handle_zrangebylex_exceptions,
-    number_are_not_none,
-)
+from upstash_redis.utils import (handle_georadius_write_exceptions,
+                                 handle_geosearch_exceptions,
+                                 handle_non_deprecated_zrange_exceptions,
+                                 handle_zrangebylex_exceptions,
+                                 number_are_not_none)
 
 ResponseT = Union[Awaitable, Any]
 
@@ -21,6 +19,17 @@ class Commands:
         self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
     ) -> ResponseT:
         """
+        Returns the number of bits set to 1 in a given range.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+        redis.setbit("mykey", 8, 1)
+        redis.setbit("mykey", 9, 1)
+
+        assert redis.bitcount("mykey", 0, 10) == 3
+        ```
+
         See https://redis.io/commands/bitcount
         """
 
@@ -36,6 +45,19 @@ class Commands:
 
     def bitfield(self, key: str) -> "BitFieldCommands":
         """
+        Returns a BitFieldCommands instance that can be used to execute BITFIELD commands on one key.
+
+        Example:
+        ```python
+        redis.set("mykey", 0)
+        result = redis.bitfield("mykey")
+                .set("u4", 0, 16)
+                .incr("u4", 4, 1)
+                .execute()
+
+        assert result == [0, 1]
+        ```
+
         See https://redis.io/commands/bitfield
         """
 
@@ -43,6 +65,18 @@ class Commands:
 
     def bitfield_ro(self, key: str) -> "BitFieldROCommands":
         """
+        Returns a BitFieldROCommands instance that can be used to execute BITFIELD_RO commands on one key.
+
+        Example:
+        ```python
+        redis.set("mykey", 0)
+        result = redis.bitfield_ro("mykey")
+                .get("u4", 0)
+                .execute()
+
+        assert result == [0]
+        ```
+
         See https://redis.io/commands/bitfield_ro
         """
 
@@ -52,6 +86,20 @@ class Commands:
         self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
     ) -> ResponseT:
         """
+        Performs a bitwise operation between multiple keys (containing string values) and stores the result in the
+        destination key.
+
+        Example:
+        ```python
+        redis.setbit("key1", 0, 1)
+        redis.setbit("key2", 0, 0)
+        redis.setbit("key2", 1, 1)
+
+        assert redis.bitop("AND", "dest", "key1", "key2") == 1
+        assert redis.getbit("dest", 0) == 0
+        assert redis.getbit("dest", 1) == 0
+        ```
+
         See https://redis.io/commands/bitop
         """
 
@@ -75,6 +123,22 @@ class Commands:
         end: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the position of the first bit set to 1 or 0 in a string.
+        If no bit is set, -1 is returned.
+        
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+        redis.setbit("mykey", 8, 1)
+
+        assert redis.bitpos("mykey", 1) == 7
+        assert redis.bitpos("mykey", 0) == 0
+
+        # With a range
+        assert redis.bitpos("mykey", 1, 0, 2) == 0
+        assert redis.bitpos("mykey", 1, 2, 3) == -1
+        ```
+
         See https://redis.io/commands/bitpos
         """
 
@@ -93,6 +157,15 @@ class Commands:
 
     def getbit(self, key: str, offset: int) -> ResponseT:
         """
+        Returns the bit value at offset in the string value stored at key.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+
+        assert redis.getbit("mykey", 7) == 1
+        ```
+
         See https://redis.io/commands/getbit
         """
 
@@ -102,6 +175,19 @@ class Commands:
 
     def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> ResponseT:
         """
+        Sets or clears the bit at offset in the string value stored at key.
+        If the offset is larger than the current length of the string,
+        the string is padded with zero-bytes to make offset fit.
+
+        Returns the original bit value stored at offset.
+
+        Example:
+        ```python
+        redis.setbit("mykey", 7, 1)
+
+        assert redis.getbit("mykey", 7) == 1
+        ```
+
         See https://redis.io/commands/setbit
         """
 
@@ -111,6 +197,14 @@ class Commands:
 
     def ping(self, message: Union[str, None] = None) -> ResponseT:
         """
+        Returns PONG if no argument is provided, otherwise return a copy of the argument as a bulk.
+
+        Example:
+        ```python
+        assert redis.ping() == "PONG"
+        assert redis.ping("Hello") == "Hello"
+        ```
+
         See https://redis.io/commands/ping
         """
 
@@ -123,6 +217,13 @@ class Commands:
 
     def echo(self, message: str) -> ResponseT:
         """
+        Returns the message.
+
+        Example:
+        ```python
+        assert redis.echo("Hello") == "Hello"
+        ```
+
         See https://redis.io/commands/echo
         """
 
@@ -132,6 +233,19 @@ class Commands:
 
     def copy(self, source: str, destination: str, replace: bool = False) -> ResponseT:
         """
+        Copies the value stored at the source key to the destination key.
+        By default, the destination key is created only when the source key exists.
+
+        :param replace: if True, the destination key is deleted before copying the value.
+
+        Example:
+        ```python
+        redis.set("mykey", "Hello")
+        redis.copy("mykey", "myotherkey")
+
+        assert redis.get("myotherkey") == "Hello"
+        ```
+
         See https://redis.io/commands/copy
         """
 
@@ -144,6 +258,19 @@ class Commands:
 
     def delete(self, *keys: str) -> ResponseT:
         """
+        Deletes one or more keys.
+        Returns the number of keys that were removed.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+        redis.delete("key1", "key2")
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") is None
+        ```
+
         See https://redis.io/commands/del
         """
 
@@ -156,6 +283,20 @@ class Commands:
 
     def exists(self, *keys: str) -> ResponseT:
         """
+        Returns the number of keys existing among the ones specified as arguments.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.exists("key1", "key2") == 2
+
+        redis.delete("key1")
+
+        assert redis.exists("key1", "key2") == 1
+        ```
+
         See https://redis.io/commands/exists
         """
 
@@ -272,6 +413,16 @@ class Commands:
 
     def keys(self, pattern: str) -> ResponseT:
         """
+        Returns all keys matching pattern.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.keys("key*") == ["key1", "key2"]
+        ```
+
         See https://redis.io/commands/keys
         """
 
@@ -281,6 +432,23 @@ class Commands:
 
     def persist(self, key: str) -> ResponseT:
         """
+        Removes the expiration from a key.
+
+        Returns True if the timeout was removed,
+        False if key does not exist or does not have an associated timeout.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+        redis.expire("key1", 10)
+
+        assert redis.ttl("key1") == 10
+
+        redis.persist("key1")
+
+        assert redis.ttl("key1") == -1
+        ```
+
         See https://redis.io/commands/persist
         """
 
@@ -389,6 +557,23 @@ class Commands:
 
     def pttl(self, key: str) -> ResponseT:
         """
+        Returns the milliseconds remaining until the key expires.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.pttl("key1") == -1
+
+        redis.expire("key1", 1000)
+
+        assert redis.pttl("key1") > 0
+
+        redis.persist("key1")
+
+        assert redis.pttl("key1") == -1
+        ```
+
         See https://redis.io/commands/pttl
         """
 
@@ -398,6 +583,18 @@ class Commands:
 
     def randomkey(self) -> ResponseT:
         """
+        Returns a random key.
+
+        Example:
+        ```
+        assert redis.randomkey() is None
+
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        assert redis.randomkey() is not None
+        ```
+
         See https://redis.io/commands/randomkey
         """
 
@@ -407,6 +604,19 @@ class Commands:
 
     def rename(self, key: str, newkey: str) -> ResponseT:
         """
+        Renames a key and overwrites the new key if it already exists.
+
+        Throws an exception if the key does not exist.
+        
+        Example:
+        ```
+        redis.set("key1", "Hello")
+        redis.rename("key1", "key2")
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") == "Hello"
+        ```
+
         See https://redis.io/commands/rename
         """
 
@@ -416,6 +626,25 @@ class Commands:
 
     def renamenx(self, key: str, newkey: str) -> ResponseT:
         """
+        Renames a key, only if the new key does not exist.
+
+        Throws an exception if the key does not exist.
+
+        Example:
+        ```
+        redis.set("key1", "Hello")
+        redis.set("key2", "World")
+
+        # Rename failed because "key2" already exists.
+        assert redis.renamenx("key1", "key2") == False
+
+        assert redis.renamenx("key1", "key3") == True
+
+        assert redis.get("key1") is None
+        assert redis.get("key2") == "World"
+        assert redis.get("key3") == "Hello"
+        ```
+
         See https://redis.io/commands/renamenx
         """
 
@@ -431,6 +660,30 @@ class Commands:
         type: Union[str, None] = None,
     ) -> ResponseT:
         """
+        Returns a paginated list of keys matching the pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+        :param type: the type of keys to match. Can be "string", "list", "set", "zset", "hash", or None.
+
+        :return: a tuple of the new cursor and the list of keys.
+
+        Example:
+        ```python
+        # Get all keys
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.scan(cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/scan
         """
 
@@ -450,6 +703,16 @@ class Commands:
 
     def touch(self, *keys: str) -> ResponseT:
         """
+        Alters the last access time of one or more keys
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.touch("key1") == 1
+        
+        ```
+
         See https://redis.io/commands/touch
         """
 
@@ -462,6 +725,23 @@ class Commands:
 
     def ttl(self, key: str) -> ResponseT:
         """
+        Returns the seconds remaining until the key expires.
+        Negative if the key does not exist or does not have an associated timeout.
+
+        ```python
+        # Get the TTL of a key
+        redis.set("my-key", "value")
+
+        assert redis.ttl("my-key") == -1
+
+        redis.expire("my-key", 10)
+
+        assert redis.ttl("my-key") > 0
+
+        # Non existent key
+        assert redis.ttl("non-existent-key") == -2
+        ```
+
         See https://redis.io/commands/ttl
         """
 
@@ -471,6 +751,23 @@ class Commands:
 
     def type(self, key: str) -> ResponseT:
         """
+        Returns the type of the value stored at key.
+
+        Can be "string", "list", "set", "zset", "hash", or "none".
+
+        Example:
+        ```
+        redis.set("key1", "Hello")
+
+        assert redis.type("key1") == "string"
+
+        redis.lpush("key2", "Hello")
+
+        assert redis.type("key2") == "list"
+
+        assert redis.type("non-existent-key") == "none"
+        ```
+
         See https://redis.io/commands/type
         """
 
@@ -480,6 +777,17 @@ class Commands:
 
     def unlink(self, *keys: str) -> ResponseT:
         """
+        Deletes one or more keys in a non-blocking way.
+
+        :return: The number of keys that were removed.
+
+        Example:
+        ```python
+        redis.set("key1", "Hello")
+
+        assert redis.unlink("key1") == 1
+        ```
+
         See https://redis.io/commands/unlink
         """
 
@@ -877,6 +1185,18 @@ class Commands:
 
     def hdel(self, key: str, *fields: str) -> ResponseT:
         """
+        Deletes one or more fields from a hash.
+
+        Returns the number of fields that were removed.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+        redis.hset("myhash", "field2", "World")
+
+        assert redis.hdel("myhash", "field1", "field2") == 2
+        ```
+
         See https://redis.io/commands/hdel
         """
 
@@ -889,6 +1209,10 @@ class Commands:
 
     def hexists(self, key: str, field: str) -> ResponseT:
         """
+        Checks if a field exists in a hash.
+
+        Returns True if the field exists, False if it does not.
+
         See https://redis.io/commands/hexists
         """
 
@@ -898,6 +1222,18 @@ class Commands:
 
     def hget(self, key: str, field: str) -> ResponseT:
         """
+        Retrieves the value of a field in a hash.
+
+        Returns None if the field or the key does not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+
+        assert redis.hget("myhash", "field1") == "Hello"
+        assert redis.hget("myhash", "field2") is None
+        ```
+
         See https://redis.io/commands/hget
         """
 
@@ -907,6 +1243,18 @@ class Commands:
 
     def hgetall(self, key: str) -> ResponseT:
         """
+        Returns all fields and values of a hash.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hgetall("myhash") == {"field1": "Hello", "field2": "World"}
+        ```
+
         See https://redis.io/commands/hgetall
         """
 
@@ -916,6 +1264,19 @@ class Commands:
 
     def hincrby(self, key: str, field: str, increment: int) -> ResponseT:
         """
+        Increments the value of a field in a hash by a given amount.
+
+        If the field does not exist, it is set to 0 before performing the operation.
+
+        Returns the new value.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", 5)
+
+        assert redis.hincrby("myhash", "field1", 10) == 15
+        ```
+
         See https://redis.io/commands/hincrby
         """
 
@@ -925,6 +1286,19 @@ class Commands:
 
     def hincrbyfloat(self, key: str, field: str, increment: float) -> ResponseT:
         """
+        Increments the value of a field in a hash by a given amount.
+
+        If the field does not exist, it is set to 0 before performing the operation.
+
+        Returns the new value.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", 5.5)
+
+        assert redis.hincrbyfloat("myhash", "field1", 10.1) - 15.6 < 0.0001
+        ```
+
         See https://redis.io/commands/hincrbyfloat
         """
 
@@ -934,6 +1308,20 @@ class Commands:
 
     def hkeys(self, key: str) -> ResponseT:
         """
+        Returns all fields in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hkeys("myhash") == ["field1", "field2"]
+        ```
+
         See https://redis.io/commands/hkeys
         """
 
@@ -943,6 +1331,22 @@ class Commands:
 
     def hlen(self, key: str) -> ResponseT:
         """
+        Returns the number of fields in a hash.
+
+        If the hash is empty or does not exist, 0 is returned.
+
+        Example:
+        ```python
+        assert redis.hlen("myhash") == 0
+
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hlen("myhash") == 2
+        ```
+
         See https://redis.io/commands/hlen
         """
 
@@ -952,6 +1356,20 @@ class Commands:
 
     def hmget(self, key: str, *fields: str) -> ResponseT:
         """
+        Returns the values of all specified fields in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hmget("myhash", "field1", "field2") == ["Hello", "World"]
+        ```
+
         See https://redis.io/commands/hmget
         """
 
@@ -962,8 +1380,21 @@ class Commands:
 
         return self.execute(command)
 
-    def hmset(self, key: str, values: Dict[str, str]) -> ResponseT:
+    def hmset(self, key: str, values: Dict[str, Any]) -> ResponseT:
         """
+        Sets the value of one or multiple fields in a hash.
+
+        Returns the number of fields that were added.
+
+        Example:
+        ```python
+        # Set multiple fields
+        assert redis.hmset("myhash"{
+            "field1": "Hello",
+            "field2": "World"
+        }) == 2
+        ```
+
         See https://redis.io/commands/hmset
         """
 
@@ -978,6 +1409,41 @@ class Commands:
         self, key: str, count: Union[int, None] = None, withvalues: bool = False
     ) -> ResponseT:
         """
+        Returns one or more random fields from a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        If no count is specified, a single field is returned.
+        If a count is specified, a list of fields is returned.
+        If "withvalues" is True, a dictionary of fields and values is returned.
+
+        :param key: the key of the hash.
+        :param count: the number of fields to return.
+        :param withvalues: if True, the keys and values are returned as a dictionary.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        # Without count
+        assert redis.hrandfield("myhash") in ["field1", "field2"]
+
+        # With count
+        assert redis.hrandfield("myhash", count=2) in [
+            ["field1", "field2"],
+            ["field2", "field1"]
+        ]
+
+        # With values
+        assert redis.hrandfield("myhash", count=1, withvalues=True) in [
+            {"field1": "Hello"},
+            {"field2": "World"}
+        ]
+        ```
+
         See https://redis.io/commands/hrandfield
         """
 
@@ -1002,6 +1468,29 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns a paginated list of keys in a hash matching the pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and the list of keys.
+
+        Example:
+        ```python
+        # Get all members of a hash.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.hscan("myhash", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/hscan
         """
 
@@ -1020,10 +1509,29 @@ class Commands:
         self,
         key: str,
         field: Optional[str] = None,
-        value: Optional[str] = None,
-        values: Optional[Dict[str, str]] = None,
+        value: Optional[Any] = None,
+        values: Optional[Dict[str, Any]] = None,
     ) -> ResponseT:
         """
+        Sets the value of one or multiple fields in a hash.
+
+        Returns the number of fields that were added.
+
+        `hmset` can be used to set multiple fields at once too.
+
+        Example:
+        ```python
+
+        # Set a single field
+        assert redis.hset("myhash", "field1", "Hello") == 1
+
+        # Set multiple fields
+        assert redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        }) == 2
+        ```
+
         See https://redis.io/commands/hset
         """
         command: List = ["HSET", key]
@@ -1040,8 +1548,18 @@ class Commands:
 
         return self.execute(command)
 
-    def hsetnx(self, key: str, field: str, value: str) -> ResponseT:
+    def hsetnx(self, key: str, field: str, value: Any) -> ResponseT:
         """
+        Sets the value of a field in a hash, only if the field does not exist.
+
+        Returns True if the field was set, False if it was not set.
+
+        Example:
+        ```python
+        assert redis.hsetnx("myhash", "field1", "Hello") == True
+        assert redis.hsetnx("myhash", "field1", "World") == False
+        ```
+
         See https://redis.io/commands/hsetnx
         """
 
@@ -1051,6 +1569,18 @@ class Commands:
 
     def hstrlen(self, key: str, field: str) -> ResponseT:
         """
+        Returns the length of a value in a hash.
+
+        Returns 0 if the field does not exist or the key does not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "Hello")
+
+        assert redis.hstrlen("myhash", "field1") == 5
+        assert redis.hstrlen("myhash", "field2") == 0
+        ```
+
         See https://redis.io/commands/hstrlen
         """
 
@@ -1060,6 +1590,20 @@ class Commands:
 
     def hvals(self, key: str) -> ResponseT:
         """
+        Returns all values in a hash.
+
+        If the hash is empty or does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        })
+
+        assert redis.hvals("myhash") == ["Hello", "World"]
+        ```
+
         See https://redis.io/commands/hvals
         """
 
@@ -1099,6 +1643,8 @@ class Commands:
 
     def lindex(self, key: str, index: int) -> ResponseT:
         """
+        Returns the element at index in the list stored at key.o
+
         See https://redis.io/commands/lindex
         """
 
@@ -1110,10 +1656,17 @@ class Commands:
         self,
         key: str,
         where: Literal["BEFORE", "AFTER"],
-        pivot: str,
+        pivot: Any,
         element: str,
     ) -> ResponseT:
         """
+        Inserts an element before or after another element in a list.
+
+        :param key: the key of the list.
+        :param where: whether to insert before or after the pivot.
+        :param pivot: the element to insert before or after.
+        :param element: the element to insert.
+
         See https://redis.io/commands/linsert
         """
 
@@ -1123,6 +1676,8 @@ class Commands:
 
     def llen(self, key: str) -> ResponseT:
         """
+        Returns the length of a list.
+
         See https://redis.io/commands/llen
         """
 
@@ -1138,6 +1693,23 @@ class Commands:
         whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
     ) -> ResponseT:
         """
+        Moves an element from one list to another atomically.
+
+        :param source: the source list.
+        :param destination: the destination list.
+        :param wherefrom: The side to pop from. Can be "LEFT" or "RIGHT".
+        :param whereto: The side to push to. Can be "LEFT" or "RIGHT".
+
+        Example:
+        ```python
+        redis.rpush("source", "one", "two", "three")
+        redis.lpush("destination", "four", "five", "six")
+
+        assert redis.lmove("source", "destination", "RIGHT", "LEFT") == "three"
+
+        assert redis.lrange("source", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/lmove
         """
 
@@ -1153,6 +1725,27 @@ class Commands:
 
     def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the first element of a list.
+
+        If count is specified, multiple elements are popped from the left side of the list.
+
+        Returns a single element if count is not specified.
+        Returns a list of elements if count is specified.
+        If the list is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lpop("mylist") == "one"
+
+        # Multiple
+        redis.rpush("mylist", "one", "two", "three")
+        
+        assert redis.lpop("mylist", 2) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/lpop
         """
 
@@ -1172,6 +1765,34 @@ class Commands:
         maxlen: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the index of matching elements inside a list.
+
+        :param key: the key of the list.
+        :param element: the element to search for.
+        :param rank: which match to return. 1 to return the first match, 0 to return the second match, and so on.
+        :param count: the maximum number of matches to return.
+        :param maxlen: the maximum number of elements to scan.
+
+        Returns the index of the matching element or array of indexes if count is specified.
+        If the element does not exist, None is returned.
+
+        Example:
+        ```py 
+        redis.rpush("key", "a", "b", "c"); 
+
+        assert redis.lpos("key", "b") == 1
+
+        # With Rank 
+        redis.rpush("key", "a", "b", "c", "b"); 
+
+        assert redis.lpos("key", "b", rank=2) == 3
+
+        # With Count
+        redis.rpush("key", "a", "b", "b")
+
+        assert redis.lpos("key", "b", count=2) == [1, 2]
+        ```
+
         See https://redis.io/commands/lpos
         """
 
@@ -1190,6 +1811,17 @@ class Commands:
 
     def lpush(self, key: str, *elements: str) -> ResponseT:
         """
+        Pushes an element to the left side of a list.
+
+        Returns the new length of the list.
+
+        Example:
+        ```python
+        assert redis.lpush("mylist", "one", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["three", "two", "one"]
+        ```
+
         See https://redis.io/commands/lpush
         """
 
@@ -1202,6 +1834,21 @@ class Commands:
 
     def lpushx(self, key: str, *elements: str) -> ResponseT:
         """
+        Pushes an element to the left side of a list, only if the list exists.
+
+        Returns the new length of the list.
+        If the list does not exist, 0 is returned.
+
+        Example:
+        ```python
+        # Initialize the list
+        redis.lpush("mylist", "one")
+
+        assert redis.lpushx("mylist", "two", "three") == 3
+
+        assert lrange("mylist", 0, -1) == ["three", "two", "one"]
+        ```
+
         See https://redis.io/commands/lpushx
         """
 
@@ -1214,6 +1861,25 @@ class Commands:
 
     def lrange(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Returns a range of elements from a list.
+
+        If start or stop are negative, the index is calculated from the end of the list.
+
+        :param key: the key of the list.
+        :param start: the index of the first element to return.
+        :param stop: the index of the last element to return.
+
+        Returns a list of elements.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lrange("mylist", 0, 1) == ["one", "two"]
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/lrange
         """
 
@@ -1223,6 +1889,23 @@ class Commands:
 
     def lrem(self, key: str, count: int, element: str) -> ResponseT:
         """
+        Removes the first `count` occurrences of an element from a list.
+
+        :param key: the key of the list.
+        :param count: the number of occurrences to remove.
+        :param element: the element to remove.
+
+        Returns the number of elements that were removed.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three", "two", "one")
+
+        assert redis.lrem("mylist", 2, "two") == 2
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "three", "one"]
+        ```
+
         See https://redis.io/commands/lrem
         """
 
@@ -1232,6 +1915,23 @@ class Commands:
 
     def lset(self, key: str, index: int, element: str) -> ResponseT:
         """
+        Sets the value of an element in a list by its index.
+
+        Returns True if the element was set, False if the index is out of range.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.lset("mylist", 1, "Hello") == True
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
+
+        assert redis.lset("mylist", 5, "Hello") == False
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
+        ```
+
         See https://redis.io/commands/lset
         """
 
@@ -1241,6 +1941,23 @@ class Commands:
 
     def ltrim(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Trims a list to the specified range.
+
+        :param key: the key of the list.
+        :param start: the index of the first element to keep.
+        :param stop: the index of the last element to keep.
+
+        Returns True if the list was trimmed, False if the key does not exist.
+
+        Example:
+        ```python
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.ltrim("mylist", 0, 1) == True
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/ltrim
         """
 
@@ -1250,6 +1967,26 @@ class Commands:
 
     def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the last element of a list.
+
+        If count is specified, multiple elements are popped from the right side of the list.
+
+        Returns a single element if count is not specified.
+        Returns a list of elements if count is specified.
+
+        Example:
+        ```python
+        # Single
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.rpop("mylist") == "three"
+
+        # Multiple
+        redis.rpush("mylist", "one", "two", "three")
+
+        assert redis.rpop("mylist", 2) == ["three", "two"]
+        ```
+
         See https://redis.io/commands/rpop
         """
 
@@ -1262,6 +1999,19 @@ class Commands:
 
     def rpoplpush(self, source: str, destination: str) -> ResponseT:
         """
+        Deletes an element from the right side of a list and pushes it to the left side of another list.
+
+        Deprecated since Redis 6. Use `lmove` with `wherefrom="RIGHT"` and `whereto="LEFT"` instead.
+
+        Example:
+        ```py
+        redis.rpush("source", "one", "two", "three")
+
+        assert redis.rpoplpush("source", "destination") == "three"
+
+        assert redis.lrange("source", 0, -1) == ["one", "two"]
+        ```
+
         See https://redis.io/commands/rpoplpush
         """
 
@@ -1271,6 +2021,17 @@ class Commands:
 
     def rpush(self, key: str, *elements: str) -> ResponseT:
         """
+        Pushes an element to the right side of a list.
+
+        Returns the new length of the list.
+
+        Example:
+        ```python
+        assert redis.rpush("mylist", "one", "two", "three") == 3
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/rpush
         """
 
@@ -1283,6 +2044,18 @@ class Commands:
 
     def rpushx(self, key: str, *elements: Any) -> ResponseT:
         """
+        Pushes an element to the right side of a list only if the list exists.
+
+        Returns the new length of the list.
+        Returns 0 if the list does not exist.
+
+        Example:
+        ```python
+        assert redis.rpushx("mylist", "one", "two", "three") == 3
+
+        assert redis.lrange("mylist", 0, -1) == ["one", "two", "three"]
+        ```
+
         See https://redis.io/commands/rpushx
         """
 
@@ -1295,6 +2068,15 @@ class Commands:
 
     def publish(self, channel: str, message: str) -> ResponseT:
         """
+        Publishes a message to a channel.
+
+        Returns the number of clients that received the message.
+
+        Example:
+        ```python
+        redis.publish("mychannel", "Hello")
+        ```
+
         See https://redis.io/commands/publish
         """
 
@@ -1309,6 +2091,32 @@ class Commands:
         args: Union[List, None] = None,
     ) -> ResponseT:
         """
+        Evaluates a Lua script in the server
+
+        :param script: the Lua script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        assert redis.eval("return 1 + 1") == 2
+
+        assert redis.eval("return KEYS[1]", keys=["mykey"]) == "mykey"
+
+        assert redis.eval("return ARGV[1]", args=["Hello"]) == "Hello"
+
+        script = \"\"\"
+        local value = redis.call("GET", KEYS[1])
+        return value
+        \"\"\"
+
+        redis.set("mykey", "Hello")
+
+        assert redis.eval(script, keys=["mykey"]) == "Hello"
+        ```
+
         See https://redis.io/commands/eval
 
         The number of keys is calculated automatically.
@@ -1330,9 +2138,23 @@ class Commands:
         self,
         sha1: str,
         keys: Union[List[str], None] = None,
-        args: Union[List, None] = None,
+        args: Union[List[str], None] = None,
     ) -> ResponseT:
         """
+        Evaluates a Lua script in the server, cached by its SHA1 digest.
+
+        :param sha1: the SHA1 digest of the script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        result = redis.eval("fb67a0c03b48ddbf8b4c9b011e779563bdbc28cb", args=["hello"])
+        assert result = "hello"
+        ```
+
         See https://redis.io/commands/evalsha
 
         The number of keys is calculated automatically.
@@ -1352,6 +2174,8 @@ class Commands:
 
     def dbsize(self) -> ResponseT:
         """
+        Returns the number of keys in the database.
+
         See https://redis.io/commands/dbsize
         """
 
@@ -1398,6 +2222,18 @@ class Commands:
 
     def sadd(self, key: str, *members: str) -> ResponseT:
         """
+        Adds one or more members to a set.
+
+        Returns the number of members that were added.
+
+        Example:
+        ```python
+        assert redis.sadd("myset", "one", "two", "three") == 3
+
+        # Only newly added members are counted
+        assert redis.sadd("myset", "one", "two", "four") == 1
+        ```
+
         See https://redis.io/commands/sadd
         """
 
@@ -1410,6 +2246,10 @@ class Commands:
 
     def scard(self, key: str) -> ResponseT:
         """
+        Returns how many members are in a set
+
+        If the set does not exist, 0 is returned.
+
         See https://redis.io/commands/scard
         """
 
@@ -1419,6 +2259,19 @@ class Commands:
 
     def sdiff(self, *keys: str) -> ResponseT:
         """
+        Returns the difference between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sdiff("key1", "key2") == {"a", "b"}
+        ```
+
         See https://redis.io/commands/sdiff
         """
 
@@ -1431,6 +2284,24 @@ class Commands:
 
     def sdiffstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Returns the difference between multiple sets and stores it in a new set.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        # Store the result in a new set
+        assert redis.sdiffstore("res", "key1", "key2") == 2
+
+        assert redis.smembers("set") == {"a", "b"}
+        ```
+
         See https://redis.io/commands/sdiffstore
         """
 
@@ -1443,6 +2314,18 @@ class Commands:
 
     def sinter(self, *keys: str) -> ResponseT:
         """
+        Returns the intersection between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("set1", "a", "b", "c"); 
+        redis.sadd("set2", "c", "d", "e"); 
+
+        assert redis.sinter("set1", "set2") == {"c"}
+        ```
+
         See https://redis.io/commands/sinter
         """
 
@@ -1455,6 +2338,21 @@ class Commands:
 
     def sinterstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Calculates the intersection between multiple sets and stores it in a new set.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```
+        redis.sadd("set1", "a", "b", "c"); 
+
+        redis.sadd("set2", "c", "d", "e"); 
+
+        assert redis.sinter("destination", "set1", "set2") == 1
+        ```
+
         See https://redis.io/commands/sinterstore
         """
 
@@ -1467,6 +2365,12 @@ class Commands:
 
     def sismember(self, key: str, member: str) -> ResponseT:
         """
+        Checks if a member is in a set.
+
+        Returns True if the member is in the set, False if it is not.
+
+        If the set does not exist, False is returned.
+
         See https://redis.io/commands/sismember
         """
 
@@ -1476,6 +2380,8 @@ class Commands:
 
     def smembers(self, key: str) -> ResponseT:
         """
+        Returns all members of a set.
+
         See https://redis.io/commands/smembers
         """
 
@@ -1485,6 +2391,21 @@ class Commands:
 
     def smismember(self, key: str, *members: str) -> ResponseT:
         """
+        Checks if multiple members are in a set.
+
+        Returns a list of booleans indicating whether the members are in the set.
+
+        If the set does not exist, an empty list is returned.
+
+        Example:
+        ```python
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.smismember("myset", "one", "four") == [True, False]
+
+        assert redis.smismember("myset", "four", "five") == [False, False]
+        ```
+
         See https://redis.io/commands/smismember
         """
 
@@ -1497,6 +2418,23 @@ class Commands:
 
     def smove(self, source: str, destination: str, member: str) -> ResponseT:
         """
+        Moves a member from one set to another atomically.
+
+        Returns True if the member was moved, False if it was not.
+
+        Example:
+        ```python
+        redis.sadd("src", "one", "two", "three")
+
+        redis.sadd("dest", "four")
+
+        assert redis.smove("src", "dest", "three") == True
+
+        assert redis.smembers("source") == {"one", "two"}
+
+        assert redis.smembers("destination") == {"three", "four"}
+        ```
+
         See https://redis.io/commands/smove
         """
 
@@ -1506,6 +2444,29 @@ class Commands:
 
     def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns one or more random members from a set.
+
+        If count is specified, multiple members are popped from the set.
+
+        Returns a single member if count is not specified.
+        
+        Returns a list of members if count is specified.
+
+        If the set is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.spop("myset") in {"one", "two", "three"}
+
+        # Multiple
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.spop("myset", 2) in {"one", "two", "three"}
+        ```
+
         See https://redis.io/commands/spop
         """
 
@@ -1518,6 +2479,29 @@ class Commands:
 
     def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Returns one or more random members from a set.
+
+        If count is specified, multiple members are returned from the set.
+
+        Returns a single member if count is not specified.
+
+        Returns a list of members if count is specified.
+
+        If the set is empty or does not exist, None is returned.
+
+        Example:
+        ```python
+        # Single
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srandmember("myset") in {"one", "two", "three"}
+
+        # Multiple
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srandmember("myset", 2) in {"one", "two", "three"}
+        ```
+        
         See https://redis.io/commands/srandmember
         """
 
@@ -1530,6 +2514,17 @@ class Commands:
 
     def srem(self, key: str, *members: str) -> ResponseT:
         """
+        Removes one or more members from a set.
+
+        Returns the number of members that were removed.
+
+        Example:
+        ```python
+        redis.sadd("myset", "one", "two", "three")
+
+        assert redis.srem("myset", "one", "four") == 1
+        ```
+
         See https://redis.io/commands/srem
         """
 
@@ -1548,6 +2543,29 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns a paginated list of members of a set matching a pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and the list of elements.
+
+        Example:
+        ```python
+        # Get all members of a set.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.sscan("myset", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+        ```
+
         See https://redis.io/commands/sscan
         """
 
@@ -1564,6 +2582,19 @@ class Commands:
 
     def sunion(self, *keys: str) -> ResponseT:
         """
+        Returns the union between multiple sets.
+
+        If a key does not exist, it is treated as an empty set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sunion("key1", "key2") == {"a", "b", "c", "d", "e"}
+        ```
+
         See https://redis.io/commands/sunion
         """
 
@@ -1576,6 +2607,19 @@ class Commands:
 
     def sunionstore(self, destination: str, *keys: str) -> ResponseT:
         """
+        Calculates the union between multiple sets and stores it in a new set.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.sadd("key1", "a", "b", "c")
+
+        redis.sadd("key2", "c", "d", "e")
+
+        assert redis.sunionstore("destination", "key1", "key2") == 5
+        ```
+
         See https://redis.io/commands/sunionstore
         """
 
@@ -1598,6 +2642,37 @@ class Commands:
         incr: bool = False,
     ) -> ResponseT:
         """
+        Adds one or more members to a sorted set, or updates its score if it already exists.
+
+        Returns the number of elements that were added.
+
+        :param key: the key of the sorted set.
+        :param scores: a dictionary of members and their scores.
+        :param nx: only add new members, do not update scores for members that already exist.
+        :param xx: only update scores for members that already exist, do not add new members.
+        :param gt: only update scores if the new score is greater than the current score.
+        :param lt: only update scores if the new score is less than the current score.
+        :param ch: return the number of elements that were changed instead of the number of elements that were added.
+        :param incr: when this option is specified, the score is used as an increment instead of being set to the specified value. Only one score can be specified in this mode.
+
+        Example:
+        ```python
+        # Add three elements
+        assert redis.zadd("myset", {"one": 1, "two": 2, "three": 3}) == 3
+
+        # No element is added since "one" and "two" already exist
+        assert redis.zadd("myset", {"one": 1, "two": 2}, nx=True) == 0
+
+        # New element is not added since it does not exist
+        assert redis.zadd("myset", {"new-element": 1}, xx=True) == 0
+
+        # Only "three" is updated since new score was greater
+        assert redis.zadd("myset", {"three": 10, "two": 0}, gt=True) == 1
+
+        # Only "three" is updated since new score was greater
+        assert redis.zadd("myset", {"three": 10, "two": 0}, gt=True) == 1
+        ```
+
         See https://redis.io/commands/zadd
         """
 
@@ -1637,6 +2712,15 @@ class Commands:
 
     def zcard(self, key: str) -> ResponseT:
         """
+        Returns the number of elements in a sorted set.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zcard("myset") == 3
+        ```
+
         See https://redis.io/commands/zcard
         """
 
@@ -1646,9 +2730,24 @@ class Commands:
 
     def zcount(self, key: str, min: FloatMinMaxT, max: FloatMinMaxT) -> ResponseT:
         """
-        See https://redis.io/commands/zcount
+        Counts the number of elements in a sorted set with scores within the given values.
 
         If you need to use "-inf" and "+inf", please write them as strings.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum score to include.
+        :param max: the maximum score to include.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zcount("myset", 1, 2) == 2
+
+        assert redis.zcount("myset", "-inf", "+inf") == 3
+        ```
+
+        See https://redis.io/commands/zcount
         """
 
         command: List = ["ZCOUNT", key, min, max]
@@ -1657,9 +2756,26 @@ class Commands:
 
     def zdiff(self, keys: List[str], withscores: bool = False) -> ResponseT:
         """
-        See https://redis.io/commands/zdiff
+        Returns the difference between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If a key does not exist, it is treated as an empty sorted set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zdiff(["key1", "key2"])
+
+        assert result == ["a", "b"]
+
+        result = redis.zdiff(["key1", "key2"], withscores=True)
+
+        assert result == [("a", 1), ("b", 2)]
+        ```
+
+        See https://redis.io/commands/zdiff
         """
 
         if len(keys) == 0:
@@ -1674,9 +2790,20 @@ class Commands:
 
     def zdiffstore(self, destination: str, keys: List[str]) -> ResponseT:
         """
-        See https://redis.io/commands/zdiffstore
+        Calculates the difference between multiple sorted sets and stores it in a new sorted set.
 
-        The number of keys is calculated automatically.
+
+        Example:
+        ```py
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        # a and b
+        assert redis.zdiffstore("dest", ["key1", "key2"]) == 2
+        ```
+
+        See https://redis.io/commands/zdiffstore
         """
 
         if len(keys) == 0:
@@ -1688,6 +2815,17 @@ class Commands:
 
     def zincrby(self, key: str, increment: float, member: str) -> ResponseT:
         """
+        Increments the score of a member in a sorted set.
+
+        Returns the new score of the member.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zincrby("myset", 2, "one") == 3
+        ```
+
         See https://redis.io/commands/zincrby
         """
 
@@ -1703,9 +2841,31 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zinter
+        Returns the intersection between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns a list of members or a list of (member, score) tuples if withscores is True.
+
+        If an aggregate method is specified, the scores are aggregated.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zinter(["key1", "key2"])
+
+        assert result == ["c"]
+        ```
+
+        See https://redis.io/commands/zinter
         """
 
         if len(keys) == 0:
@@ -1732,9 +2892,29 @@ class Commands:
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zinterstore
+        Calculates the intersection between multiple sorted sets and stores it in a key.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns the number of elements in the resulting sorted set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zinterstore("dest", ["key1", "key2"])
+
+        assert result == 1
+        ```
+
+        See https://redis.io/commands/zinterstore
         """
 
         if len(keys) == 0:
@@ -1752,6 +2932,19 @@ class Commands:
 
     def zlexcount(self, key: str, min: str, max: str) -> ResponseT:
         """
+        Counts the number of elements in a sorted set between a min and max value.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum value to include.
+        :param max: the maximum value to include.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zlexcount("myset", "-", "+") == 3
+        ```
+
         See https://redis.io/commands/zlexcount
         """
 
@@ -1768,6 +2961,17 @@ class Commands:
 
     def zmscore(self, key: str, members: List[str]) -> ResponseT:
         """
+        Returns the scores associated with the specified members in a sorted set.
+
+        If a member does not exist, None is returned for it.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zmscore("myset", ["a", "b", "c", "d"]) == [1, 2, 3, None]
+        ```
+
         See https://redis.io/commands/zmscore
         """
 
@@ -1780,6 +2984,17 @@ class Commands:
 
     def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the members with the highest scores in a sorted set.
+
+        Returns a list member score tuples.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zpopmax("myset") == [("c", 3)]
+        ```
+
         See https://redis.io/commands/zpopmax
         """
 
@@ -1792,6 +3007,17 @@ class Commands:
 
     def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
         """
+        Removes and returns the members with the lowest scores in a sorted set.
+
+        Returns a list member score tuples.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zpopmin("myset") == [("a", 1)]
+        ```
+
         See https://redis.io/commands/zpopmin
         """
 
@@ -1806,6 +3032,25 @@ class Commands:
         self, key: str, count: Union[int, None] = None, withscores: bool = False
     ) -> ResponseT:
         """
+        Returns one or more random members from a sorted set.
+
+        If count is specified, multiple members are returned from the set.
+
+        Returns a single member if count is not specified.
+
+        If withscores is True, the scores are returned along with the members as a tuple.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        # "one"
+        redis.zrandmember("myset")
+
+        # ["one", "three"]
+        redis.zrandmember("myset", 2)
+        ```
+
         See https://redis.io/commands/zrandmember
         """
 
@@ -1834,9 +3079,32 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrange
+        Returns the members of a sorted set between a min and max value.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        :param key: the key of the sorted set.
+        :param start: the minimum value to include.
+        :param stop: the maximum value to include.
+        :param sortby: whether to sort by score or lexicographically.
+        :param rev: whether to reverse the results.
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+        :param withscores: whether to return the scores along with the members.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrange("myset", 0, 1) == ["a", "b"]
+
+        assert redis.zrange("myset", 0, 1, rev=True) == ["c", "b"]
+
+        assert redis.zrange("myset", 0, 1, sortby="BYSCORE") == ["a", "b"]
+
+        # With scores
+        assert redis.zrange("myset", 0, 1, withscores=True) == [("a", 1), ("b", 2)]
+        ```
+
+        See https://redis.io/commands/zrange
         """
 
         handle_non_deprecated_zrange_exceptions(sortby, start, stop, offset, count)
@@ -1866,6 +3134,23 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the members of a sorted set between a min and max value ordered lexicographically.
+
+        Deprecated: use zrange with sortby="BYLEX" instead.
+
+        :param key: the key of the sorted set.
+        :param min: the minimum value to include. Can be "[a", "(a", "+", or "-".
+        :param max: the maximum value to include. Can be "[a", "(a", "+", or "-".
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangebylex("myset", "-", "+") == ["a", "b", "c"]
+        ```
+
         See https://redis.io/commands/zrangebylex
         """
 
@@ -1888,9 +3173,20 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrangebyscore
+        Returns the members of a sorted which have scores between a min and max value.
+        
+        Deprecated: use zrange with sortby="BYSCORE" instead.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangebyscore("myset", 1, 2) == ["a", "b"]
+
+        assert redis.zrangebyscore("myset", "-inf", "+inf") == ["a", "b", "c"]
+        ```
+
+        See https://redis.io/commands/zrangebyscore
         """
 
         if number_are_not_none(offset, count, number=1):
@@ -1918,6 +3214,26 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Stores the result of a zrange command in a new sorted set.
+
+        :param dst: the key of the new sorted set.
+        :param src: the key of the source sorted set.
+        :param min: the minimum value to include.
+        :param max: the maximum value to include.
+        :param sortby: whether to sort by score or lexicographically.
+        :param rev: whether to reverse the results.
+        :param offset: the offset to start from.
+        :param count: the number of elements to return.
+
+        Returns the number of elements in the new sorted set.
+
+        Example:
+        ```python
+        redis.zadd("src", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrangestore("dest", "src", 1, 2) == 2
+        ```
+
         See https://redis.io/commands/zrangestore
         """
 
@@ -1938,6 +3254,25 @@ class Commands:
 
     def zrank(self, key: str, member: str) -> ResponseT:
         """
+        Returns the rank of a member in a sorted set.
+
+        The rank is 0-based, with the member with the lowest score being rank 0.
+
+        If the member does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrank("myset", "a") == 0
+
+        assert redis.zrank("myset", "d") == None
+
+        assert redis.zrank("myset", "b") == 1
+
+        assert redis.zrank("myset", "c") == 2
+        ```
+
         See https://redis.io/commands/zrank
         """
 
@@ -1947,6 +3282,17 @@ class Commands:
 
     def zrem(self, key: str, *members: str) -> ResponseT:
         """
+        Removes one or more members from a sorted set.
+
+        Returns the number of members that were removed.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"one": 1, "two": 2, "three": 3})
+
+        assert redis.zrem("myset", "one", "four") == 1
+        ```
+
         See https://redis.io/commands/zrem
         """
 
@@ -1959,6 +3305,8 @@ class Commands:
 
     def zremrangebylex(self, key: str, min: str, max: str) -> ResponseT:
         """
+        Removes all members in a sorted set between a min and max value lexicographically.
+
         See https://redis.io/commands/zremrangebylex
         """
 
@@ -1975,6 +3323,8 @@ class Commands:
 
     def zremrangebyrank(self, key: str, start: int, stop: int) -> ResponseT:
         """
+        Removes all members in a sorted set between a rank range.
+
         See https://redis.io/commands/zremrangebyrank
         """
 
@@ -1986,6 +3336,8 @@ class Commands:
         self, key: str, min: FloatMinMaxT, max: FloatMinMaxT
     ) -> ResponseT:
         """
+        Removes all members in a sorted set between a min and max score.
+
         See https://redis.io/commands/zremrangebyscore\
 
         If you need to use "-inf" and "+inf", please write them as strings.
@@ -1999,6 +3351,10 @@ class Commands:
         self, key: str, start: int, stop: int, withscores: bool = False
     ) -> ResponseT:
         """
+        Returns the members of a sorted set between a min and max value in reverse order.
+
+        Deprecated: use zrange with rev=True instead.
+
         See https://redis.io/commands/zrevrange
         """
 
@@ -2018,6 +3374,10 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns the members of a sorted set between a min and max value ordered lexicographically in reverse order.
+
+        Deprecated: use zrange with sortby="BYLEX" and rev=True instead.
+
         See https://redis.io/commands/zrevrangebylex
         """
 
@@ -2040,9 +3400,11 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zrevrangebyscore
+        Returns the members of a sorted set whose scores are between a min and max value in reverse order.
 
-        If you need to use "-inf" and "+inf", please write them as strings.
+        Deprecated: use zrange with sortby="BYSCORE" and rev=True instead.
+
+        See https://redis.io/commands/zrevrangebyscore
         """
 
         if number_are_not_none(offset, count, number=1):
@@ -2060,6 +3422,15 @@ class Commands:
 
     def zrevrank(self, key: str, member: str) -> ResponseT:
         """
+        Returns the rank of a member in a sorted set in reverse order.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zrevrank("myset", "a") == 2
+        ```
+
         See https://redis.io/commands/zrevrank
         """
 
@@ -2075,6 +3446,32 @@ class Commands:
         count: Union[int, None] = None,
     ) -> ResponseT:
         """
+        Returns a paginated list of members and their scores of an ordered set matching a pattern.
+
+        :param cursor: the cursor to use for the scan, 0 to start a new scan.
+        :param match: a pattern to match.
+        :param count: the number of elements to return per page.
+
+        :return: a tuple containing the new cursor and a list of (key, score) tuples.
+
+        Example:
+        ```python
+        # Get all elements of an ordered set.
+
+        cursor = 0
+        results = []
+
+        while True:
+            cursor, keys = redis.zscan("myzset", cursor, match="*")
+
+            results.extend(keys)
+            if cursor == 0:
+                break
+
+        for key, score in results:
+            print(key, score)
+        ```
+
         See https://redis.io/commands/zscan
         """
 
@@ -2091,6 +3488,17 @@ class Commands:
 
     def zscore(self, key: str, member: str) -> ResponseT:
         """
+        Returns the score of a member in a sorted set.
+
+        If the member does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.zadd("myset", {"a": 1, "b": 2, "c": 3})
+
+        assert redis.zscore("myset", "a") == 1
+        ```
+
         See https://redis.io/commands/zscore
         """
 
@@ -2106,9 +3514,29 @@ class Commands:
         withscores: bool = False,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zunion
+        Returns the union between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns a list of members or a list of (member, score) tuples if withscores is True.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.zunion(["key1", "key2"])
+
+        assert result == ["a", "b", "c", "d", "e"]
+        ```
+
+        See https://redis.io/commands/zunion
         """
 
         if len(keys) == 0:
@@ -2135,9 +3563,30 @@ class Commands:
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> ResponseT:
         """
-        See https://redis.io/commands/zunionstore
+        Returns the union between multiple sorted sets.
 
-        The number of keys is calculated automatically.
+        If aggregate is specified, the resulting scores are aggregated using the specified method.
+
+        :param destination: the key of the sorted set to store the result in.
+        :param keys: the keys of the sorted sets.
+        :param weights: the weights to apply to the sorted sets.
+        :param aggregate: the method to use to aggregate scores.
+        :param withscores: whether to return the scores along with the members.
+
+        Returns the number of elements in the resulting set.
+
+        Example:
+        ```python
+        redis.zadd("key1", {"a": 1, "b": 2, "c": 3})
+
+        redis.zadd("key2", {"c": 3, "d": 4, "e": 5})
+
+        result = redis.unionstore("dest", ["key1", "key2"])
+
+        assert result == 5
+        ```
+
+        See https://redis.io/commands/zunionstore
         """
 
         if len(keys) == 0:
@@ -2155,6 +3604,21 @@ class Commands:
 
     def append(self, key: str, value: str) -> ResponseT:
         """
+        Appends a value to a string stored at a key.
+
+        If the key does not exist, it is created.
+
+        Returns the length of the string after the append operation.
+
+        Example:
+        ```python
+        redis.set("key", "Hello")
+
+        assert redis.append("key", " World") == 11
+
+        assert redis.get("key") == "Hello World"
+        ```
+
         See https://redis.io/commands/append
         """
 
@@ -2164,6 +3628,19 @@ class Commands:
 
     def decr(self, key: str) -> ResponseT:
         """
+        Decrements the integer value of a key by one.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the decrement operation.
+
+        Example:
+        ```
+        redis.set("key", 10)
+
+        assert redis.decr("key") == 9
+        ```
+
         See https://redis.io/commands/decr
         """
 
@@ -2173,6 +3650,19 @@ class Commands:
 
     def decrby(self, key: str, decrement: int) -> ResponseT:
         """
+        Decrements the integer value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the decrement operation.
+
+        Example:
+        ```
+        redis.set("key", 10)
+
+        assert redis.decrby("key", 5) == 5
+        ```
+
         See https://redis.io/commands/decrby
         """
 
@@ -2182,6 +3672,15 @@ class Commands:
 
     def get(self, key: str) -> ResponseT:
         """
+        Returns the value of a key or None if the key does not exist.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.get("key") == "value"
+        ```
+
         See https://redis.io/commands/get
         """
 
@@ -2191,6 +3690,19 @@ class Commands:
 
     def getdel(self, key: str) -> ResponseT:
         """
+        Gets the value of a key and delete the key atomically.
+
+        Returns the value of the key or None if the key does not exist.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.getdel("key") == "value"
+
+        assert redis.get("key") == None
+        ```
+
         See https://redis.io/commands/getdel
         """
 
@@ -2208,6 +3720,25 @@ class Commands:
         persist: Union[bool, None] = None,
     ) -> ResponseT:
         """
+        Gets the value of a key and optionally set its expiration.
+
+        Returns the value of the key or None if the key does not exist.
+
+        :param ex: the number of seconds until the key expires.
+        :param px: the number of milliseconds until the key expires.
+        :param exat: the UNIX timestamp in seconds until the key expires.
+        :param pxat: the UNIX timestamp in milliseconds until the key expires.
+        :param persist: Remove the expiration from the key.
+
+        Example:
+        ```python
+        redis.set("key", "value")
+
+        assert redis.getex("key", ex=60) == "value"
+
+        # The key will expire in 60 seconds.
+        ```
+
         See https://redis.io/commands/getex
         """
 
@@ -2237,6 +3768,19 @@ class Commands:
 
     def getrange(self, key: str, start: int, end: int) -> ResponseT:
         """
+        Returns a substring of a string stored at a key.
+
+        The substring is inclusive of the start and end indices.
+
+        Negative indices can be used to specify offsets starting at the end of the string.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.getrange("key", 0, 4) == "Hello"
+        ```
+
         See https://redis.io/commands/getrange
         """
 
@@ -2246,6 +3790,17 @@ class Commands:
 
     def getset(self, key: str, value: str) -> ResponseT:
         """
+        Sets the value of a key and return its old value.
+
+        If the key does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.set("key", "old-value")
+
+        assert redis.getset("key", "newvalue") == "old-value"
+        ```
+
         See https://redis.io/commands/getset
         """
 
@@ -2255,6 +3810,19 @@ class Commands:
 
     def incr(self, key: str) -> ResponseT:
         """
+        Increments the integer value of a key by one.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10)
+
+        assert redis.incr("key") == 11
+        ```
+
         See https://redis.io/commands/incr
         """
 
@@ -2264,6 +3832,19 @@ class Commands:
 
     def incrby(self, key: str, increment: int) -> ResponseT:
         """
+        Increments the integer value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10)
+
+        assert redis.incrby("key", 5) == 15
+        ```
+
         See https://redis.io/commands/incrby
         """
 
@@ -2273,6 +3854,20 @@ class Commands:
 
     def incrbyfloat(self, key: str, increment: float) -> ResponseT:
         """
+        Increments the float value of a key by the given number.
+
+        If the key does not exist, it is set to 0 before performing the operation.
+
+        Returns the value of the key after the increment operation.
+
+        Example:
+        ```python
+        redis.set("key", 10.50)
+
+        # 10.60
+        result = redis.incrbyfloat("key", 0.1)
+        ```
+
         See https://redis.io/commands/incrbyfloat
         """
 
@@ -2282,6 +3877,19 @@ class Commands:
 
     def mget(self, *keys: str) -> ResponseT:
         """
+        Returns the values of all the given keys.
+
+        If a key does not exist, None is returned.
+
+        Example:
+        ```python
+        redis.set("key1", "value1")
+
+        redis.set("key2", "value2")
+
+        assert redis.mget("key1", "key2") == ["value1", "value2"]
+        ```
+
         See https://redis.io/commands/mget
         """
 
@@ -2292,8 +3900,20 @@ class Commands:
 
         return self.execute(command)
 
-    def mset(self, values: Dict[str, str]) -> ResponseT:
+    def mset(self, values: Dict[str, Any]) -> ResponseT:
         """
+        Sets multiple keys to multiple values.
+
+        Returns "OK" if all the keys were set.
+
+        Example:
+        ```python
+        redis.mset({
+            "key1": "value1",
+            "key2": "value2"
+        })
+        ```
+
         See https://redis.io/commands/mset
         """
 
@@ -2304,8 +3924,19 @@ class Commands:
 
         return self.execute(command)
 
-    def msetnx(self, values: Dict[str, str]) -> ResponseT:
+    def msetnx(self, values: Dict[str, Any]) -> ResponseT:
         """
+        Sets multiple keys to multiple values, only if none of the keys exist.
+
+        Returns `True` if all the keys were set, `False` otherwise.
+
+        Example:
+        ```python
+        redis.msetnx({
+            "key1": "value1",
+            "key2": "value2"
+        })
+        ```
         See https://redis.io/commands/msetnx
         """
 
@@ -2318,6 +3949,18 @@ class Commands:
 
     def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
         """
+        Sets the value of a key and set its expiration in milliseconds.
+
+        If the key does not exist, it is created.
+
+        DEPRECATED: Use "set" with "px" option instead.
+
+        Example:
+        ```python
+        # The key will expire in 1000 milliseconds.
+        redis.psetex("key", 1000, "value")
+        ```
+
         See https://redis.io/commands/psetex
         """
 
@@ -2339,6 +3982,38 @@ class Commands:
         keepttl: Union[bool, None] = None,
     ) -> ResponseT:
         """
+        Sets the value of a key and optionally set its expiration.
+
+        Returns `True` if the key was set.
+
+        :param nx: Only set the key if it does not already exist.
+        :param xx: Only set the key if it already exists.
+
+        :param get: Return the old value stored at the key.
+
+        :param ex: Set the number of seconds until the key expires.
+        :param px: Set the number of milliseconds until the key expires.
+        :param exat: Set the UNIX timestamp in seconds until the key expires.
+        :param pxat: Set the UNIX timestamp in milliseconds until the key expires.
+
+        :param keepttl: Don't reset the ttl of the key.
+
+        Example:
+        ```python
+        assert redis.set("key", "value") == True
+
+        assert redis.get("key") == "value"
+
+        # Only set the key if it does not already exist.
+        assert redis.set("key", "value", nx=True) == False
+
+        # Only set the key if it already exists.
+        assert redis.set("key", "value", xx=True) == True
+
+        # Get the old value stored at the key.
+        assert redis.set("key", "new-value", get=True) == "value"
+        ```
+
         See https://redis.io/commands/set
         """
 
@@ -2383,6 +4058,16 @@ class Commands:
 
     def setex(self, key: str, seconds: int, value: str) -> ResponseT:
         """
+        Sets the value of a key and set its expiration in seconds.
+
+        Deprecated: Use "set" with "ex" option instead.
+
+        Example:
+        ```python
+        # The key will expire in 60 seconds.
+        redis.setex("key", 60, "value")
+        ```
+
         See https://redis.io/commands/setex
         """
 
@@ -2392,6 +4077,21 @@ class Commands:
 
     def setnx(self, key: str, value: str) -> ResponseT:
         """
+        Sets the value of a key, only if the key does not already exist.
+
+        Returns `True` if the key was set.
+
+        Deprecated: Use "set" with "nx" option instead.
+
+        Example:
+        ```python
+        # The key does not exist, so it will be set.
+        assert redis.setnx("key", "value") == True
+
+        # The key already exists, so it will not be set.
+        assert redis.setnx("key", "value") == False
+        ```
+
         See https://redis.io/commands/setnx
         """
 
@@ -2401,6 +4101,22 @@ class Commands:
 
     def setrange(self, key: str, offset: int, value: str) -> ResponseT:
         """
+        Overwrites part of a string at key starting at the specified offset.
+
+        If the offset is larger than the current length of the string at key,
+        the string is padded with zero-bytes to make offset fit.
+
+        Returns the length of the string after it was modified by the command.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.setrange("key", 6, "Redis") == 11
+
+        assert redis.get("key") == "Hello Redis"
+        ```
+
         See https://redis.io/commands/setrange
         """
 
@@ -2410,6 +4126,15 @@ class Commands:
 
     def strlen(self, key: str) -> ResponseT:
         """
+        Returns the length of the string stored at a key.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.strlen("key") == 11
+        ```
+
         See https://redis.io/commands/strlen
         """
 
@@ -2419,6 +4144,27 @@ class Commands:
 
     def substr(self, key: str, start: int, end: int) -> ResponseT:
         """
+        Returns a substring of a string stored at a key.
+
+        The substring is inclusive of the start and end indices.
+
+        Negative indices can be used to specify offsets starting at the end of the string.
+
+        Deprecated: Use "getrange" instead.
+
+        Example:
+        ```python
+        redis.set("key", "Hello World")
+
+        assert redis.substr("key", 0, 4) == "Hello"
+
+        assert redis.substr("key", -5, -1) == "World"
+
+        assert redis.substr("key", 6, -1) == "World"
+
+        assert redis.substr("key", 6, 11) == "World"
+        ```
+
         See https://redis.io/commands/substr
         """
 
@@ -2428,6 +4174,10 @@ class Commands:
 
     def script_exists(self, *sha1: str) -> ResponseT:
         """
+        Checks if the given sha1 digests exist in the script cache.
+
+        Returns a list of booleans indicating which scripts exist.
+
         See https://redis.io/commands/script-exists
         """
 
@@ -2442,6 +4192,10 @@ class Commands:
         self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
+        Removes all the scripts from the script cache.
+
+        Flush type can be "ASYNC" or "SYNC".
+
         See https://redis.io/commands/script-flush
         """
 
@@ -2454,6 +4208,17 @@ class Commands:
 
     def script_load(self, script: str) -> ResponseT:
         """
+        Loads the given script into the script cache
+
+        Returns the sha1 digest of the script.
+
+        Example:
+        ```python
+        sha1 = redis.script_load("return 1")
+
+        assert redis.evalsha(sha1) == 1
+        ```
+
         See https://redis.io/commands/script-load
         """
 
