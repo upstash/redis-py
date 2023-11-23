@@ -68,7 +68,7 @@ def handle_geosearch_exceptions(
 
 
 def handle_non_deprecated_zrange_exceptions(
-    sortby: Union[Literal["BYLEX", "BYSCORE"], None],
+    sortby: Optional[Literal["BYLEX", "BYSCORE"]],
     start: FloatMinMaxT,
     stop: FloatMinMaxT,
     offset: Optional[int],

@@ -879,7 +879,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> ResponseT:
@@ -931,7 +931,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadius_ro
@@ -973,7 +973,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> ResponseT:
@@ -1024,7 +1024,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember_ro
@@ -1065,7 +1065,7 @@ class Commands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
@@ -1134,7 +1134,7 @@ class Commands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
@@ -2184,7 +2184,7 @@ class Commands:
         return self.execute(command)
 
     def flushall(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
         See https://redis.io/commands/flushall
@@ -2198,7 +2198,7 @@ class Commands:
         return self.execute(command)
 
     def flushdb(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
         See https://redis.io/commands/flushdb
@@ -2837,7 +2837,7 @@ class Commands:
         self,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -2889,7 +2889,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> ResponseT:
         """
         Calculates the intersection between multiple sorted sets and stores it in a key.
@@ -3072,7 +3072,7 @@ class Commands:
         key: str,
         start: FloatMinMaxT,
         stop: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -3208,7 +3208,7 @@ class Commands:
         src: str,
         min: FloatMinMaxT,
         max: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -3510,7 +3510,7 @@ class Commands:
         self,
         keys: List[str],
         weights: Optional[List[float]] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -3560,7 +3560,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> ResponseT:
         """
         Returns the union between multiple sorted sets.

@@ -110,7 +110,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
@@ -126,7 +126,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
     def georadiusbymember(
         self,
@@ -139,7 +139,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
@@ -154,7 +154,7 @@ class Commands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
     def geosearch(
         self,
@@ -166,7 +166,7 @@ class Commands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
@@ -184,7 +184,7 @@ class Commands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
@@ -276,10 +276,10 @@ class Commands:
     ) -> Any: ...
     def dbsize(self) -> int: ...
     def flushall(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     def flushdb(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     def time(self) -> Tuple[int, int]: ...
     def sadd(self, key: str, *members: Value) -> int: ...
@@ -330,7 +330,7 @@ class Commands:
         self,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     def zinterstore(
@@ -338,7 +338,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> int: ...
     def zlexcount(self, key: str, min: str, max: str) -> int: ...
     def zmscore(self, key: str, members: List[str]) -> List[Optional[float]]: ...
@@ -356,7 +356,7 @@ class Commands:
         key: str,
         start: FloatMinMaxT,
         stop: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -385,7 +385,7 @@ class Commands:
         src: str,
         min: FloatMinMaxT,
         max: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -430,7 +430,7 @@ class Commands:
         self,
         keys: List[str],
         weights: Optional[List[float]] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     def zunionstore(
@@ -438,7 +438,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Optional[List[float]] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> int: ...
     def append(self, key: str, value: str) -> int: ...
     def decr(self, key: str) -> int: ...
@@ -597,7 +597,7 @@ class AsyncCommands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
@@ -613,7 +613,7 @@ class AsyncCommands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
     async def georadiusbymember(
         self,
@@ -626,7 +626,7 @@ class AsyncCommands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         store: Optional[str] = None,
         storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
@@ -641,7 +641,7 @@ class AsyncCommands:
         withcoord: bool = False,
         count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
     async def geosearch(
         self,
@@ -653,7 +653,7 @@ class AsyncCommands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
@@ -671,7 +671,7 @@ class AsyncCommands:
         radius: Optional[float] = None,
         width: Optional[float] = None,
         height: Optional[float] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
         count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
@@ -763,10 +763,10 @@ class AsyncCommands:
     ) -> Any: ...
     async def dbsize(self) -> int: ...
     async def flushall(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     async def flushdb(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     async def time(self) -> Tuple[int, int]: ...
     async def sadd(self, key: str, *members: Value) -> int: ...
@@ -817,7 +817,7 @@ class AsyncCommands:
         self,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     async def zinterstore(
@@ -825,7 +825,7 @@ class AsyncCommands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> int: ...
     async def zlexcount(self, key: str, min: str, max: str) -> int: ...
     async def zmscore(
@@ -845,7 +845,7 @@ class AsyncCommands:
         key: str,
         start: FloatMinMaxT,
         stop: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -874,7 +874,7 @@ class AsyncCommands:
         src: str,
         min: FloatMinMaxT,
         max: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
         offset: Optional[int] = None,
         count: Optional[int] = None,
@@ -919,7 +919,7 @@ class AsyncCommands:
         self,
         keys: List[str],
         weights: Optional[List[float]] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     async def zunionstore(
@@ -927,7 +927,7 @@ class AsyncCommands:
         destination: str,
         keys: List[str],
         weights: Optional[List[float]] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> int: ...
     async def append(self, key: str, value: str) -> int: ...
     async def decr(self, key: str) -> int: ...
