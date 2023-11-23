@@ -90,7 +90,7 @@ class Redis(Commands):
 
     def __exit__(
         self,
-        exc_type: Union[Type[BaseException], None],
+        exc_type: Optional[Type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
