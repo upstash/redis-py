@@ -1,4 +1,4 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional, Union
 
 from upstash_redis.typing import FloatMinMaxT
 

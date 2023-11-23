@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Literal, Type, Union
+from typing import Any, List, Literal, Optional, Type
 
 from requests import Session
 

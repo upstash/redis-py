@@ -1,7 +1,7 @@
 import asyncio
 from os import environ
 from platform import python_version
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest

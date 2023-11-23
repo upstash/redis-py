@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Literal, Tuple, Union
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import GeoSearchResult
 
