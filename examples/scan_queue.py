@@ -1,5 +1,5 @@
 from threading import Thread
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 
 from upstash_redis import Redis
 
@@ -35,7 +35,7 @@ class TaskQueue:
         # Ignore type since if count is specified, this method returns a list
         return self.redis.rpop(f"scan:completed:{clientid}", 99999)  # type: ignore
 
-    def start_scan(self) -> Tuple[str, str]:
+    def start_scan(self) -> Optional[Tuple[str, str]]:
         # Pop task from the waiting list and add it to the running list
         task: str | None = self.redis.rpop("scan:waiting")  # type: ignore
 
