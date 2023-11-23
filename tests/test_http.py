@@ -216,7 +216,7 @@ def test_decode(arg: Any, expected: Any) -> None:
 )
 def test_make_headers(
     token: str,
-    encoding: Union[Literal["base64"], None],
+    encoding: Optional[Literal["base64"]],
     allow_telemetry: bool,
     expected: Dict[str, str],
 ) -> None:

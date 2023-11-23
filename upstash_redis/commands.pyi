@@ -5,7 +5,7 @@ from upstash_redis.typing import FloatMinMaxT, GeoSearchResult, Value
 
 class Commands:
     def bitcount(
-        self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
+        self, key: str, start: Optional[int] = None, end: Optional[int] = None
     ) -> int: ...
     def bitfield(self, key: str) -> "BitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "BitFieldROCommands": ...
@@ -16,12 +16,12 @@ class Commands:
         self,
         key: str,
         bit: Literal[0, 1],
-        start: Union[int, None] = None,
-        end: Union[int, None] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
     ) -> int: ...
     def getbit(self, key: str, offset: int) -> Literal[0, 1]: ...
     def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int: ...
-    def ping(self, message: Union[str, None] = None) -> str: ...
+    def ping(self, message: Optional[str] = None) -> str: ...
     def echo(self, message: str) -> str: ...
     def copy(self, source: str, destination: str, replace: bool = False) -> bool: ...
     def delete(self, *keys: str) -> int: ...
@@ -65,19 +65,19 @@ class Commands:
         lt: bool = False,
     ) -> bool: ...
     def pttl(self, key: str) -> int: ...
-    def randomkey(self) -> Union[str, None]: ...
+    def randomkey(self) -> Optional[str]: ...
     def rename(self, key: str, newkey: str) -> bool: ...
     def renamenx(self, key: str, newkey: str) -> bool: ...
     def scan(
         self,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
-        type: Union[str, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
+        type: Optional[str] = None,
     ) -> Tuple[int, List[str]]: ...
     def touch(self, *keys: str) -> int: ...
     def ttl(self, key: str) -> int: ...
-    def type(self, key: str) -> Union[str, None]: ...
+    def type(self, key: str) -> Optional[str]: ...
     def unlink(self, *keys: str) -> int: ...
     def geoadd(
         self,
@@ -93,8 +93,8 @@ class Commands:
         member1: str,
         member2: str,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-    ) -> Union[float, None]: ...
-    def geohash(self, key: str, *members: str) -> List[Union[str, None]]: ...
+    ) -> Optional[float]: ...
+    def geohash(self, key: str, *members: str) -> List[Optional[str]]: ...
     def geopos(
         self, key: str, *members: str
     ) -> List[Union[Tuple[float, float], None]]: ...
@@ -108,11 +108,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
     def georadius_ro(
         self,
@@ -124,7 +124,7 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
@@ -137,11 +137,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
     def georadiusbymember_ro(
         self,
@@ -152,7 +152,7 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
@@ -160,14 +160,14 @@ class Commands:
         self,
         key: str,
         unit: Literal["M", "KM", "FT", "MI"],
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
@@ -177,37 +177,37 @@ class Commands:
         self,
         destination: str,
         source: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
     ) -> int: ...
     def hdel(self, key: str, *fields: str) -> int: ...
     def hexists(self, key: str, field: str) -> bool: ...
-    def hget(self, key: str, field: str) -> Union[str, None]: ...
+    def hget(self, key: str, field: str) -> Optional[str]: ...
     def hgetall(self, key: str) -> Dict[str, str]: ...
     def hincrby(self, key: str, field: str, increment: int) -> int: ...
     def hincrbyfloat(self, key: str, field: str, increment: float) -> float: ...
     def hkeys(self, key: str) -> List[str]: ...
     def hlen(self, key: str) -> int: ...
-    def hmget(self, key: str, *fields: str) -> List[Union[str, None]]: ...
+    def hmget(self, key: str, *fields: str) -> List[Optional[str]]: ...
     def hmset(self, key: str, values: Mapping[str, Value]) -> bool: ...
     def hrandfield(
-        self, key: str, count: Union[int, None] = None, withvalues: bool = False
+        self, key: str, count: Optional[int] = None, withvalues: bool = False
     ) -> Union[str, None, List[str], Dict[str, str]]: ...
     def hscan(
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, Dict[str, str]]: ...
     def hset(
         self,
@@ -222,7 +222,7 @@ class Commands:
     def pfadd(self, key: str, *elements: Value) -> bool: ...
     def pfcount(self, *keys: str) -> int: ...
     def pfmerge(self, destkey: str, *sourcekeys: str) -> bool: ...
-    def lindex(self, key: str, index: int) -> Union[str, None]: ...
+    def lindex(self, key: str, index: int) -> Optional[str]: ...
     def linsert(
         self,
         key: str,
@@ -237,18 +237,18 @@ class Commands:
         destination: str,
         wherefrom: Literal["LEFT", "RIGHT"] = "LEFT",
         whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
-    ) -> Union[str, None]: ...
+    ) -> Optional[str]: ...
     def lpop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     def lpos(
         self,
         key: str,
         element: Value,
-        rank: Union[int, None] = None,
-        count: Union[int, None] = None,
-        maxlen: Union[int, None] = None,
-    ) -> Union[(Union[int, None]), List[int]]: ...
+        rank: Optional[int] = None,
+        count: Optional[int] = None,
+        maxlen: Optional[int] = None,
+    ) -> Union[(Optional[int]), List[int]]: ...
     def lpush(self, key: str, *elements: Value) -> int: ...
     def lpushx(self, key: str, *elements: Value) -> int: ...
     def lrange(self, key: str, start: int, stop: int) -> List[str]: ...
@@ -256,23 +256,23 @@ class Commands:
     def lset(self, key: str, index: int, element: Value) -> bool: ...
     def ltrim(self, key: str, start: int, stop: int) -> str: ...
     def rpop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
-    def rpoplpush(self, source: str, destination: str) -> Union[str, None]: ...
+    def rpoplpush(self, source: str, destination: str) -> Optional[str]: ...
     def rpush(self, key: str, *elements: Value) -> int: ...
     def rpushx(self, key: str, *elements: Value) -> int: ...
     def publish(self, channel: str, message: Value) -> int: ...
     def eval(
         self,
         script: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> Any: ...
     def evalsha(
         self,
         sha1: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> Any: ...
     def dbsize(self) -> int: ...
     def flushall(
@@ -293,18 +293,18 @@ class Commands:
     def smembers(self, key: str) -> Set[str]: ...
     def smove(self, source: str, destination: str, member: Value) -> bool: ...
     def spop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     def srandmember(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     def srem(self, key: str, *members: Value) -> int: ...
     def sscan(
         self,
         key: str,
         cursor: int = 0,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, List[str]]: ...
     def sunion(self, *keys: str) -> Set[str]: ...
     def sunionstore(self, destination: str, *keys: str) -> int: ...
@@ -341,15 +341,15 @@ class Commands:
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int: ...
     def zlexcount(self, key: str, min: str, max: str) -> int: ...
-    def zmscore(self, key: str, members: List[str]) -> List[Union[float, None]]: ...
+    def zmscore(self, key: str, members: List[str]) -> List[Optional[float]]: ...
     def zpopmax(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> List[Tuple[str, float]]: ...
     def zpopmin(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> List[Tuple[str, float]]: ...
     def zrandmember(
-        self, key: str, count: Union[int, None] = None, withscores: bool = False
+        self, key: str, count: Optional[int] = None, withscores: bool = False
     ) -> Union[str, None, List[str], List[Tuple[str, float]]]: ...
     def zrange(
         self,
@@ -358,8 +358,8 @@ class Commands:
         stop: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     def zrangebylex(
@@ -367,8 +367,8 @@ class Commands:
         key: str,
         min: str,
         max: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> List[str]: ...
     def zrangebyscore(
         self,
@@ -376,8 +376,8 @@ class Commands:
         min: FloatMinMaxT,
         max: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     def zrangestore(
         self,
@@ -387,10 +387,10 @@ class Commands:
         max: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> int: ...
-    def zrank(self, key: str, member: str) -> Union[int, None]: ...
+    def zrank(self, key: str, member: str) -> Optional[int]: ...
     def zrem(self, key: str, *members: str) -> int: ...
     def zremrangebylex(self, key: str, min: str, max: str) -> int: ...
     def zremrangebyrank(self, key: str, start: int, stop: int) -> int: ...
@@ -405,8 +405,8 @@ class Commands:
         key: str,
         max: str,
         min: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> List[str]: ...
     def zrevrangebyscore(
         self,
@@ -414,22 +414,22 @@ class Commands:
         max: FloatMinMaxT,
         min: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
-    def zrevrank(self, key: str, member: str) -> Union[int, None]: ...
+    def zrevrank(self, key: str, member: str) -> Optional[int]: ...
     def zscan(
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, List[Tuple[str, float]]]: ...
-    def zscore(self, key: str, member: str) -> Union[float, None]: ...
+    def zscore(self, key: str, member: str) -> Optional[float]: ...
     def zunion(
         self,
         keys: List[str],
-        weights: Union[List[float], None] = None,
+        weights: Optional[List[float]] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
@@ -437,29 +437,29 @@ class Commands:
         self,
         destination: str,
         keys: List[str],
-        weights: Union[List[float], None] = None,
+        weights: Optional[List[float]] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int: ...
     def append(self, key: str, value: str) -> int: ...
     def decr(self, key: str) -> int: ...
     def decrby(self, key: str, decrement: int) -> int: ...
-    def get(self, key: str) -> Union[str, None]: ...
-    def getdel(self, key: str) -> Union[str, None]: ...
+    def get(self, key: str) -> Optional[str]: ...
+    def getdel(self, key: str) -> Optional[str]: ...
     def getex(
         self,
         key: str,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        persist: Union[bool, None] = None,
-    ) -> Union[str, None]: ...
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> Optional[str]: ...
     def getrange(self, key: str, start: int, end: int) -> str: ...
-    def getset(self, key: str, value: Value) -> Union[str, None]: ...
+    def getset(self, key: str, value: Value) -> Optional[str]: ...
     def incr(self, key: str) -> int: ...
     def incrby(self, key: str, increment: int) -> int: ...
     def incrbyfloat(self, key: str, increment: float) -> float: ...
-    def mget(self, *keys: str) -> List[Union[str, None]]: ...
+    def mget(self, *keys: str) -> List[Optional[str]]: ...
     def mset(self, values: Mapping[str, Value]) -> Literal[True]: ...
     def msetnx(self, values: Mapping[str, Value]) -> bool: ...
     def psetex(self, key: str, milliseconds: int, value: str) -> Literal[True]: ...
@@ -470,12 +470,12 @@ class Commands:
         nx: bool = False,
         xx: bool = False,
         get: bool = False,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
         keepttl: bool = False,
-    ) -> Union[str, None]: ...
+    ) -> Optional[str]: ...
     def setex(self, key: str, seconds: int, value: Value) -> Literal[True]: ...
     def setnx(self, key: str, value: Value) -> bool: ...
     def setrange(self, key: str, offset: int, value: str) -> int: ...
@@ -490,7 +490,7 @@ class Commands:
 class AsyncCommands:
     def __init__(self): ...
     async def bitcount(
-        self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
+        self, key: str, start: Optional[int] = None, end: Optional[int] = None
     ) -> int: ...
     def bitfield(self, key: str) -> "AsyncBitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "AsyncBitFieldROCommands": ...
@@ -501,12 +501,12 @@ class AsyncCommands:
         self,
         key: str,
         bit: Literal[0, 1],
-        start: Union[int, None] = None,
-        end: Union[int, None] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
     ) -> int: ...
     async def getbit(self, key: str, offset: int) -> Literal[0, 1]: ...
     async def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int: ...
-    async def ping(self, message: Union[str, None] = None) -> str: ...
+    async def ping(self, message: Optional[str] = None) -> str: ...
     async def echo(self, message: str) -> str: ...
     async def copy(
         self, source: str, destination: str, replace: bool = False
@@ -552,19 +552,19 @@ class AsyncCommands:
         lt: bool = False,
     ) -> bool: ...
     async def pttl(self, key: str) -> int: ...
-    async def randomkey(self) -> Union[str, None]: ...
+    async def randomkey(self) -> Optional[str]: ...
     async def rename(self, key: str, newkey: str) -> bool: ...
     async def renamenx(self, key: str, newkey: str) -> bool: ...
     async def scan(
         self,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
-        type: Union[str, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
+        type: Optional[str] = None,
     ) -> Tuple[int, List[str]]: ...
     async def touch(self, *keys: str) -> int: ...
     async def ttl(self, key: str) -> int: ...
-    async def type(self, key: str) -> Union[str, None]: ...
+    async def type(self, key: str) -> Optional[str]: ...
     async def unlink(self, *keys: str) -> int: ...
     async def geoadd(
         self,
@@ -580,8 +580,8 @@ class AsyncCommands:
         member1: str,
         member2: str,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-    ) -> Union[float, None]: ...
-    async def geohash(self, key: str, *members: str) -> List[Union[str, None]]: ...
+    ) -> Optional[float]: ...
+    async def geohash(self, key: str, *members: str) -> List[Optional[str]]: ...
     async def geopos(
         self, key: str, *members: str
     ) -> List[Union[Tuple[float, float], None]]: ...
@@ -595,11 +595,11 @@ class AsyncCommands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
     async def georadius_ro(
         self,
@@ -611,7 +611,7 @@ class AsyncCommands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
@@ -624,11 +624,11 @@ class AsyncCommands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> Union[List[Union[str, GeoSearchResult]], int]: ...
     async def georadiusbymember_ro(
         self,
@@ -639,7 +639,7 @@ class AsyncCommands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> List[Union[str, GeoSearchResult]]: ...
@@ -647,14 +647,14 @@ class AsyncCommands:
         self,
         key: str,
         unit: Literal["M", "KM", "FT", "MI"],
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
@@ -664,37 +664,37 @@ class AsyncCommands:
         self,
         destination: str,
         source: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
     ) -> int: ...
     async def hdel(self, key: str, *fields: str) -> int: ...
     async def hexists(self, key: str, field: str) -> bool: ...
-    async def hget(self, key: str, field: str) -> Union[str, None]: ...
+    async def hget(self, key: str, field: str) -> Optional[str]: ...
     async def hgetall(self, key: str) -> Dict[str, str]: ...
     async def hincrby(self, key: str, field: str, increment: int) -> int: ...
     async def hincrbyfloat(self, key: str, field: str, increment: float) -> float: ...
     async def hkeys(self, key: str) -> List[str]: ...
     async def hlen(self, key: str) -> int: ...
-    async def hmget(self, key: str, *fields: str) -> List[Union[str, None]]: ...
+    async def hmget(self, key: str, *fields: str) -> List[Optional[str]]: ...
     async def hmset(self, key: str, values: Mapping[str, Value]) -> bool: ...
     async def hrandfield(
-        self, key: str, count: Union[int, None] = None, withvalues: bool = False
+        self, key: str, count: Optional[int] = None, withvalues: bool = False
     ) -> Union[str, None, List[str], Dict[str, str]]: ...
     async def hscan(
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, Dict[str, str]]: ...
     async def hset(
         self,
@@ -709,7 +709,7 @@ class AsyncCommands:
     async def pfadd(self, key: str, *elements: Value) -> bool: ...
     async def pfcount(self, *keys: str) -> int: ...
     async def pfmerge(self, destkey: str, *sourcekeys: str) -> bool: ...
-    async def lindex(self, key: str, index: int) -> Union[str, None]: ...
+    async def lindex(self, key: str, index: int) -> Optional[str]: ...
     async def linsert(
         self,
         key: str,
@@ -724,18 +724,18 @@ class AsyncCommands:
         destination: str,
         wherefrom: Literal["LEFT", "RIGHT"] = "LEFT",
         whereto: Literal["LEFT", "RIGHT"] = "RIGHT",
-    ) -> Union[str, None]: ...
+    ) -> Optional[str]: ...
     async def lpop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     async def lpos(
         self,
         key: str,
         element: Value,
-        rank: Union[int, None] = None,
-        count: Union[int, None] = None,
-        maxlen: Union[int, None] = None,
-    ) -> Union[(Union[int, None]), List[int]]: ...
+        rank: Optional[int] = None,
+        count: Optional[int] = None,
+        maxlen: Optional[int] = None,
+    ) -> Union[(Optional[int]), List[int]]: ...
     async def lpush(self, key: str, *elements: Value) -> int: ...
     async def lpushx(self, key: str, *elements: Value) -> int: ...
     async def lrange(self, key: str, start: int, stop: int) -> List[str]: ...
@@ -743,23 +743,23 @@ class AsyncCommands:
     async def lset(self, key: str, index: int, element: Value) -> bool: ...
     async def ltrim(self, key: str, start: int, stop: int) -> str: ...
     async def rpop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
-    async def rpoplpush(self, source: str, destination: str) -> Union[str, None]: ...
+    async def rpoplpush(self, source: str, destination: str) -> Optional[str]: ...
     async def rpush(self, key: str, *elements: Value) -> int: ...
     async def rpushx(self, key: str, *elements: Value) -> int: ...
     async def publish(self, channel: str, message: Value) -> int: ...
     async def eval(
         self,
         script: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> Any: ...
     async def evalsha(
         self,
         sha1: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> Any: ...
     async def dbsize(self) -> int: ...
     async def flushall(
@@ -780,18 +780,18 @@ class AsyncCommands:
     async def smembers(self, key: str) -> Set[str]: ...
     async def smove(self, source: str, destination: str, member: Value) -> bool: ...
     async def spop(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     async def srandmember(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> Union[str, List[str], None]: ...
     async def srem(self, key: str, *members: Value) -> int: ...
     async def sscan(
         self,
         key: str,
         cursor: int = 0,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, List[str]]: ...
     async def sunion(self, *keys: str) -> Set[str]: ...
     async def sunionstore(self, destination: str, *keys: str) -> int: ...
@@ -830,15 +830,15 @@ class AsyncCommands:
     async def zlexcount(self, key: str, min: str, max: str) -> int: ...
     async def zmscore(
         self, key: str, members: List[str]
-    ) -> List[Union[float, None]]: ...
+    ) -> List[Optional[float]]: ...
     async def zpopmax(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> List[Tuple[str, float]]: ...
     async def zpopmin(
-        self, key: str, count: Union[int, None] = None
+        self, key: str, count: Optional[int] = None
     ) -> List[Tuple[str, float]]: ...
     async def zrandmember(
-        self, key: str, count: Union[int, None] = None, withscores: bool = False
+        self, key: str, count: Optional[int] = None, withscores: bool = False
     ) -> Union[str, None, List[str], List[Tuple[str, float]]]: ...
     async def zrange(
         self,
@@ -847,8 +847,8 @@ class AsyncCommands:
         stop: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     async def zrangebylex(
@@ -856,8 +856,8 @@ class AsyncCommands:
         key: str,
         min: str,
         max: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> List[str]: ...
     async def zrangebyscore(
         self,
@@ -865,8 +865,8 @@ class AsyncCommands:
         min: FloatMinMaxT,
         max: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
     async def zrangestore(
         self,
@@ -876,10 +876,10 @@ class AsyncCommands:
         max: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> int: ...
-    async def zrank(self, key: str, member: str) -> Union[int, None]: ...
+    async def zrank(self, key: str, member: str) -> Optional[int]: ...
     async def zrem(self, key: str, *members: str) -> int: ...
     async def zremrangebylex(self, key: str, min: str, max: str) -> int: ...
     async def zremrangebyrank(self, key: str, start: int, stop: int) -> int: ...
@@ -894,8 +894,8 @@ class AsyncCommands:
         key: str,
         max: str,
         min: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> List[str]: ...
     async def zrevrangebyscore(
         self,
@@ -903,22 +903,22 @@ class AsyncCommands:
         max: FloatMinMaxT,
         min: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
-    async def zrevrank(self, key: str, member: str) -> Union[int, None]: ...
+    async def zrevrank(self, key: str, member: str) -> Optional[int]: ...
     async def zscan(
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> Tuple[int, List[Tuple[str, float]]]: ...
-    async def zscore(self, key: str, member: str) -> Union[float, None]: ...
+    async def zscore(self, key: str, member: str) -> Optional[float]: ...
     async def zunion(
         self,
         keys: List[str],
-        weights: Union[List[float], None] = None,
+        weights: Optional[List[float]] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
     ) -> Union[List[str], List[Tuple[str, float]]]: ...
@@ -926,29 +926,29 @@ class AsyncCommands:
         self,
         destination: str,
         keys: List[str],
-        weights: Union[List[float], None] = None,
+        weights: Optional[List[float]] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
     ) -> int: ...
     async def append(self, key: str, value: str) -> int: ...
     async def decr(self, key: str) -> int: ...
     async def decrby(self, key: str, decrement: int) -> int: ...
-    async def get(self, key: str) -> Union[str, None]: ...
-    async def getdel(self, key: str) -> Union[str, None]: ...
+    async def get(self, key: str) -> Optional[str]: ...
+    async def getdel(self, key: str) -> Optional[str]: ...
     async def getex(
         self,
         key: str,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        persist: Union[bool, None] = None,
-    ) -> Union[str, None]: ...
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> Optional[str]: ...
     async def getrange(self, key: str, start: int, end: int) -> str: ...
-    async def getset(self, key: str, value: Value) -> Union[str, None]: ...
+    async def getset(self, key: str, value: Value) -> Optional[str]: ...
     async def incr(self, key: str) -> int: ...
     async def incrby(self, key: str, increment: int) -> int: ...
     async def incrbyfloat(self, key: str, increment: float) -> float: ...
-    async def mget(self, *keys: str) -> List[Union[str, None]]: ...
+    async def mget(self, *keys: str) -> List[Optional[str]]: ...
     async def mset(self, values: Mapping[str, Value]) -> Literal[True]: ...
     async def msetnx(self, values: Mapping[str, Value]) -> bool: ...
     async def psetex(
@@ -961,12 +961,12 @@ class AsyncCommands:
         nx: bool = False,
         xx: bool = False,
         get: bool = False,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
         keepttl: bool = False,
-    ) -> Union[str, None]: ...
+    ) -> Optional[str]: ...
     async def setex(self, key: str, seconds: int, value: Value) -> Literal[True]: ...
     async def setnx(self, key: str, value: Value) -> bool: ...
     async def setrange(self, key: str, offset: int, value: str) -> int: ...

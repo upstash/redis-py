@@ -15,7 +15,7 @@ from upstash_redis.typing import RESTResultT
 
 
 def make_headers(
-    token: str, encoding: Union[Literal["base64"], None], allow_telemetry: bool
+    token: str, encoding: Optional[Literal["base64"]], allow_telemetry: bool
 ) -> Dict[str, str]:
     headers = {
         "Authorization": f"Bearer {token}",
@@ -44,7 +44,7 @@ async def async_execute(
     session: ClientSession,
     url: str,
     headers: Dict[str, str],
-    encoding: Union[Literal["base64"], None],
+    encoding: Optional[Literal["base64"]],
     retries: int,
     retry_interval: float,
     command: List,
@@ -105,7 +105,7 @@ def sync_execute(
     session: Session,
     url: str,
     headers: Dict[str, str],
-    encoding: Union[Literal["base64"], None],
+    encoding: Optional[Literal["base64"]],
     retries: int,
     retry_interval: float,
     command: List[Any],

@@ -16,7 +16,7 @@ class Commands:
         raise NotImplementedError("execute")
 
     def bitcount(
-        self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
+        self, key: str, start: Optional[int] = None, end: Optional[int] = None
     ) -> ResponseT:
         """
         Returns the number of bits set to 1 in a given range.
@@ -119,8 +119,8 @@ class Commands:
         self,
         key: str,
         bit: Literal[0, 1],
-        start: Union[int, None] = None,
-        end: Union[int, None] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the position of the first bit set to 1 or 0 in a string.
@@ -195,7 +195,7 @@ class Commands:
 
         return self.execute(command)
 
-    def ping(self, message: Union[str, None] = None) -> ResponseT:
+    def ping(self, message: Optional[str] = None) -> ResponseT:
         """
         Returns PONG if no argument is provided, otherwise return a copy of the argument as a bulk.
 
@@ -655,9 +655,9 @@ class Commands:
     def scan(
         self,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
-        type: Union[str, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
+        type: Optional[str] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of keys matching the pattern.
@@ -877,11 +877,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadius
@@ -929,7 +929,7 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> ResponseT:
@@ -971,11 +971,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember
@@ -1022,7 +1022,7 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         order: Union[Literal["ASC", "DESC"], None] = None,
     ) -> ResponseT:
@@ -1058,15 +1058,15 @@ class Commands:
     def geosearch(
         self,
         key: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
@@ -1127,15 +1127,15 @@ class Commands:
         self,
         destination: str,
         source: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
         order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
     ) -> ResponseT:
@@ -1406,7 +1406,7 @@ class Commands:
         return self.execute(command)
 
     def hrandfield(
-        self, key: str, count: Union[int, None] = None, withvalues: bool = False
+        self, key: str, count: Optional[int] = None, withvalues: bool = False
     ) -> ResponseT:
         """
         Returns one or more random fields from a hash.
@@ -1464,8 +1464,8 @@ class Commands:
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of keys in a hash matching the pattern.
@@ -1723,7 +1723,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def lpop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the first element of a list.
 
@@ -1760,9 +1760,9 @@ class Commands:
         self,
         key: str,
         element: Value,
-        rank: Union[int, None] = None,
-        count: Union[int, None] = None,
-        maxlen: Union[int, None] = None,
+        rank: Optional[int] = None,
+        count: Optional[int] = None,
+        maxlen: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the index of matching elements inside a list.
@@ -1965,7 +1965,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def rpop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the last element of a list.
 
@@ -2087,8 +2087,8 @@ class Commands:
     def eval(
         self,
         script: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> ResponseT:
         """
         Evaluates a Lua script in the server
@@ -2137,8 +2137,8 @@ class Commands:
     def evalsha(
         self,
         sha1: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> ResponseT:
         """
         Evaluates a Lua script in the server, cached by its SHA1 digest.
@@ -2442,7 +2442,7 @@ class Commands:
 
         return self.execute(command)
 
-    def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def spop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns one or more random members from a set.
 
@@ -2477,7 +2477,7 @@ class Commands:
 
         return self.execute(command)
 
-    def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def srandmember(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Returns one or more random members from a set.
 
@@ -2539,8 +2539,8 @@ class Commands:
         self,
         key: str,
         cursor: int = 0,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of members of a set matching a pattern.
@@ -2982,7 +2982,7 @@ class Commands:
 
         return self.execute(command)
 
-    def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def zpopmax(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the members with the highest scores in a sorted set.
 
@@ -3005,7 +3005,7 @@ class Commands:
 
         return self.execute(command)
 
-    def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def zpopmin(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the members with the lowest scores in a sorted set.
 
@@ -3029,7 +3029,7 @@ class Commands:
         return self.execute(command)
 
     def zrandmember(
-        self, key: str, count: Union[int, None] = None, withscores: bool = False
+        self, key: str, count: Optional[int] = None, withscores: bool = False
     ) -> ResponseT:
         """
         Returns one or more random members from a sorted set.
@@ -3074,8 +3074,8 @@ class Commands:
         stop: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -3130,8 +3130,8 @@ class Commands:
         key: str,
         min: str,
         max: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set between a min and max value ordered lexicographically.
@@ -3169,8 +3169,8 @@ class Commands:
         min: FloatMinMaxT,
         max: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted which have scores between a min and max value.
@@ -3210,8 +3210,8 @@ class Commands:
         max: FloatMinMaxT,
         sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Stores the result of a zrange command in a new sorted set.
@@ -3370,8 +3370,8 @@ class Commands:
         key: str,
         max: str,
         min: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set between a min and max value ordered lexicographically in reverse order.
@@ -3396,8 +3396,8 @@ class Commands:
         max: FloatMinMaxT,
         min: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set whose scores are between a min and max value in reverse order.
@@ -3442,8 +3442,8 @@ class Commands:
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of members and their scores of an ordered set matching a pattern.
@@ -3509,7 +3509,7 @@ class Commands:
     def zunion(
         self,
         keys: List[str],
-        weights: Union[List[float], None] = None,
+        weights: Optional[List[float]] = None,
         aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
         withscores: bool = False,
     ) -> ResponseT:
@@ -3713,11 +3713,11 @@ class Commands:
     def getex(
         self,
         key: str,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        persist: Union[bool, None] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
     ) -> ResponseT:
         """
         Gets the value of a key and optionally set its expiration.
@@ -3972,14 +3972,14 @@ class Commands:
         self,
         key: str,
         value: Value,
-        nx: Union[bool, None] = None,
-        xx: Union[bool, None] = None,
-        get: Union[bool, None] = None,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        keepttl: Union[bool, None] = None,
+        nx: Optional[bool] = None,
+        xx: Optional[bool] = None,
+        get: Optional[bool] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: Optional[bool] = None,
     ) -> ResponseT:
         """
         Sets the value of a key and optionally set its expiration.

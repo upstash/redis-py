@@ -29,7 +29,7 @@ class Redis(AsyncCommands):
         self,
         url: str,
         token: str,
-        rest_encoding: Union[Literal["base64"], None] = "base64",
+        rest_encoding: Optional[Literal["base64"]] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
@@ -60,7 +60,7 @@ class Redis(AsyncCommands):
     @classmethod
     def from_env(
         cls,
-        rest_encoding: Union[Literal["base64"], None] = "base64",
+        rest_encoding: Optional[Literal["base64"]] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
@@ -92,7 +92,7 @@ class Redis(AsyncCommands):
     async def __aexit__(
         self,
         exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
+        exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
         await self.close()
@@ -162,7 +162,7 @@ class _SessionContextManager:
     async def __aexit__(
         self,
         exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
+        exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
         if self._close_session:
