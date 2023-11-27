@@ -15,15 +15,6 @@ async def main():
     # 10 is converted to "10", it's still a string
     await redis.set("key", 10)
 
-    # The dictionary is converted to json, it's still a string
-    await redis.set(
-        "key",
-        {
-            "name": "John",
-            "age": 30,
-        },
-    )
-
     # Expires in 10 seconds
     await redis.set("expire_key", value="expire_value", ex=10)
 
