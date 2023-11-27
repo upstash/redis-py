@@ -50,7 +50,7 @@ class Redis(AsyncCommands):
 
         self._allow_telemetry = allow_telemetry
 
-        self._rest_encoding = rest_encoding
+        self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
