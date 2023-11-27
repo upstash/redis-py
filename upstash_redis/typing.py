@@ -1,4 +1,4 @@
-from typing import List, Literal, TypedDict, Union, Dict
+from typing import List, Literal, TypedDict, Union
 
 """
 The type of the "result" field returned by the REST API. 
