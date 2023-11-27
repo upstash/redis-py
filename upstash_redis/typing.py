@@ -10,7 +10,7 @@ Types that are automatically converted into string before getting sent to redis.
 
 So they are still stored as strings. This is just a shorthand for the user.
 """
-Value = Union[str, int, float, bool]
+ValueT = Union[str, int, float, bool]
 
 # "str" allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
 FloatMinMaxT = Union[float, str]

@@ -1,7 +1,7 @@
 import datetime
 from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
-from upstash_redis.typing import FloatMinMaxT, Value
+from upstash_redis.typing import FloatMinMaxT, ValueT
 from upstash_redis.utils import (handle_georadius_write_exceptions,
                                  handle_geosearch_exceptions,
                                  handle_non_deprecated_zrange_exceptions,
@@ -1380,7 +1380,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hmset(self, key: str, values: Mapping[str, Value]) -> ResponseT:
+    def hmset(self, key: str, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
 
@@ -1509,8 +1509,8 @@ class Commands:
         self,
         key: str,
         field: Optional[str] = None,
-        value: Optional[Value] = None,
-        values: Optional[Mapping[str, Value]] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
     ) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
@@ -1548,7 +1548,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hsetnx(self, key: str, field: str, value: Value) -> ResponseT:
+    def hsetnx(self, key: str, field: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a field in a hash, only if the field does not exist.
 
@@ -1611,7 +1611,7 @@ class Commands:
 
         return self.execute(command)
 
-    def pfadd(self, key: str, *elements: Value) -> ResponseT:
+    def pfadd(self, key: str, *elements: ValueT) -> ResponseT:
         """
         See https://redis.io/commands/pfadd
         """
@@ -1656,7 +1656,7 @@ class Commands:
         self,
         key: str,
         where: Literal["BEFORE", "AFTER"],
-        pivot: Value,
+        pivot: ValueT,
         element: str,
     ) -> ResponseT:
         """
@@ -1759,7 +1759,7 @@ class Commands:
     def lpos(
         self,
         key: str,
-        element: Value,
+        element: ValueT,
         rank: Optional[int] = None,
         count: Optional[int] = None,
         maxlen: Optional[int] = None,
@@ -1809,7 +1809,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpush(self, key: str, *elements: Value) -> ResponseT:
+    def lpush(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the left side of a list.
 
@@ -1832,7 +1832,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpushx(self, key: str, *elements: Value) -> ResponseT:
+    def lpushx(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the left side of a list, only if the list exists.
 
@@ -1887,7 +1887,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lrem(self, key: str, count: int, element: Value) -> ResponseT:
+    def lrem(self, key: str, count: int, element: ValueT) -> ResponseT:
         """
         Removes the first `count` occurrences of an element from a list.
 
@@ -1913,7 +1913,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lset(self, key: str, index: int, element: Value) -> ResponseT:
+    def lset(self, key: str, index: int, element: ValueT) -> ResponseT:
         """
         Sets the value of an element in a list by its index.
 
@@ -2019,7 +2019,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpush(self, key: str, *elements: Value) -> ResponseT:
+    def rpush(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the right side of a list.
 
@@ -2042,7 +2042,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpushx(self, key: str, *elements: Value) -> ResponseT:
+    def rpushx(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the right side of a list only if the list exists.
 
@@ -2066,7 +2066,7 @@ class Commands:
 
         return self.execute(command)
 
-    def publish(self, channel: str, message: Value) -> ResponseT:
+    def publish(self, channel: str, message: ValueT) -> ResponseT:
         """
         Publishes a message to a channel.
 
@@ -2220,7 +2220,7 @@ class Commands:
 
         return self.execute(command)
 
-    def sadd(self, key: str, *members: Value) -> ResponseT:
+    def sadd(self, key: str, *members: ValueT) -> ResponseT:
         """
         Adds one or more members to a set.
 
@@ -2363,7 +2363,7 @@ class Commands:
 
         return self.execute(command)
 
-    def sismember(self, key: str, member: Value) -> ResponseT:
+    def sismember(self, key: str, member: ValueT) -> ResponseT:
         """
         Checks if a member is in a set.
 
@@ -2389,7 +2389,7 @@ class Commands:
 
         return self.execute(command)
 
-    def smismember(self, key: str, *members: Value) -> ResponseT:
+    def smismember(self, key: str, *members: ValueT) -> ResponseT:
         """
         Checks if multiple members are in a set.
 
@@ -2416,7 +2416,7 @@ class Commands:
 
         return self.execute(command)
 
-    def smove(self, source: str, destination: str, member: Value) -> ResponseT:
+    def smove(self, source: str, destination: str, member: ValueT) -> ResponseT:
         """
         Moves a member from one set to another atomically.
 
@@ -2512,7 +2512,7 @@ class Commands:
 
         return self.execute(command)
 
-    def srem(self, key: str, *members: Value) -> ResponseT:
+    def srem(self, key: str, *members: ValueT) -> ResponseT:
         """
         Removes one or more members from a set.
 
@@ -3788,7 +3788,7 @@ class Commands:
 
         return self.execute(command)
 
-    def getset(self, key: str, value: Value) -> ResponseT:
+    def getset(self, key: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and return its old value.
 
@@ -3900,7 +3900,7 @@ class Commands:
 
         return self.execute(command)
 
-    def mset(self, values: Mapping[str, Value]) -> ResponseT:
+    def mset(self, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets multiple keys to multiple values.
 
@@ -3924,7 +3924,7 @@ class Commands:
 
         return self.execute(command)
 
-    def msetnx(self, values: Mapping[str, Value]) -> ResponseT:
+    def msetnx(self, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets multiple keys to multiple values, only if none of the keys exist.
 
@@ -3947,7 +3947,7 @@ class Commands:
 
         return self.execute(command)
 
-    def psetex(self, key: str, milliseconds: int, value: Value) -> ResponseT:
+    def psetex(self, key: str, milliseconds: int, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and set its expiration in milliseconds.
 
@@ -3971,7 +3971,7 @@ class Commands:
     def set(
         self,
         key: str,
-        value: Value,
+        value: ValueT,
         nx: Optional[bool] = None,
         xx: Optional[bool] = None,
         get: Optional[bool] = None,
@@ -4056,7 +4056,7 @@ class Commands:
 
         return self.execute(command)
 
-    def setex(self, key: str, seconds: int, value: Value) -> ResponseT:
+    def setex(self, key: str, seconds: int, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and set its expiration in seconds.
 
@@ -4075,7 +4075,7 @@ class Commands:
 
         return self.execute(command)
 
-    def setnx(self, key: str, value: Value) -> ResponseT:
+    def setnx(self, key: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a key, only if the key does not already exist.
 
