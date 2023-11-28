@@ -1,7 +1,7 @@
 import datetime
-from typing import Any, Awaitable, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
-from upstash_redis.typing import FloatMinMaxT
+from upstash_redis.typing import FloatMinMaxT, ValueT
 from upstash_redis.utils import (handle_georadius_write_exceptions,
                                  handle_geosearch_exceptions,
                                  handle_non_deprecated_zrange_exceptions,
@@ -16,7 +16,7 @@ class Commands:
         raise NotImplementedError("execute")
 
     def bitcount(
-        self, key: str, start: Union[int, None] = None, end: Union[int, None] = None
+        self, key: str, start: Optional[int] = None, end: Optional[int] = None
     ) -> ResponseT:
         """
         Returns the number of bits set to 1 in a given range.
@@ -119,8 +119,8 @@ class Commands:
         self,
         key: str,
         bit: Literal[0, 1],
-        start: Union[int, None] = None,
-        end: Union[int, None] = None,
+        start: Optional[int] = None,
+        end: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the position of the first bit set to 1 or 0 in a string.
@@ -195,7 +195,7 @@ class Commands:
 
         return self.execute(command)
 
-    def ping(self, message: Union[str, None] = None) -> ResponseT:
+    def ping(self, message: Optional[str] = None) -> ResponseT:
         """
         Returns PONG if no argument is provided, otherwise return a copy of the argument as a bulk.
 
@@ -655,9 +655,9 @@ class Commands:
     def scan(
         self,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
-        type: Union[str, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
+        type: Optional[str] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of keys matching the pattern.
@@ -877,11 +877,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadius
@@ -929,9 +929,9 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadius_ro
@@ -971,11 +971,11 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
-        store: Union[str, None] = None,
-        storedist: Union[str, None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
+        store: Optional[str] = None,
+        storedist: Optional[str] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember
@@ -1022,9 +1022,9 @@ class Commands:
         withdist: bool = False,
         withhash: bool = False,
         withcoord: bool = False,
-        count: Union[int, None] = None,
+        count: Optional[int] = None,
         any: bool = False,
-        order: Union[Literal["ASC", "DESC"], None] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
     ) -> ResponseT:
         """
         See https://redis.io/commands/georadiusbymember_ro
@@ -1058,15 +1058,15 @@ class Commands:
     def geosearch(
         self,
         key: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
+        count: Optional[int] = None,
         any: bool = False,
         withdist: bool = False,
         withhash: bool = False,
@@ -1127,15 +1127,15 @@ class Commands:
         self,
         destination: str,
         source: str,
-        member: Union[str, None] = None,
-        longitude: Union[float, None] = None,
-        latitude: Union[float, None] = None,
+        member: Optional[str] = None,
+        longitude: Optional[float] = None,
+        latitude: Optional[float] = None,
         unit: Literal["M", "KM", "FT", "MI"] = "M",
-        radius: Union[float, None] = None,
-        width: Union[float, None] = None,
-        height: Union[float, None] = None,
-        order: Union[Literal["ASC", "DESC"], None] = None,
-        count: Union[int, None] = None,
+        radius: Optional[float] = None,
+        width: Optional[float] = None,
+        height: Optional[float] = None,
+        order: Optional[Literal["ASC", "DESC"]] = None,
+        count: Optional[int] = None,
         any: bool = False,
         storedist: bool = False,
     ) -> ResponseT:
@@ -1380,7 +1380,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hmset(self, key: str, values: Dict[str, Any]) -> ResponseT:
+    def hmset(self, key: str, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
 
@@ -1406,7 +1406,7 @@ class Commands:
         return self.execute(command)
 
     def hrandfield(
-        self, key: str, count: Union[int, None] = None, withvalues: bool = False
+        self, key: str, count: Optional[int] = None, withvalues: bool = False
     ) -> ResponseT:
         """
         Returns one or more random fields from a hash.
@@ -1464,8 +1464,8 @@ class Commands:
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of keys in a hash matching the pattern.
@@ -1509,8 +1509,8 @@ class Commands:
         self,
         key: str,
         field: Optional[str] = None,
-        value: Optional[Any] = None,
-        values: Optional[Dict[str, Any]] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
     ) -> ResponseT:
         """
         Sets the value of one or multiple fields in a hash.
@@ -1548,7 +1548,7 @@ class Commands:
 
         return self.execute(command)
 
-    def hsetnx(self, key: str, field: str, value: Any) -> ResponseT:
+    def hsetnx(self, key: str, field: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a field in a hash, only if the field does not exist.
 
@@ -1611,7 +1611,7 @@ class Commands:
 
         return self.execute(command)
 
-    def pfadd(self, key: str, *elements: Any) -> ResponseT:
+    def pfadd(self, key: str, *elements: ValueT) -> ResponseT:
         """
         See https://redis.io/commands/pfadd
         """
@@ -1656,7 +1656,7 @@ class Commands:
         self,
         key: str,
         where: Literal["BEFORE", "AFTER"],
-        pivot: Any,
+        pivot: ValueT,
         element: str,
     ) -> ResponseT:
         """
@@ -1723,7 +1723,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def lpop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the first element of a list.
 
@@ -1759,10 +1759,10 @@ class Commands:
     def lpos(
         self,
         key: str,
-        element: str,
-        rank: Union[int, None] = None,
-        count: Union[int, None] = None,
-        maxlen: Union[int, None] = None,
+        element: ValueT,
+        rank: Optional[int] = None,
+        count: Optional[int] = None,
+        maxlen: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the index of matching elements inside a list.
@@ -1809,7 +1809,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpush(self, key: str, *elements: str) -> ResponseT:
+    def lpush(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the left side of a list.
 
@@ -1832,7 +1832,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lpushx(self, key: str, *elements: str) -> ResponseT:
+    def lpushx(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the left side of a list, only if the list exists.
 
@@ -1887,7 +1887,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lrem(self, key: str, count: int, element: str) -> ResponseT:
+    def lrem(self, key: str, count: int, element: ValueT) -> ResponseT:
         """
         Removes the first `count` occurrences of an element from a list.
 
@@ -1913,7 +1913,7 @@ class Commands:
 
         return self.execute(command)
 
-    def lset(self, key: str, index: int, element: str) -> ResponseT:
+    def lset(self, key: str, index: int, element: ValueT) -> ResponseT:
         """
         Sets the value of an element in a list by its index.
 
@@ -1965,7 +1965,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def rpop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the last element of a list.
 
@@ -2019,7 +2019,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpush(self, key: str, *elements: str) -> ResponseT:
+    def rpush(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the right side of a list.
 
@@ -2042,7 +2042,7 @@ class Commands:
 
         return self.execute(command)
 
-    def rpushx(self, key: str, *elements: Any) -> ResponseT:
+    def rpushx(self, key: str, *elements: ValueT) -> ResponseT:
         """
         Pushes an element to the right side of a list only if the list exists.
 
@@ -2066,7 +2066,7 @@ class Commands:
 
         return self.execute(command)
 
-    def publish(self, channel: str, message: str) -> ResponseT:
+    def publish(self, channel: str, message: ValueT) -> ResponseT:
         """
         Publishes a message to a channel.
 
@@ -2087,8 +2087,8 @@ class Commands:
     def eval(
         self,
         script: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List, None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> ResponseT:
         """
         Evaluates a Lua script in the server
@@ -2137,8 +2137,8 @@ class Commands:
     def evalsha(
         self,
         sha1: str,
-        keys: Union[List[str], None] = None,
-        args: Union[List[str], None] = None,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
     ) -> ResponseT:
         """
         Evaluates a Lua script in the server, cached by its SHA1 digest.
@@ -2184,7 +2184,7 @@ class Commands:
         return self.execute(command)
 
     def flushall(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
         See https://redis.io/commands/flushall
@@ -2198,7 +2198,7 @@ class Commands:
         return self.execute(command)
 
     def flushdb(
-        self, flush_type: Union[Literal["ASYNC", "SYNC"], None] = None
+        self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> ResponseT:
         """
         See https://redis.io/commands/flushdb
@@ -2220,7 +2220,7 @@ class Commands:
 
         return self.execute(command)
 
-    def sadd(self, key: str, *members: str) -> ResponseT:
+    def sadd(self, key: str, *members: ValueT) -> ResponseT:
         """
         Adds one or more members to a set.
 
@@ -2363,7 +2363,7 @@ class Commands:
 
         return self.execute(command)
 
-    def sismember(self, key: str, member: str) -> ResponseT:
+    def sismember(self, key: str, member: ValueT) -> ResponseT:
         """
         Checks if a member is in a set.
 
@@ -2389,7 +2389,7 @@ class Commands:
 
         return self.execute(command)
 
-    def smismember(self, key: str, *members: str) -> ResponseT:
+    def smismember(self, key: str, *members: ValueT) -> ResponseT:
         """
         Checks if multiple members are in a set.
 
@@ -2416,7 +2416,7 @@ class Commands:
 
         return self.execute(command)
 
-    def smove(self, source: str, destination: str, member: str) -> ResponseT:
+    def smove(self, source: str, destination: str, member: ValueT) -> ResponseT:
         """
         Moves a member from one set to another atomically.
 
@@ -2442,7 +2442,7 @@ class Commands:
 
         return self.execute(command)
 
-    def spop(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def spop(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns one or more random members from a set.
 
@@ -2477,7 +2477,7 @@ class Commands:
 
         return self.execute(command)
 
-    def srandmember(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def srandmember(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Returns one or more random members from a set.
 
@@ -2512,7 +2512,7 @@ class Commands:
 
         return self.execute(command)
 
-    def srem(self, key: str, *members: str) -> ResponseT:
+    def srem(self, key: str, *members: ValueT) -> ResponseT:
         """
         Removes one or more members from a set.
 
@@ -2539,8 +2539,8 @@ class Commands:
         self,
         key: str,
         cursor: int = 0,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of members of a set matching a pattern.
@@ -2837,7 +2837,7 @@ class Commands:
         self,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -2889,7 +2889,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> ResponseT:
         """
         Calculates the intersection between multiple sorted sets and stores it in a key.
@@ -2982,7 +2982,7 @@ class Commands:
 
         return self.execute(command)
 
-    def zpopmax(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def zpopmax(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the members with the highest scores in a sorted set.
 
@@ -3005,7 +3005,7 @@ class Commands:
 
         return self.execute(command)
 
-    def zpopmin(self, key: str, count: Union[int, None] = None) -> ResponseT:
+    def zpopmin(self, key: str, count: Optional[int] = None) -> ResponseT:
         """
         Removes and returns the members with the lowest scores in a sorted set.
 
@@ -3029,7 +3029,7 @@ class Commands:
         return self.execute(command)
 
     def zrandmember(
-        self, key: str, count: Union[int, None] = None, withscores: bool = False
+        self, key: str, count: Optional[int] = None, withscores: bool = False
     ) -> ResponseT:
         """
         Returns one or more random members from a sorted set.
@@ -3072,10 +3072,10 @@ class Commands:
         key: str,
         start: FloatMinMaxT,
         stop: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -3130,8 +3130,8 @@ class Commands:
         key: str,
         min: str,
         max: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set between a min and max value ordered lexicographically.
@@ -3169,8 +3169,8 @@ class Commands:
         min: FloatMinMaxT,
         max: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted which have scores between a min and max value.
@@ -3208,10 +3208,10 @@ class Commands:
         src: str,
         min: FloatMinMaxT,
         max: FloatMinMaxT,
-        sortby: Union[Literal["BYSCORE", "BYLEX"], None] = None,
+        sortby: Optional[Literal["BYSCORE", "BYLEX"]] = None,
         rev: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Stores the result of a zrange command in a new sorted set.
@@ -3370,8 +3370,8 @@ class Commands:
         key: str,
         max: str,
         min: str,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set between a min and max value ordered lexicographically in reverse order.
@@ -3396,8 +3396,8 @@ class Commands:
         max: FloatMinMaxT,
         min: FloatMinMaxT,
         withscores: bool = False,
-        offset: Union[int, None] = None,
-        count: Union[int, None] = None,
+        offset: Optional[int] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns the members of a sorted set whose scores are between a min and max value in reverse order.
@@ -3442,8 +3442,8 @@ class Commands:
         self,
         key: str,
         cursor: int,
-        match: Union[str, None] = None,
-        count: Union[int, None] = None,
+        match: Optional[str] = None,
+        count: Optional[int] = None,
     ) -> ResponseT:
         """
         Returns a paginated list of members and their scores of an ordered set matching a pattern.
@@ -3509,8 +3509,8 @@ class Commands:
     def zunion(
         self,
         keys: List[str],
-        weights: Union[List[float], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        weights: Optional[List[float]] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
         withscores: bool = False,
     ) -> ResponseT:
         """
@@ -3560,7 +3560,7 @@ class Commands:
         destination: str,
         keys: List[str],
         weights: Union[List[float], List[int], None] = None,
-        aggregate: Union[Literal["SUM", "MIN", "MAX"], None] = None,
+        aggregate: Optional[Literal["SUM", "MIN", "MAX"]] = None,
     ) -> ResponseT:
         """
         Returns the union between multiple sorted sets.
@@ -3713,11 +3713,11 @@ class Commands:
     def getex(
         self,
         key: str,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        persist: Union[bool, None] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
     ) -> ResponseT:
         """
         Gets the value of a key and optionally set its expiration.
@@ -3788,7 +3788,7 @@ class Commands:
 
         return self.execute(command)
 
-    def getset(self, key: str, value: str) -> ResponseT:
+    def getset(self, key: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and return its old value.
 
@@ -3900,7 +3900,7 @@ class Commands:
 
         return self.execute(command)
 
-    def mset(self, values: Dict[str, Any]) -> ResponseT:
+    def mset(self, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets multiple keys to multiple values.
 
@@ -3924,7 +3924,7 @@ class Commands:
 
         return self.execute(command)
 
-    def msetnx(self, values: Dict[str, Any]) -> ResponseT:
+    def msetnx(self, values: Mapping[str, ValueT]) -> ResponseT:
         """
         Sets multiple keys to multiple values, only if none of the keys exist.
 
@@ -3947,7 +3947,7 @@ class Commands:
 
         return self.execute(command)
 
-    def psetex(self, key: str, milliseconds: int, value: str) -> ResponseT:
+    def psetex(self, key: str, milliseconds: int, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and set its expiration in milliseconds.
 
@@ -3971,15 +3971,15 @@ class Commands:
     def set(
         self,
         key: str,
-        value: Any,
-        nx: Union[bool, None] = None,
-        xx: Union[bool, None] = None,
-        get: Union[bool, None] = None,
-        ex: Union[int, None] = None,
-        px: Union[int, None] = None,
-        exat: Union[int, None] = None,
-        pxat: Union[int, None] = None,
-        keepttl: Union[bool, None] = None,
+        value: ValueT,
+        nx: Optional[bool] = None,
+        xx: Optional[bool] = None,
+        get: Optional[bool] = None,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: Optional[bool] = None,
     ) -> ResponseT:
         """
         Sets the value of a key and optionally set its expiration.
@@ -4056,7 +4056,7 @@ class Commands:
 
         return self.execute(command)
 
-    def setex(self, key: str, seconds: int, value: str) -> ResponseT:
+    def setex(self, key: str, seconds: int, value: ValueT) -> ResponseT:
         """
         Sets the value of a key and set its expiration in seconds.
 
@@ -4075,7 +4075,7 @@ class Commands:
 
         return self.execute(command)
 
-    def setnx(self, key: str, value: str) -> ResponseT:
+    def setnx(self, key: str, value: ValueT) -> ResponseT:
         """
         Sets the value of a key, only if the key does not already exist.
 

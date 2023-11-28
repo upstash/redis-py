@@ -1,7 +1,7 @@
 import asyncio
 from os import environ
 from platform import python_version
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Literal, Optional
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -216,7 +216,7 @@ def test_decode(arg: Any, expected: Any) -> None:
 )
 def test_make_headers(
     token: str,
-    encoding: Union[Literal["base64"], None],
+    encoding: Optional[Literal["base64"]],
     allow_telemetry: bool,
     expected: Dict[str, str],
 ) -> None:

@@ -1,4 +1,4 @@
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional
 
 from upstash_redis.typing import FloatMinMaxT
 
@@ -15,10 +15,10 @@ def handle_georadius_write_exceptions(
     withdist: bool = False,
     withhash: bool = False,
     withcoord: bool = False,
-    count: Union[int, None] = None,
+    count: Optional[int] = None,
     any: bool = False,
-    store: Union[str, None] = None,
-    storedist: Union[str, None] = None,
+    store: Optional[str] = None,
+    storedist: Optional[str] = None,
 ) -> None:
     """
     Handle exceptions for "GEORADIUS*" write commands.
@@ -34,13 +34,13 @@ def handle_georadius_write_exceptions(
 
 
 def handle_geosearch_exceptions(
-    member: Union[str, None],
-    longitude: Union[float, None],
-    latitude: Union[float, None],
-    radius: Union[float, None],
-    width: Union[float, None],
-    height: Union[float, None],
-    count: Union[int, None],
+    member: Optional[str],
+    longitude: Optional[float],
+    latitude: Optional[float],
+    radius: Optional[float],
+    width: Optional[float],
+    height: Optional[float],
+    count: Optional[int],
     any: bool,
 ) -> None:
     """
@@ -68,11 +68,11 @@ def handle_geosearch_exceptions(
 
 
 def handle_non_deprecated_zrange_exceptions(
-    sortby: Union[Literal["BYLEX", "BYSCORE"], None],
+    sortby: Optional[Literal["BYLEX", "BYSCORE"]],
     start: FloatMinMaxT,
     stop: FloatMinMaxT,
-    offset: Union[int, None],
-    count: Union[int, None],
+    offset: Optional[int],
+    count: Optional[int],
 ) -> None:
     """
     Handle exceptions for non-deprecated "ZRANGE*" commands.
@@ -97,8 +97,8 @@ the ranging method is "BYLEX"."""
 def handle_zrangebylex_exceptions(
     min: str,
     max: str,
-    offset: Union[int, None],
-    count: Union[int, None],
+    offset: Optional[int],
+    count: Optional[int],
 ) -> None:
     """
     Handle exceptions for "ZRANGEBYLEX" and "ZREVRANGEBYLEX" commands.

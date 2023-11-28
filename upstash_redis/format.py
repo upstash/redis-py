@@ -1,4 +1,4 @@
-from typing import Callable, Dict, List, Literal, Tuple, Union
+from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.typing import GeoSearchResult
 
@@ -12,7 +12,7 @@ def list_to_dict(raw: List, command=None) -> Dict:
 
 
 def format_geopos(
-    raw: List[Union[List[str], None]], command=None
+    raw: List[Optional[List[str]]], command=None
 ) -> List[Union[Tuple[float, float], None]]:
     return [
         (float(member[0]), float(member[1])) if isinstance(member, List) else None
@@ -120,8 +120,8 @@ def format_sorted_set_return(raw: List[str], command=None) -> List[Tuple[str, fl
 
 
 def format_float_list(
-    raw: List[Union[str, None]], command=None
-) -> List[Union[float, None]]:
+    raw: List[Optional[str]], command=None
+) -> List[Optional[float]]:
     """
     Format a list of strings representing floats or None values.
     """

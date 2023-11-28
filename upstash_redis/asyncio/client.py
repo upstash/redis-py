@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Literal, Optional, Type, Union
+from typing import Any, List, Literal, Optional, Type
 
 from aiohttp import ClientSession
 
@@ -29,7 +29,7 @@ class Redis(AsyncCommands):
         self,
         url: str,
         token: str,
-        rest_encoding: Union[Literal["base64"], None] = "base64",
+        rest_encoding: Optional[Literal["base64"]] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
@@ -50,7 +50,7 @@ class Redis(AsyncCommands):
 
         self._allow_telemetry = allow_telemetry
 
-        self._rest_encoding = rest_encoding
+        self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
@@ -60,7 +60,7 @@ class Redis(AsyncCommands):
     @classmethod
     def from_env(
         cls,
-        rest_encoding: Union[Literal["base64"], None] = "base64",
+        rest_encoding: Optional[Literal["base64"]] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
@@ -91,8 +91,8 @@ class Redis(AsyncCommands):
 
     async def __aexit__(
         self,
-        exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
         await self.close()
@@ -161,8 +161,8 @@ class _SessionContextManager:
 
     async def __aexit__(
         self,
-        exc_type: Union[Type[BaseException], None],
-        exc_val: Union[BaseException, None],
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
         if self._close_session:
