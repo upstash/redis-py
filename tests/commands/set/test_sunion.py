@@ -51,7 +51,8 @@ def test_sunion_single_set(redis: Redis):
     result = redis.sunion(set1)
 
     # Assert that set1 itself is returned
-    assert result == {"apple", "banana", "cherry"}
+    result.sort()
+    assert result == ["apple", "banana", "cherry"]
 
     with pytest.raises(Exception):
         redis.sunion()

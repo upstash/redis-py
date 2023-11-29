@@ -30,7 +30,4 @@ def test_sinterstore(redis: Redis):
     expected_result = 1  # Number of elements in the resulting set
     assert result == expected_result
 
-    # Check the elements in the resulting set
-    result_set_elements = redis.smembers(result_set)
-    expected_elements = {"element3"}  # Expected elements in the resulting set
-    assert result_set_elements == expected_elements
+    assert redis.smembers(result_set) == ["element3"]
