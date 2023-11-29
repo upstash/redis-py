@@ -1,6 +1,7 @@
 from pytest import mark, raises
 
 from upstash_redis.asyncio import Redis
+from upstash_redis.utils import GeoSearchResult
 
 
 # GEORADIUSBYMEMBER tests in GEOSEARCH
@@ -31,8 +32,8 @@ async def test_with_distance(async_redis: Redis) -> None:
         radius=200,
         withdist=True,
     ) == [
-        {"member": "Palermo", "distance": 166.2742},
-        {"member": "Catania", "distance": 0.0},
+        GeoSearchResult(member="Palermo", distance=166.2742),
+        GeoSearchResult(member="Catania", distance=0.0),
     ]
 
 
@@ -45,8 +46,8 @@ async def test_with_hash(async_redis: Redis) -> None:
         unit="KM",
         withhash=True,
     ) == [
-        {"member": "Palermo", "hash": 3479099956230698},
-        {"member": "Catania", "hash": 3479447370796909},
+        GeoSearchResult(member="Palermo", hash=3479099956230698),
+        GeoSearchResult(member="Catania", hash=3479447370796909),
     ]
 
 
@@ -59,16 +60,16 @@ async def test_with_coordinates(async_redis: Redis) -> None:
         unit="KM",
         withcoord=True,
     ) == [
-        {
-            "member": "Palermo",
-            "longitude": 13.3613893389701841,
-            "latitude": 38.115556395496299,
-        },
-        {
-            "member": "Catania",
-            "longitude": 15.087267458438873,
-            "latitude": 37.50266842333162,
-        },
+        GeoSearchResult(
+            member="Palermo",
+            longitude=13.3613893389701841,
+            latitude=38.115556395496299,
+        ),
+        GeoSearchResult(
+            member="Catania",
+            longitude=15.087267458438873,
+            latitude=37.50266842333162,
+        ),
     ]
 
 

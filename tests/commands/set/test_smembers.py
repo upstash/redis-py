@@ -20,4 +20,5 @@ def test_smembers(redis: Redis):
     members = redis.smembers(set_name)
 
     # Assert that the members are correct
-    assert members == {"element1", "element2", "element3"}
+    members.sort()
+    assert members == ["element1", "element2", "element3"]

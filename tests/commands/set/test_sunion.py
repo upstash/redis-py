@@ -26,7 +26,8 @@ def test_sunion(redis: Redis):
     result = redis.sunion(set1, set2)
 
     # Assert that the union of both sets is returned
-    assert result == {"apple", "banana", "cherry", "date"}
+    result.sort()
+    assert result == ["apple", "banana", "cherry", "date"]
 
 
 def test_sunion_empty_sets(redis: Redis):
@@ -37,7 +38,7 @@ def test_sunion_empty_sets(redis: Redis):
     result = redis.sunion(set1, set2)
 
     # Assert that an empty set is returned
-    assert result == set()
+    assert result == []
 
 
 def test_sunion_single_set(redis: Redis):

@@ -24,5 +24,5 @@ def test_sdiff(redis: Redis):
 
     result = redis.sdiff(set1, set2, set3)
 
-    expected_result = {"element6", "element1"}
-    assert result == expected_result
+    result.sort()
+    assert result == ["element1", "element6"]

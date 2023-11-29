@@ -1,6 +1,20 @@
+from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 from upstash_redis.typing import FloatMinMaxT
+
+
+@dataclass
+class GeoSearchResult:
+    """
+    Represents the result of the geo-search related commands.
+    """
+
+    member: str
+    distance: Optional[float] = None
+    hash: Optional[int] = None
+    longitude: Optional[float] = None
+    latitude: Optional[float] = None
 
 
 def number_are_not_none(*parameters: Any, number: int) -> bool:

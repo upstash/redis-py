@@ -2,11 +2,13 @@ import datetime
 from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT, ValueT
-from upstash_redis.utils import (handle_georadius_write_exceptions,
-                                 handle_geosearch_exceptions,
-                                 handle_non_deprecated_zrange_exceptions,
-                                 handle_zrangebylex_exceptions,
-                                 number_are_not_none)
+from upstash_redis.utils import (
+    handle_georadius_write_exceptions,
+    handle_geosearch_exceptions,
+    handle_non_deprecated_zrange_exceptions,
+    handle_zrangebylex_exceptions,
+    number_are_not_none,
+)
 
 ResponseT = Union[Awaitable, Any]
 
@@ -125,7 +127,7 @@ class Commands:
         """
         Returns the position of the first bit set to 1 or 0 in a string.
         If no bit is set, -1 is returned.
-        
+
         Example:
         ```python
         redis.setbit("mykey", 7, 1)
@@ -607,7 +609,7 @@ class Commands:
         Renames a key and overwrites the new key if it already exists.
 
         Throws an exception if the key does not exist.
-        
+
         Example:
         ```
         redis.set("key1", "Hello")
@@ -710,7 +712,7 @@ class Commands:
         redis.set("key1", "Hello")
 
         assert redis.touch("key1") == 1
-        
+
         ```
 
         See https://redis.io/commands/touch
@@ -1742,7 +1744,7 @@ class Commands:
 
         # Multiple
         redis.rpush("mylist", "one", "two", "three")
-        
+
         assert redis.lpop("mylist", 2) == ["one", "two"]
         ```
 
@@ -1777,13 +1779,13 @@ class Commands:
         If the element does not exist, None is returned.
 
         Example:
-        ```py 
-        redis.rpush("key", "a", "b", "c"); 
+        ```py
+        redis.rpush("key", "a", "b", "c");
 
         assert redis.lpos("key", "b") == 1
 
-        # With Rank 
-        redis.rpush("key", "a", "b", "c", "b"); 
+        # With Rank
+        redis.rpush("key", "a", "b", "c", "b");
 
         assert redis.lpos("key", "b", rank=2) == 3
 
@@ -2320,8 +2322,8 @@ class Commands:
 
         Example:
         ```python
-        redis.sadd("set1", "a", "b", "c"); 
-        redis.sadd("set2", "c", "d", "e"); 
+        redis.sadd("set1", "a", "b", "c");
+        redis.sadd("set2", "c", "d", "e");
 
         assert redis.sinter("set1", "set2") == {"c"}
         ```
@@ -2346,9 +2348,9 @@ class Commands:
 
         Example:
         ```
-        redis.sadd("set1", "a", "b", "c"); 
+        redis.sadd("set1", "a", "b", "c");
 
-        redis.sadd("set2", "c", "d", "e"); 
+        redis.sadd("set2", "c", "d", "e");
 
         assert redis.sinter("destination", "set1", "set2") == 1
         ```
@@ -2449,7 +2451,7 @@ class Commands:
         If count is specified, multiple members are popped from the set.
 
         Returns a single member if count is not specified.
-        
+
         Returns a list of members if count is specified.
 
         If the set is empty or does not exist, None is returned.
@@ -2501,7 +2503,7 @@ class Commands:
 
         assert redis.srandmember("myset", 2) in {"one", "two", "three"}
         ```
-        
+
         See https://redis.io/commands/srandmember
         """
 
@@ -3174,7 +3176,7 @@ class Commands:
     ) -> ResponseT:
         """
         Returns the members of a sorted which have scores between a min and max value.
-        
+
         Deprecated: use zrange with sortby="BYSCORE" instead.
 
         Example:

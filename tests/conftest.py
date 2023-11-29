@@ -72,7 +72,7 @@ commands: List[List] = [
         "a",
         "string_without_expire",
         "a",
-        #Other expire stuff
+        # Other expire stuff
         "string_for_persist",
         "a",
         "string_for_ttl",

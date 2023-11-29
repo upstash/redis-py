@@ -133,3 +133,6 @@ dmypy.json
 
 # VS Code settings
 .vscode
+
+# Poetry lock
+poetry.lock

@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 
 from upstash_redis import Redis
 
@@ -19,7 +19,7 @@ class ChatModel:
     def __init__(self, redis: Redis):
         self.redis = redis
 
-    def get_user_chats(self, user_id: str) -> Set[str]:
+    def get_user_chats(self, user_id: str) -> List[str]:
         # A set of chat ids for a user, stores which chats belong to the user
         return self.redis.smembers(f"user:{user_id}:chats")
 
@@ -95,7 +95,7 @@ print("chatids after deletion:", chat.get_user_chats(userid))
 # Output
 # chatid_1: 1
 # chatid_2: 2
-# chat_ids: {'2', '1'}
+# chat_ids: ['2', '1']
 # chat 1 messages: ['user:Hello', 'bot:Hello', 'user:How are you?']
 # chat 2 messages: ['user:This is chat2']
-# chatids after deletion: set()
+# chatids after deletion: []

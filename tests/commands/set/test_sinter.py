@@ -25,5 +25,4 @@ def test_sinter(redis: Redis):
     # Compute the intersection of sets
     result = redis.sinter(set1, set2, set3)
 
-    expected_result = {"element3"}  # Expected elements in the intersection
-    assert result == expected_result
+    assert result == ["element3"]

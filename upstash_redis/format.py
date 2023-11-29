@@ -1,6 +1,6 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
-from upstash_redis.typing import GeoSearchResult
+from upstash_redis.utils import GeoSearchResult
 
 
 def list_to_dict(raw: List, command=None) -> Dict:
@@ -40,7 +40,7 @@ def format_geo_search_result(
     All represented as strings
     """
 
-    result: List[GeoSearchResult] = []
+    results: List[GeoSearchResult] = []
 
     # (metin): mypy has trouble narrowing down the types in this function.
     # We can use typing.cast(str, xxx) to force it manually narrow
@@ -49,36 +49,36 @@ def format_geo_search_result(
     # there is a better way of doing it, I wil just ignore the errors.
 
     for member in raw:
-        formatted: GeoSearchResult = {"member": member[0]}  # type: ignore[typeddict-item]
+        result = GeoSearchResult(member[0])  # type: ignore[arg-type]
 
         if with_distance:
-            formatted["distance"] = float(member[1])  # type: ignore[arg-type]
+            result.distance = float(member[1])  # type: ignore[arg-type]
 
             if with_hash:
-                formatted["hash"] = int(member[2])  # type: ignore[arg-type]
+                result.hash = int(member[2])  # type: ignore[arg-type]
 
                 if with_coordinates:
-                    formatted["longitude"] = float(member[3][0])  # type: ignore[arg-type]
-                    formatted["latitude"] = float(member[3][1])  # type: ignore[arg-type]
+                    result.longitude = float(member[3][0])  # type: ignore[arg-type]
+                    result.latitude = float(member[3][1])  # type: ignore[arg-type]
 
             elif with_coordinates:
-                formatted["longitude"] = float(member[2][0])  # type: ignore[arg-type]
-                formatted["latitude"] = float(member[2][1])  # type: ignore[arg-type]
+                result.longitude = float(member[2][0])  # type: ignore[arg-type]
+                result.latitude = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_hash:
-            formatted["hash"] = int(member[1])  # type: ignore[arg-type]
+            result.hash = int(member[1])  # type: ignore[arg-type]
 
             if with_coordinates:
-                formatted["longitude"] = float(member[2][0])  # type: ignore[arg-type]
-                formatted["latitude"] = float(member[2][1])  # type: ignore[arg-type]
+                result.longitude = float(member[2][0])  # type: ignore[arg-type]
+                result.latitude = float(member[2][1])  # type: ignore[arg-type]
 
         elif with_coordinates:
-            formatted["longitude"] = float(member[1][0])  # type: ignore[arg-type]
-            formatted["latitude"] = float(member[1][1])  # type: ignore[arg-type]
+            result.longitude = float(member[1][0])  # type: ignore[arg-type]
+            result.latitude = float(member[1][1])  # type: ignore[arg-type]
 
-        result.append(formatted)
+        results.append(result)
 
-    return result
+    return results
 
 
 def format_hash_return(raw: List[str], command=None) -> Dict[str, str]:
@@ -119,14 +119,13 @@ def format_sorted_set_return(raw: List[str], command=None) -> List[Tuple[str, fl
     return list(zip(it, map(float, it)))
 
 
-def format_float_list(
-    raw: List[Optional[str]], command=None
-) -> List[Optional[float]]:
+def format_float_list(raw: List[Optional[str]], command=None) -> List[Optional[float]]:
     """
     Format a list of strings representing floats or None values.
     """
 
     return [float(value) if value is not None else None for value in raw]
+
 
 def set_formatter(res, command):
     options = command[3:]
@@ -134,9 +133,6 @@ def set_formatter(res, command):
     if "GET" in options:
         return res
     return res == "OK"
-
-def to_set(res, command):
-    return set(res)
 
 
 def ok_to_bool(res, command):
@@ -329,10 +325,6 @@ FORMATTERS: Dict[str, Callable] = {
     "MSETNX": to_bool,
     "HMSET": ok_to_bool,
     "LSET": ok_to_bool,
-    "SMEMBERS": to_set,
-    "SDIFF": to_set,
-    "SINTER": to_set,
-    "SUNION": to_set,
     "SCRIPT FLUSH": ok_to_bool,
     "SCRIPT EXISTS": list_to_bool_list,
 }
