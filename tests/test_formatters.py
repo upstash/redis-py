@@ -6,6 +6,7 @@ from upstash_redis.format import (
     format_time,
     list_to_dict,
 )
+from upstash_redis.utils import GeoSearchResult
 
 
 def test_list_to_dict() -> None:
@@ -34,20 +35,20 @@ def test_format_geo_members_with_distance_and_hash_and_coordinates() -> None:
         with_hash=True,
         with_coordinates=True,
     ) == [
-        {
-            "member": "a",
-            "distance": 2.51,
-            "hash": 100,
-            "longitude": 3.12,
-            "latitude": 4.23,
-        },
-        {
-            "member": "b",
-            "distance": 5.6,
-            "hash": 200,
-            "longitude": 7.1,
-            "latitude": 8.2,
-        },
+        GeoSearchResult(
+            member="a",
+            distance=2.51,
+            hash=100,
+            longitude=3.12,
+            latitude=4.23,
+        ),
+        GeoSearchResult(
+            member="b",
+            distance=5.6,
+            hash=200,
+            longitude=7.1,
+            latitude=8.2,
+        ),
     ]
 
 
@@ -61,8 +62,8 @@ def test_format_geo_members_with_distance() -> None:
         with_hash=False,
         with_coordinates=False,
     ) == [
-        {"member": "a", "distance": 2.51},
-        {"member": "b", "distance": 5.6},
+        GeoSearchResult(member="a", distance=2.51),
+        GeoSearchResult(member="b", distance=5.6),
     ]
 
 
@@ -76,8 +77,8 @@ def test_format_geo_members_with_hash() -> None:
         with_hash=True,
         with_coordinates=False,
     ) == [
-        {"member": "a", "hash": 100},
-        {"member": "b", "hash": 200},
+        GeoSearchResult(member="a", hash=100),
+        GeoSearchResult(member="b", hash=200),
     ]
 
 
@@ -91,8 +92,8 @@ def test_format_geo_members_with_coordinates() -> None:
         with_hash=False,
         with_coordinates=True,
     ) == [
-        {"member": "a", "longitude": 3.12, "latitude": 4.23},
-        {"member": "b", "longitude": 7.1, "latitude": 8.2},
+        GeoSearchResult(member="a", longitude=3.12, latitude=4.23),
+        GeoSearchResult(member="b", longitude=7.1, latitude=8.2),
     ]
 
 
@@ -106,8 +107,8 @@ def test_format_geo_members_with_distance_and_hash() -> None:
         with_hash=True,
         with_coordinates=False,
     ) == [
-        {"member": "a", "distance": 2.51, "hash": 100},
-        {"member": "b", "distance": 5.6, "hash": 200},
+        GeoSearchResult(member="a", distance=2.51, hash=100),
+        GeoSearchResult(member="b", distance=5.6, hash=200),
     ]
 
 
@@ -121,8 +122,8 @@ def test_format_geo_members_with_distance_and_coordinates() -> None:
         with_hash=False,
         with_coordinates=True,
     ) == [
-        {"member": "a", "distance": 2.51, "longitude": 3.12, "latitude": 4.23},
-        {"member": "b", "distance": 5.6, "longitude": 7.1, "latitude": 8.2},
+        GeoSearchResult(member="a", distance=2.51, longitude=3.12, latitude=4.23),
+        GeoSearchResult(member="b", distance=5.6, longitude=7.1, latitude=8.2),
     ]
 
 
@@ -136,8 +137,8 @@ def test_format_geo_members_with_hash_and_coordinates() -> None:
         with_hash=True,
         with_coordinates=True,
     ) == [
-        {"member": "a", "hash": 100, "longitude": 3.12, "latitude": 4.23},
-        {"member": "b", "hash": 200, "longitude": 7.1, "latitude": 8.2},
+        GeoSearchResult(member="a", hash=100, longitude=3.12, latitude=4.23),
+        GeoSearchResult(member="b", hash=200, longitude=7.1, latitude=8.2),
     ]
 
 

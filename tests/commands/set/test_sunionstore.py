@@ -36,7 +36,9 @@ def test_sunionstore(redis: Redis):
     assert result == 4
 
     # Assert that the members in the union set are as expected
-    assert redis.smembers(union_set) == {"apple", "banana", "cherry", "date"}
+    members = redis.smembers(union_set)
+    members.sort()
+    assert members == ["apple", "banana", "cherry", "date"]
 
 
 def test_sunionstore_empty_sets(redis: Redis):
@@ -51,7 +53,7 @@ def test_sunionstore_empty_sets(redis: Redis):
     assert result == 0
 
     # Assert that the union set is also empty
-    assert redis.smembers(union_set) == set()
+    assert redis.smembers(union_set) == []
 
 
 def test_sunionstore_single_set(redis: Redis):
@@ -68,4 +70,6 @@ def test_sunionstore_single_set(redis: Redis):
     assert result == 3
 
     # Assert that the members in the union set are the same as set1
-    assert redis.smembers(union_set) == {"apple", "banana", "cherry"}
+    members = redis.smembers(union_set)
+    members.sort()
+    assert members == ["apple", "banana", "cherry"]

@@ -1,4 +1,4 @@
-from typing import List, Literal, TypedDict, Union
+from typing import List, Literal, Union
 
 """
 The type of the "result" field returned by the REST API. 
@@ -14,15 +14,3 @@ ValueT = Union[str, int, float, bool]
 
 # "str" allows for "-inf" and "+inf". Not to be confused with the lexical min and max type (which is "str").
 FloatMinMaxT = Union[float, str]
-
-
-class GeoSearchResult(TypedDict, total=False):
-    """
-    Represents the result of the geo-search related commands.
-    """
-
-    member: str
-    distance: float
-    hash: int
-    longitude: float
-    latitude: float

@@ -42,6 +42,7 @@ async def test_not_with_more_than_one_source_key(async_redis: Redis) -> None:
         == 'The "NOT " operation takes only one source key as argument.'
     )
 
+
 @mark.asyncio
 async def test_not(async_redis: Redis) -> None:
     assert (

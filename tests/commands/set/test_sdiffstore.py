@@ -30,8 +30,4 @@ def test_sdiffstore(redis: Redis):
     expected_result = 1  # Expected number of elements in the destination set
     assert result == expected_result
 
-    # Get the elements from the destination set
-    destination_set_elements = redis.smembers(destination_set)
-
-    expected_set_elements = {"element1"}  # Expected elements in the destination set
-    assert destination_set_elements == expected_set_elements
+    assert redis.smembers(destination_set) == ["element1"]

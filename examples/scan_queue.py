@@ -16,6 +16,7 @@ from upstash_redis import Redis
 # since a task must be popped from the waiting list by its id,
 # we use a set
 
+
 # scan:completed:123 -> a list of completed tasks for the client
 class TaskQueue:
     def __init__(self, redis: Redis):
@@ -63,6 +64,7 @@ queue = TaskQueue(redis)
 queue.add_scan_task("client1", "https://example.com")
 
 queue.add_scan_task("client1", "https://google.com")
+
 
 # This code will be run by multiple workers
 def work():

@@ -14,7 +14,7 @@ class Redis(Commands):
     A Redis client that uses the Upstash REST API.
 
     Blocking example:
-    
+
     ```python
     from upstash_redis import Redis
 

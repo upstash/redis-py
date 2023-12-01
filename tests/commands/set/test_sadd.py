@@ -18,4 +18,6 @@ def test_sadd(redis: Redis):
     assert result == 3  # Number of elements added to the set
 
     # Verify that the set contains the added elements
-    assert redis.smembers(set_name) == {"element1", "element2", "element3"}
+    members = redis.smembers(set_name)
+    members.sort()
+    assert members == ["element1", "element2", "element3"]
