@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upstash-redis"
-version = "0.15.0"
+version = "1.0.0"
 description = "Serverless Redis SDK from Upstash"
 license = "MIT"
 authors = ["Upstash <support@upstash.com>", "Zgîmbău Tudor <tudor.zgimbau@gmail.com>"]
@@ -9,7 +9,7 @@ readme = "README.md"
 repository = "https://github.com/upstash/redis-python"
 keywords = ["Upstash Redis", "Serverless Redis"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -20,6 +20,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Database",
     "Topic :: Database :: Front-Ends",
