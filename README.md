@@ -1,5 +1,10 @@
 # Upstash Redis Python SDK
 
+> [!NOTE]  
+> **This project is in GA Stage.**
+>
+> The Upstash Professional Support fully covers this project. It receives regular updates, and bug fixes. The Upstash team is committed to maintaining and improving its functionality.
+
 upstash-redis is a connectionless, HTTP-based Redis client for Python, designed to be used in serverless and serverful environments such as:
 - AWS Lambda
 - Vercel Serverless
