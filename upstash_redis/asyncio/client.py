@@ -188,7 +188,7 @@ class AsyncPipeline(Redis):
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
-    def execute(self, command: List) -> None:
+    def execute(self, command: List) -> None: # type: ignore[override]
         self._command_stack.append(command)
 
     async def exec(self) -> List[RESTResultT]:
@@ -202,7 +202,7 @@ class AsyncPipeline(Redis):
             )
 
         async with context_manager:
-            res = await async_execute(
+            res: List[RESTResultT] = await async_execute( # type: ignore[assignment]
                 session=context_manager.session,
                 url=url,
                 headers=self._headers,

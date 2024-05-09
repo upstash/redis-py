@@ -62,7 +62,7 @@ async def async_execute(
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
     command = _format_command(command, from_pipeline=from_pipeline)
 
-    response: Optional[Dict[str, Any]] = None
+    response: Optional[Union[Dict, List[Dict]]] = None
     last_error: Optional[Exception] = None
 
     for attempts_left in range(max(0, retries), -1, -1):
@@ -83,7 +83,7 @@ async def async_execute(
         raise last_error
 
     if not from_pipeline:
-        return format_response(response, encoding)
+        return format_response(response, encoding) # type: ignore[arg-type]
     elif from_pipeline:
         return [
             format_response(sub_response, encoding)
@@ -126,7 +126,7 @@ def sync_execute(
         return format_response(response, encoding)
     elif from_pipeline:
         return [
-            format_response(sub_response, encoding)
+            format_response(sub_response, encoding) # type: ignore[arg-type]
             for sub_response in response
         ]
 

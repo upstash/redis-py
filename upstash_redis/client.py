@@ -194,7 +194,7 @@ class Pipeline(Redis):
     def exec(self) -> List[RESTResultT]:
 
         url = f"{self._url}/{self._multi_exec}"
-        res = sync_execute(
+        res: List[RESTResultT] = sync_execute( # type: ignore[assignment]
             session=self._session,
             url=url,
             headers=self._headers,
