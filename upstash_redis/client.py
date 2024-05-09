@@ -1,13 +1,12 @@
 from os import environ
-from typing import Any, List, Literal, Optional, Type
+from typing import Any, List, Literal, Optional, Type, Dict
 
 from requests import Session
 
 from upstash_redis.commands import Commands
-from upstash_redis.format import FORMATTERS
+from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, sync_execute
 from upstash_redis.typing import RESTResultT
-
 
 class Redis(Commands):
     """
@@ -117,11 +116,103 @@ class Redis(Commands):
             command=command,
         )
 
-        main_command = command[0]
-        if len(command) > 1 and main_command == "SCRIPT":
-            main_command = f"{main_command} {command[1]}"
+        return cast_response(command, res)
 
-        if main_command in FORMATTERS:
-            return FORMATTERS[main_command](res, command)
+    def pipeline(self):
+        return Pipeline(
+            url=self._url,
+            token=self._token,
+            rest_encoding=self._rest_encoding,
+            rest_retries=self._rest_retries,
+            rest_retry_interval=self._rest_retry_interval,
+            allow_telemetry=self._allow_telemetry,
+            headers=self._headers,
+            session=self._session,
+            multi_exec="pipeline"
+        )
 
-        return res
+    def multi(self):
+        return Pipeline(
+            url=self._url,
+            token=self._token,
+            rest_encoding=self._rest_encoding,
+            rest_retries=self._rest_retries,
+            rest_retry_interval=self._rest_retry_interval,
+            allow_telemetry=self._allow_telemetry,
+            headers=self._headers,
+            session=self._session,
+            multi_exec="multi-exec"
+        )
+
+
+class Pipeline(Redis):
+
+    def __init__(
+        self,
+        url: str,
+        token: str,
+        rest_encoding: Optional[Literal["base64"]] = "base64",
+        rest_retries: int = 1,
+        rest_retry_interval: float = 3,  # Seconds.
+        allow_telemetry: bool = True,
+        headers: Optional[Dict[str, str]] = None,
+        session: Optional[Session] = None,
+        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
+    ):
+        """
+        Creates a new blocking Redis client.
+
+        :param url: UPSTASH_REDIS_REST_URL in the console
+        :param token: UPSTASH_REDIS_REST_TOKEN in the console
+        :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
+        :param rest_retries: how many times an HTTP request will be retried if it fails
+        :param rest_retry_interval: how many seconds will be waited between each retry
+        :param allow_telemetry: whether anonymous telemetry can be collected
+        :param headers: request headers
+        :param session: A Requests session
+        :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
+        """
+
+        self._url = url
+        self._token = token
+
+        self._allow_telemetry = allow_telemetry
+
+        self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
+        self._rest_retries = rest_retries
+        self._rest_retry_interval = rest_retry_interval
+
+        self._headers = headers or make_headers(token, rest_encoding, allow_telemetry)
+        self._session = session or Session()
+        
+        self._command_stack: List[List[str]] = []
+        self._multi_exec = multi_exec
+
+    def execute(self, command: List) -> None:
+        self._command_stack.append(command)
+
+    def exec(self) -> List[RESTResultT]:
+
+        url = f"{self._url}/{self._multi_exec}"
+        res = sync_execute(
+            session=self._session,
+            url=url,
+            headers=self._headers,
+            encoding=self._rest_encoding,
+            retries=self._rest_retries,
+            retry_interval=self._rest_retry_interval,
+            command=self._command_stack,
+            from_pipeline=True
+        )
+        response = [
+            cast_response(command, response)
+            for command, response in zip(self._command_stack, res)
+        ]
+        self._command_stack = []
+        return response
+    
+    def pipeline(self):
+        raise NotImplementedError("A pipeline can not be created from a pipeline!")
+    
+    def multi(self):
+        raise NotImplementedError("A pipeline can not be created from a pipeline!")

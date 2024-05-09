@@ -328,3 +328,16 @@ FORMATTERS: Dict[str, Callable] = {
     "SCRIPT FLUSH": ok_to_bool,
     "SCRIPT EXISTS": list_to_bool_list,
 }
+
+def cast_response(command: List[str], response: str):
+
+    # get main command
+    main_command = command[0]
+    if len(command) > 1 and main_command == "SCRIPT":
+        main_command = f"{main_command} {command[1]}"
+
+    # format response
+    if main_command in FORMATTERS:
+        return FORMATTERS[main_command](response, command)
+    
+    return response

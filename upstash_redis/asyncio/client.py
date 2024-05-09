@@ -4,7 +4,7 @@ from typing import Any, List, Literal, Optional, Type
 from aiohttp import ClientSession
 
 from upstash_redis.commands import AsyncCommands
-from upstash_redis.format import FORMATTERS
+from upstash_redis.format import cast_response
 from upstash_redis.http import async_execute, make_headers
 from upstash_redis.typing import RESTResultT
 
@@ -126,14 +126,105 @@ class Redis(AsyncCommands):
                 command=command,
             )
 
-        main_command = command[0]
-        if len(command) > 1 and main_command == "SCRIPT":
-            main_command = f"{main_command} {command[1]}"
+        return cast_response(command, res)
 
-        if main_command in FORMATTERS:
-            return FORMATTERS[main_command](res, command)
+    def pipeline(self):
+        return AsyncPipeline(
+            url=self._url,
+            token=self._token,
+            rest_encoding=self._rest_encoding,
+            rest_retries=self._rest_retries,
+            rest_retry_interval=self._rest_retry_interval,
+            allow_telemetry=self._allow_telemetry,
+            multi_exec="pipeline"
+        )
 
-        return res
+    def multi(self):
+        return AsyncPipeline(
+            url=self._url,
+            token=self._token,
+            rest_encoding=self._rest_encoding,
+            rest_retries=self._rest_retries,
+            rest_retry_interval=self._rest_retry_interval,
+            allow_telemetry=self._allow_telemetry,
+            multi_exec="multi-exec"
+        )
+
+
+class AsyncPipeline(Redis):
+
+    def __init__(
+        self,
+        url: str,
+        token: str,
+        rest_encoding: Optional[Literal["base64"]] = "base64",
+        rest_retries: int = 1,
+        rest_retry_interval: float = 3,  # Seconds.
+        allow_telemetry: bool = True,
+        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
+    ):
+        """
+        Creates a new blocking Redis client.
+
+        :param url: UPSTASH_REDIS_REST_URL in the console
+        :param token: UPSTASH_REDIS_REST_TOKEN in the console
+        :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
+        :param rest_retries: how many times an HTTP request will be retried if it fails
+        :param rest_retry_interval: how many seconds will be waited between each retry
+        :param allow_telemetry: whether anonymous telemetry can be collected
+        :param headers: request headers
+        :param session: A Requests session
+        :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
+        """
+        super().__init__(
+            url=url,
+            token=token,
+            rest_encoding=rest_encoding,
+            rest_retries=rest_retries,
+            rest_retry_interval=rest_retry_interval,
+            allow_telemetry=allow_telemetry,
+        )
+        
+        self._command_stack: List[List[str]] = []
+        self._multi_exec = multi_exec
+
+    def execute(self, command: List) -> None:
+        self._command_stack.append(command)
+
+    async def exec(self) -> List[RESTResultT]:
+
+        url = f"{self._url}/{self._multi_exec}"
+        
+        context_manager = self._context_manager
+        if not context_manager:
+            context_manager = _SessionContextManager(
+                ClientSession(), close_session=True
+            )
+
+        async with context_manager:
+            res = await async_execute(
+                session=context_manager.session,
+                url=url,
+                headers=self._headers,
+                encoding=self._rest_encoding,
+                retries=self._rest_retries,
+                retry_interval=self._rest_retry_interval,
+                command=self._command_stack,
+                from_pipeline=True
+            )
+
+        response = [
+            cast_response(command, response)
+            for command, response in zip(self._command_stack, res)
+        ]
+        self._command_stack = []
+        return response
+    
+    def pipeline(self):
+        raise NotImplementedError("A pipeline can not be created from a pipeline!")
+    
+    def multi(self):
+        raise NotImplementedError("A pipeline can not be created from a pipeline!")
 
 
 class _SessionContextManager:

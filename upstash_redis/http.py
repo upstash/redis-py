@@ -4,7 +4,7 @@ from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from aiohttp import ClientSession
 from requests import Session
@@ -48,7 +48,8 @@ async def async_execute(
     retries: int,
     retry_interval: float,
     command: List,
-) -> RESTResultT:
+    from_pipeline: bool = False
+) -> Union[RESTResultT, List[RESTResultT]]:
     """
     Execute the given command over the REST API.
 
@@ -59,16 +60,7 @@ async def async_execute(
     """
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
-    command = [
-        element
-        if (
-            isinstance(element, str)
-            or isinstance(element, int)
-            or isinstance(element, float)
-        )
-        else dumps(element)
-        for element in command
-    ]
+    command = _format_command(command, from_pipeline=from_pipeline)
 
     response: Optional[Dict[str, Any]] = None
     last_error: Optional[Exception] = None
@@ -90,15 +82,13 @@ async def async_execute(
         # Exhausted all retries, but no response is received
         raise last_error
 
-    if response.get("error"):
-        raise UpstashError(response["error"])
-
-    result = response["result"]
-
-    if encoding == "base64":
-        return decode(result)
-
-    return result
+    if not from_pipeline:
+        return format_response(response, encoding)
+    elif from_pipeline:
+        return [
+            format_response(sub_response, encoding)
+            for sub_response in response
+        ]
 
 
 def sync_execute(
@@ -109,17 +99,9 @@ def sync_execute(
     retries: int,
     retry_interval: float,
     command: List[Any],
-) -> RESTResultT:
-    command = [
-        element
-        if (
-            isinstance(element, str)
-            or isinstance(element, int)
-            or isinstance(element, float)
-        )
-        else dumps(element)
-        for element in command
-    ]
+    from_pipeline: bool = False
+) -> Union[RESTResultT, List[RESTResultT]]:
+    command = _format_command(command, from_pipeline=from_pipeline)
 
     response: Optional[Dict[str, Any]] = None
     last_error: Optional[Exception] = None
@@ -140,9 +122,26 @@ def sync_execute(
         # Exhausted all retries, but no response is received
         raise last_error
 
+    if not from_pipeline:
+        return format_response(response, encoding)
+    elif from_pipeline:
+        return [
+            format_response(sub_response, encoding)
+            for sub_response in response
+        ]
+
+def format_response(
+        response: Dict[str, Any],
+        encoding: Optional[Literal["base64"]]
+) -> RESTResultT:
+    """
+    Raise exception if the response is an error
+
+    Otherwise, decode if an encoding was used
+    """
     if response.get("error"):
         raise UpstashError(response["error"])
-
+    
     result = response["result"]
 
     if encoding == "base64":
@@ -168,3 +167,28 @@ def decode(raw: RESTResultT) -> RESTResultT:
         ]
     else:
         raise UpstashError(f"Error decoding data for result type {str(type(raw))}")
+
+
+def _format_command(command: List[Any], from_pipeline: bool = False):
+    """
+    Format command
+
+    If not from_pipeline, treat the command as a single command. Otherwise,
+    treat it as a list of commands
+    """
+    if from_pipeline:
+        return [
+            _format_command(command=pipeline_command, from_pipeline=False)
+            for pipeline_command in command
+        ]
+    
+    return [
+        element
+        if (
+            isinstance(element, str)
+            or isinstance(element, int)
+            or isinstance(element, float)
+        )
+        else dumps(element)
+        for element in command
+    ]
