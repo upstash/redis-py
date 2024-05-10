@@ -119,6 +119,9 @@ class Redis(Commands):
         return cast_response(command, res)
 
     def pipeline(self):
+        """
+        Create a pipeline to send commands in batches
+        """
         return Pipeline(
             url=self._url,
             token=self._token,
@@ -132,6 +135,9 @@ class Redis(Commands):
         )
 
     def multi(self):
+        """
+        Create a pipeline to send commands in batches as a transaction
+        """
         return Pipeline(
             url=self._url,
             token=self._token,
@@ -189,10 +195,18 @@ class Pipeline(Redis):
         self._multi_exec = multi_exec
 
     def execute(self, command: List) -> None:
+        """
+        Adds commnd to the command stack which will be sent as a batch
+        later
+
+        :param command: Command to execute
+        """
         self._command_stack.append(command)
 
     def exec(self) -> List[RESTResultT]:
-
+        """
+        Executes the commands in the pipeline by sending them as a batch
+        """
         url = f"{self._url}/{self._multi_exec}"
         res: List[RESTResultT] = sync_execute( # type: ignore[assignment]
             session=self._session,

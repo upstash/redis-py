@@ -331,6 +331,13 @@ FORMATTERS: Dict[str, Callable] = {
 }
 
 def cast_response(command: List[str], response: RESTResultT):
+    """
+    Given a command and its response, casts the response using the `FORMATTERS`
+    map
+
+    :param command: Used to determine the formatting to apply
+    :param response: Response to format 
+    """
 
     # get main command
     main_command = command[0]

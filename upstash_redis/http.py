@@ -184,11 +184,7 @@ def _format_command(command: List[Any], from_pipeline: bool = False):
     
     return [
         element
-        if (
-            isinstance(element, str)
-            or isinstance(element, int)
-            or isinstance(element, float)
-        )
+        if isinstance(element, (str, int, float))
         else dumps(element)
         for element in command
     ]

@@ -129,6 +129,9 @@ class Redis(AsyncCommands):
         return cast_response(command, res)
 
     def pipeline(self):
+        """
+        Create a pipeline to send commands in batches
+        """
         return AsyncPipeline(
             url=self._url,
             token=self._token,
@@ -140,6 +143,9 @@ class Redis(AsyncCommands):
         )
 
     def multi(self):
+        """
+        Create a pipeline to send commands in batches as a transaction
+        """
         return AsyncPipeline(
             url=self._url,
             token=self._token,
@@ -172,8 +178,6 @@ class AsyncPipeline(Redis):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
-        :param headers: request headers
-        :param session: A Requests session
         :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
         """
         super().__init__(
@@ -189,10 +193,18 @@ class AsyncPipeline(Redis):
         self._multi_exec = multi_exec
 
     def execute(self, command: List) -> None: # type: ignore[override]
+        """
+        Adds commnd to the command stack which will be sent as a batch
+        later
+
+        :param command: Command to execute
+        """
         self._command_stack.append(command)
 
     async def exec(self) -> List[RESTResultT]:
-
+        """
+        Executes the commands in the pipeline by sending them as a batch
+        """
         url = f"{self._url}/{self._multi_exec}"
         
         context_manager = self._context_manager
