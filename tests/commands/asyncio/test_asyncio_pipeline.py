@@ -60,3 +60,38 @@ def test_raises(async_redis: Redis):
         multi.pipeline()
     with pytest.raises(NotImplementedError):
         multi.multi()
+
+@pytest.mark.asyncio
+async def test_context_manager_usage(async_redis: Redis):
+
+    async with async_redis.pipeline() as pipeline:
+        pipeline.incr("rocket")
+        pipeline.incr("rocket")
+        pipeline.incr("space")
+        pipeline.incr("rocket")
+        pipeline.incr("space")
+        pipeline.incr("rocket")
+
+    # redis still works after pipeline is done
+    result = await async_redis.get("rocket")
+    assert result == "4"
+
+    get_pipeline = async_redis.pipeline()
+    get_pipeline.get("rocket")
+    get_pipeline.get("space")
+    get_pipeline.get("marine")
+
+    res = await get_pipeline.exec()
+    assert res == ["4", "2", None]
+
+@pytest.mark.asyncio
+def test_context_manager_raise(async_redis: Redis):
+    """
+    Check that exceptions in context aren't silently ignored
+
+    This can happen if we return something in __exit__ method
+    """
+    with pytest.raises(Exception):
+        with async_redis.pipeline() as pipeline:
+            pipeline.incr("rocket")
+            raise Exception("test")

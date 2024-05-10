@@ -238,6 +238,21 @@ class AsyncPipeline(Redis):
     def multi(self):
         raise NotImplementedError("A pipeline can not be created from a pipeline!")
 
+    async def __aenter__(self) -> "Redis":
+        self._context_manager = _SessionContextManager(
+            ClientSession(), close_session=False
+        )
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Any,
+    ) -> None:
+        await self.exec()
+        await self.close()
+
 
 class _SessionContextManager:
     """

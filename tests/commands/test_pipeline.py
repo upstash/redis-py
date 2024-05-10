@@ -56,3 +56,36 @@ def test_raises(redis: Redis):
         multi.pipeline()
     with pytest.raises(NotImplementedError):
         multi.multi()
+
+def test_context_manager_usage(redis: Redis):
+
+    with redis.pipeline() as pipeline:
+        pipeline.incr("rocket")
+        pipeline.incr("rocket")
+        pipeline.incr("space")
+        pipeline.incr("rocket")
+        pipeline.incr("space")
+        pipeline.incr("rocket")
+
+    # redis still works after pipeline is done
+    result = redis.get("rocket")
+    assert result == "4"
+
+    get_pipeline = redis.pipeline()
+    get_pipeline.get("rocket")
+    get_pipeline.get("space")
+    get_pipeline.get("marine")
+
+    res = get_pipeline.exec()
+    assert res == ["4", "2", None]
+
+def test_context_manager_raise(redis: Redis):
+    """
+    Check that exceptions in context aren't silently ignored
+
+    This can happen if we return something in __exit__ method
+    """
+    with pytest.raises(Exception):
+        with redis.pipeline() as pipeline:
+            pipeline.incr("rocket")
+            raise Exception("test")
