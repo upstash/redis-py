@@ -6,7 +6,7 @@ from upstash_redis.asyncio import Redis
 
 @pytest_asyncio.fixture(autouse=True)
 async def flush_db(async_redis: Redis):
-    await async_redis.flushdb()
+    await async_redis.delete("rocket", "space", "marine")
 
 @pytest.mark.asyncio
 async def test_pipeline(async_redis: Redis):

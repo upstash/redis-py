@@ -5,7 +5,7 @@ from upstash_redis import Redis
 
 @pytest.fixture(autouse=True)
 def flush_db(redis: Redis):
-    redis.flushdb()
+    redis.delete("rocket", "space", "marine")
 
 def test_pipeline(redis: Redis):
 
