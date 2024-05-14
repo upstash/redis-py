@@ -3,7 +3,7 @@ from typing import Any, List, Literal, Optional, Type
 
 from aiohttp import ClientSession
 
-from upstash_redis.commands import AsyncCommands
+from upstash_redis.commands import AsyncCommands, PipelineCommands
 from upstash_redis.format import cast_response
 from upstash_redis.http import async_execute, make_headers
 from upstash_redis.typing import RESTResultT
@@ -128,7 +128,7 @@ class Redis(AsyncCommands):
 
         return cast_response(command, res)
 
-    def pipeline(self):
+    def pipeline(self) -> "AsyncPipeline":
         """
         Create a pipeline to send commands in batches
         """
@@ -142,7 +142,7 @@ class Redis(AsyncCommands):
             multi_exec="pipeline"
         )
 
-    def multi(self):
+    def multi(self) -> "AsyncPipeline":
         """
         Create a pipeline to send commands in batches as a transaction
         """
@@ -157,7 +157,7 @@ class Redis(AsyncCommands):
         )
 
 
-class AsyncPipeline(Redis):
+class AsyncPipeline(PipelineCommands):
 
     def __init__(
         self,
@@ -180,19 +180,23 @@ class AsyncPipeline(Redis):
         :param allow_telemetry: whether anonymous telemetry can be collected
         :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
         """
-        super().__init__(
-            url=url,
-            token=token,
-            rest_encoding=rest_encoding,
-            rest_retries=rest_retries,
-            rest_retry_interval=rest_retry_interval,
-            allow_telemetry=allow_telemetry,
-        )
+
+        self._url = url
+        self._token = token
+
+        self._allow_telemetry = allow_telemetry
+
+        self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
+        self._rest_retries = rest_retries
+        self._rest_retry_interval = rest_retry_interval
+
+        self._headers = make_headers(token, rest_encoding, allow_telemetry)
+        self._context_manager: Optional[_SessionContextManager] = None
         
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
-    def execute(self, command: List) -> None: # type: ignore[override]
+    def execute(self, command: List) -> "AsyncPipeline": # type: ignore[override]
         """
         Adds commnd to the command stack which will be sent as a batch
         later
@@ -200,6 +204,7 @@ class AsyncPipeline(Redis):
         :param command: Command to execute
         """
         self._command_stack.append(command)
+        return self
 
     async def exec(self) -> List[RESTResultT]:
         """
@@ -231,14 +236,8 @@ class AsyncPipeline(Redis):
         ]
         self._command_stack = []
         return response
-    
-    def pipeline(self):
-        raise NotImplementedError("A pipeline can not be created from a pipeline!")
-    
-    def multi(self):
-        raise NotImplementedError("A pipeline can not be created from a pipeline!")
 
-    async def __aenter__(self) -> "Redis":
+    async def __aenter__(self) -> "AsyncPipeline":
         self._context_manager = _SessionContextManager(
             ClientSession(), close_session=False
         )
@@ -251,7 +250,6 @@ class AsyncPipeline(Redis):
         exc_tb: Any,
     ) -> None:
         await self.exec()
-        await self.close()
 
 
 class _SessionContextManager:

@@ -20,9 +20,8 @@ async def test_pipeline(async_redis: Redis):
     pipeline.incr("space")
     pipeline.incr("rocket")
 
-    pipeline.get("rocket")
-    pipeline.get("space")
-    pipeline.get("marine")
+    # can chain commands
+    pipeline.get("rocket").get("space").get("marine")
 
     res = await pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
@@ -45,21 +44,6 @@ async def test_multi(async_redis: Redis):
 
     res = await pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
-
-@pytest.mark.asyncio
-def test_raises(async_redis: Redis):
-
-    pipeline = async_redis.pipeline()
-    with pytest.raises(NotImplementedError):
-        pipeline.pipeline()
-    with pytest.raises(NotImplementedError):
-        pipeline.multi()
-
-    multi = async_redis.multi()
-    with pytest.raises(NotImplementedError):
-        multi.pipeline()
-    with pytest.raises(NotImplementedError):
-        multi.multi()
 
 @pytest.mark.asyncio
 async def test_context_manager_usage(async_redis: Redis):
@@ -85,13 +69,13 @@ async def test_context_manager_usage(async_redis: Redis):
     assert res == ["4", "2", None]
 
 @pytest.mark.asyncio
-def test_context_manager_raise(async_redis: Redis):
+async def test_context_manager_raise(async_redis: Redis):
     """
     Check that exceptions in context aren't silently ignored
 
     This can happen if we return something in __exit__ method
     """
     with pytest.raises(Exception):
-        with async_redis.pipeline() as pipeline:
+        async with async_redis.pipeline() as pipeline:
             pipeline.incr("rocket")
             raise Exception("test")

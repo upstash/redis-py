@@ -18,9 +18,7 @@ def test_pipeline(redis: Redis):
     pipeline.incr("space")
     pipeline.incr("rocket")
 
-    pipeline.get("rocket")
-    pipeline.get("space")
-    pipeline.get("marine")
+    pipeline.get("rocket").get("space").get("marine")
 
     res = pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
@@ -42,20 +40,6 @@ def test_multi(redis: Redis):
 
     res = pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
-
-def test_raises(redis: Redis):
-
-    pipeline = redis.pipeline()
-    with pytest.raises(NotImplementedError):
-        pipeline.pipeline()
-    with pytest.raises(NotImplementedError):
-        pipeline.multi()
-
-    multi = redis.multi()
-    with pytest.raises(NotImplementedError):
-        multi.pipeline()
-    with pytest.raises(NotImplementedError):
-        multi.multi()
 
 def test_context_manager_usage(redis: Redis):
 

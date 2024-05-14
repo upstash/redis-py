@@ -3,7 +3,7 @@ from typing import Any, List, Literal, Optional, Type, Dict
 
 from requests import Session
 
-from upstash_redis.commands import Commands
+from upstash_redis.commands import Commands, PipelineCommands
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, sync_execute
 from upstash_redis.typing import RESTResultT
@@ -118,7 +118,7 @@ class Redis(Commands):
 
         return cast_response(command, res)
 
-    def pipeline(self):
+    def pipeline(self) -> "Pipeline":
         """
         Create a pipeline to send commands in batches
         """
@@ -134,7 +134,7 @@ class Redis(Commands):
             multi_exec="pipeline"
         )
 
-    def multi(self):
+    def multi(self) -> "Pipeline":
         """
         Create a pipeline to send commands in batches as a transaction
         """
@@ -151,7 +151,7 @@ class Redis(Commands):
         )
 
 
-class Pipeline(Redis):
+class Pipeline(PipelineCommands):
 
     def __init__(
         self,
@@ -194,7 +194,7 @@ class Pipeline(Redis):
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
-    def execute(self, command: List) -> None:
+    def execute(self, command: List) -> "Pipeline":
         """
         Adds commnd to the command stack which will be sent as a batch
         later
@@ -202,6 +202,7 @@ class Pipeline(Redis):
         :param command: Command to execute
         """
         self._command_stack.append(command)
+        return self
 
     def exec(self) -> List[RESTResultT]:
         """
@@ -224,12 +225,12 @@ class Pipeline(Redis):
         ]
         self._command_stack = []
         return response
-    
-    def pipeline(self):
-        raise NotImplementedError("A pipeline can not be created from a pipeline!")
-    
-    def multi(self):
-        raise NotImplementedError("A pipeline can not be created from a pipeline!")
+
+    def close(self):
+        """
+        Closes the resources associated with the client.
+        """
+        self._session.close()
 
     def __enter__(self):
         return self
