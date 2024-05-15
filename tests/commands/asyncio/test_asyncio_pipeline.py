@@ -57,7 +57,12 @@ async def test_context_manager_usage(async_redis: Redis):
         pipeline.incr("rocket")
         result = await pipeline.exec()
 
+        # add a command to the pipeline which will be
+        # removed from the pipeline when we exit the context
+        pipeline.set("foo", "bar")
+
     assert result == [1, 2, 1, 3, 2, 4]
+    assert len(pipeline._command_stack) == 0 # pipeline is empty
 
     # redis still works after pipeline is done
     get_result = await async_redis.get("rocket")
@@ -82,3 +87,17 @@ async def test_context_manager_raise(async_redis: Redis):
         async with async_redis.pipeline() as pipeline:
             pipeline.incr("rocket")
             raise Exception("test")
+
+@pytest.mark.asyncio
+async def test_run_pipeline_twice(async_redis: Redis):
+    """
+    Runs a pipeline twice
+    """
+    pipeline = async_redis.pipeline()
+    pipeline.incr("albatros")
+    result = await pipeline.exec()
+    assert result == [1]
+
+    pipeline.incrby("albatros", 2)
+    result = await pipeline.exec()
+    assert result == [3]

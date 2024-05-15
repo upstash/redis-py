@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Literal, Optional, Type
+from typing import Any, List, Literal, Optional, Type, Dict
 
 from aiohttp import ClientSession
 
@@ -139,6 +139,8 @@ class Redis(AsyncCommands):
             rest_retries=self._rest_retries,
             rest_retry_interval=self._rest_retry_interval,
             allow_telemetry=self._allow_telemetry,
+            headers=self._headers,
+            context_manager=self._context_manager,
             multi_exec="pipeline"
         )
 
@@ -153,6 +155,8 @@ class Redis(AsyncCommands):
             rest_retries=self._rest_retries,
             rest_retry_interval=self._rest_retry_interval,
             allow_telemetry=self._allow_telemetry,
+            headers=self._headers,
+            context_manager=self._context_manager,
             multi_exec="multi-exec"
         )
 
@@ -167,6 +171,8 @@ class AsyncPipeline(PipelineCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
+        context_manager: Optional["_SessionContextManager"] = None,
+        headers: Optional[Dict[str, str]] = None,
         multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
     ):
         """
@@ -178,6 +184,8 @@ class AsyncPipeline(PipelineCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param context_manager: context manager
+        :param headers: request headers
         :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
         """
 
@@ -190,8 +198,10 @@ class AsyncPipeline(PipelineCommands):
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
-        self._headers = make_headers(token, rest_encoding, allow_telemetry)
-        self._context_manager: Optional[_SessionContextManager] = None
+        self._headers = headers or make_headers(token, rest_encoding, allow_telemetry)
+        self._context_manager = context_manager or _SessionContextManager(
+            ClientSession(), close_session=True
+        )
         
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
@@ -213,11 +223,6 @@ class AsyncPipeline(PipelineCommands):
         url = f"{self._url}/{self._multi_exec}"
         
         context_manager = self._context_manager
-        if not context_manager:
-            context_manager = _SessionContextManager(
-                ClientSession(), close_session=True
-            )
-
         async with context_manager:
             res: List[RESTResultT] = await async_execute( # type: ignore[assignment]
                 session=context_manager.session,
@@ -234,13 +239,16 @@ class AsyncPipeline(PipelineCommands):
             cast_response(command, response)
             for command, response in zip(self._command_stack, res)
         ]
-        self._command_stack = []
+        self.reset()
         return response
 
+    def reset(self):
+        """
+        Resets the commands in the pipeline
+        """
+        self._command_stack = []
+
     async def __aenter__(self) -> "AsyncPipeline":
-        self._context_manager = _SessionContextManager(
-            ClientSession(), close_session=False
-        )
         return self
 
     async def __aexit__(
@@ -249,15 +257,7 @@ class AsyncPipeline(PipelineCommands):
         exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
-        await self.close()
-
-    async def close(self) -> None:
-        """
-        Closes the resources associated with the client.
-        """
-        if self._context_manager:
-            await self._context_manager.close_session()
-            self._context_manager = None
+        self.reset()
 
 
 class _SessionContextManager:
