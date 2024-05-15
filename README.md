@@ -120,6 +120,54 @@ and pass the command as a `list`.
 redis.execute(command=["XLEN", "test_stream"])
 ```
 
+### Pipelines & Transactions
+
+If you want to submit commands in batches to reduce the number of roundtrips, you can utilize pipelining or
+transactions. The difference between pipelines and transactions is that transactions are atomic: no other
+command is executed during that transaction. In pipelines there is no such guarantee.
+
+To use a pipeline, simply call the `pipeline` method:
+
+```python
+pipeline = redis.pipeline()
+
+pipeline.set("foo", 1)
+pipeline.incr("foo")
+pipeline.get("foo")
+
+result = pipeline.exec()
+
+print(result)
+# prints [True, 2, '2']
+```
+
+For transaction, use `mutli`:
+
+```python
+pipeline = redis.multi()
+
+pipeline.set("foo", 1)
+pipeline.incr("foo")
+pipeline.get("foo")
+
+result = pipeline.exec()
+
+print(result)
+# prints [True, 2, '2']
+```
+
+You can also chain the commands:
+
+```python
+pipeline = redis.pipeline()
+
+pipeline.set("foo", 1).incr("foo").get("foo")
+result = pipeline.exec()
+
+print(result)
+# prints [True, 2, '2']
+```
+
 # Encoding
 Although Redis can store invalid JSON data, there might be problems with the deserialization.
 To avoid this, the Upstash REST proxy is capable of encoding the data as base64 on the server and then sending it to the client to be

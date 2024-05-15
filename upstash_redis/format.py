@@ -1,6 +1,7 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 
 from upstash_redis.utils import GeoSearchResult
+from upstash_redis.typing import RESTResultT
 
 
 def list_to_dict(raw: List, command=None) -> Dict:
@@ -328,3 +329,23 @@ FORMATTERS: Dict[str, Callable] = {
     "SCRIPT FLUSH": ok_to_bool,
     "SCRIPT EXISTS": list_to_bool_list,
 }
+
+def cast_response(command: List[str], response: RESTResultT):
+    """
+    Given a command and its response, casts the response using the `FORMATTERS`
+    map
+
+    :param command: Used to determine the formatting to apply
+    :param response: Response to format 
+    """
+
+    # get main command
+    main_command = command[0]
+    if len(command) > 1 and main_command == "SCRIPT":
+        main_command = f"{main_command} {command[1]}"
+
+    # format response
+    if main_command in FORMATTERS:
+        return FORMATTERS[main_command](response, command)
+    
+    return response

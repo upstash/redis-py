@@ -4320,3 +4320,4 @@ class BitFieldROCommands:
 AsyncCommands = Commands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
+PipelineCommands = Commands
