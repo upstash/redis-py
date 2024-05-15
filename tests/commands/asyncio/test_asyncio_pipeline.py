@@ -55,10 +55,13 @@ async def test_context_manager_usage(async_redis: Redis):
         pipeline.incr("rocket")
         pipeline.incr("space")
         pipeline.incr("rocket")
+        result = await pipeline.exec()
+
+    assert result == [1, 2, 1, 3, 2, 4]
 
     # redis still works after pipeline is done
-    result = await async_redis.get("rocket")
-    assert result == "4"
+    get_result = await async_redis.get("rocket")
+    assert get_result == "4"
 
     get_pipeline = async_redis.pipeline()
     get_pipeline.get("rocket")

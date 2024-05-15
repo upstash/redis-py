@@ -50,6 +50,9 @@ def test_context_manager_usage(redis: Redis):
         pipeline.incr("rocket")
         pipeline.incr("space")
         pipeline.incr("rocket")
+        result = pipeline.exec()
+
+    assert result == [1, 2, 1, 3, 2, 4]
 
     # redis still works after pipeline is done
     result = redis.get("rocket")

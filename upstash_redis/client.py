@@ -129,8 +129,6 @@ class Redis(Commands):
             rest_retries=self._rest_retries,
             rest_retry_interval=self._rest_retry_interval,
             allow_telemetry=self._allow_telemetry,
-            headers=self._headers,
-            session=self._session,
             multi_exec="pipeline"
         )
 
@@ -145,8 +143,6 @@ class Redis(Commands):
             rest_retries=self._rest_retries,
             rest_retry_interval=self._rest_retry_interval,
             allow_telemetry=self._allow_telemetry,
-            headers=self._headers,
-            session=self._session,
             multi_exec="multi-exec"
         )
 
@@ -161,8 +157,6 @@ class Pipeline(PipelineCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
-        headers: Optional[Dict[str, str]] = None,
-        session: Optional[Session] = None,
         multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
     ):
         """
@@ -174,8 +168,6 @@ class Pipeline(PipelineCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
-        :param headers: request headers
-        :param session: A Requests session
         :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
         """
 
@@ -188,8 +180,8 @@ class Pipeline(PipelineCommands):
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
-        self._headers = headers or make_headers(token, rest_encoding, allow_telemetry)
-        self._session = session or Session()
+        self._headers = make_headers(token, rest_encoding, allow_telemetry)
+        self._session = Session()
         
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
@@ -234,7 +226,11 @@ class Pipeline(PipelineCommands):
 
     def __enter__(self):
         return self
-     
-    def __exit__(self, exc_type, exc_value, exc_traceback):
-        self.exec()
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Any,
+    ) -> None:
         self.close()

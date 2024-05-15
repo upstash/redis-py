@@ -84,7 +84,7 @@ async def async_execute(
 
     if not from_pipeline:
         return format_response(response, encoding) # type: ignore[arg-type]
-    elif from_pipeline:
+    else:
         return [
             format_response(sub_response, encoding)
             for sub_response in response
@@ -124,7 +124,7 @@ def sync_execute(
 
     if not from_pipeline:
         return format_response(response, encoding)
-    elif from_pipeline:
+    else:
         return [
             format_response(sub_response, encoding) # type: ignore[arg-type]
             for sub_response in response

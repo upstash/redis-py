@@ -249,7 +249,15 @@ class AsyncPipeline(PipelineCommands):
         exc_val: Optional[BaseException],
         exc_tb: Any,
     ) -> None:
-        await self.exec()
+        await self.close()
+
+    async def close(self) -> None:
+        """
+        Closes the resources associated with the client.
+        """
+        if self._context_manager:
+            await self._context_manager.close_session()
+            self._context_manager = None
 
 
 class _SessionContextManager:
