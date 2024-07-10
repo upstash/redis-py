@@ -4,7 +4,7 @@ from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Callable
 
 from aiohttp import ClientSession
 from requests import Session
@@ -48,7 +48,8 @@ async def async_execute(
     retries: int,
     retry_interval: float,
     command: List,
-    from_pipeline: bool = False
+    from_pipeline: bool = False,
+    upstash_sync_token_callback: Optional[Callable[[str], None]] = None
 ) -> Union[RESTResultT, List[RESTResultT]]:
     """
     Execute the given command over the REST API.
@@ -57,6 +58,7 @@ async def async_execute(
     :param retries: how many times an HTTP request will be retried if it fails
     :param retry_interval: how many seconds will be waited between each retry
     :param allow_telemetry: whether anonymous telemetry can be collected
+    :param upstash_sync_token_callback: This callback is called with the new Upstash Sync Token after each request to update the client's token
     """
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
@@ -68,6 +70,12 @@ async def async_execute(
     for attempts_left in range(max(0, retries), -1, -1):
         try:
             async with session.post(url, headers=headers, json=command) as r:
+                headers = await r.headers
+                new_upstash_sync_token = headers.get("Upstash-Sync-Token")
+
+                if upstash_sync_token_callback and new_upstash_sync_token:
+                    upstash_sync_token_callback(new_upstash_sync_token)
+
                 response = await r.json()
                 break  # Break the loop as soon as we receive a proper response
         except Exception as e:
@@ -99,7 +107,8 @@ def sync_execute(
     retries: int,
     retry_interval: float,
     command: List[Any],
-    from_pipeline: bool = False
+    from_pipeline: bool = False,
+    upstash_sync_token_callback: Optional[Callable[[str], None]] = None
 ) -> Union[RESTResultT, List[RESTResultT]]:
     command = _format_command(command, from_pipeline=from_pipeline)
 
@@ -108,7 +117,14 @@ def sync_execute(
 
     for attempts_left in range(max(0, retries), -1, -1):
         try:
-            response = session.post(url, headers=headers, json=command).json()
+            response = session.post(url, headers=headers, json=command)
+
+            new_upstash_sync_token = response.headers.get("Upstash-Sync-Token")
+            if upstash_sync_token_callback and new_upstash_sync_token:
+                upstash_sync_token_callback(new_upstash_sync_token)
+
+            response = response.json()
+
             break  # Break the loop as soon as we receive a proper response
         except Exception as e:
             last_error = e
@@ -121,7 +137,6 @@ def sync_execute(
 
         # Exhausted all retries, but no response is received
         raise last_error
-
     if not from_pipeline:
         return format_response(response, encoding)
     else:

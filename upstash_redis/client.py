@@ -34,6 +34,7 @@ class Redis(Commands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
+        read_your_writes: bool = True
     ):
         """
         Creates a new blocking Redis client.
@@ -44,6 +45,7 @@ class Redis(Commands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: whether the client should wait for the response of a write operation before sending the next one
         """
 
         self._url = url
@@ -55,6 +57,9 @@ class Redis(Commands):
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
+        self._read_your_writes = read_your_writes
+        self._upstash_sync_token = ""
+
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
 
@@ -65,6 +70,7 @@ class Redis(Commands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
+        read_your_writes: bool = True
     ):
         """
         Load the credentials from environment.
@@ -82,6 +88,7 @@ class Redis(Commands):
             rest_retries,
             rest_retry_interval,
             allow_telemetry,
+            read_your_writes
         )
 
     def __enter__(self) -> "Redis":
@@ -101,10 +108,14 @@ class Redis(Commands):
         """
         self._session.close()
 
+    def _update_sync_token(self, new_token: str):
+        self._upstash_sync_token = new_token
     def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
         """
+        if self._read_your_writes:
+            self._headers["upstash-sync-token"] = self._upstash_sync_token
 
         res = sync_execute(
             session=self._session,
@@ -114,8 +125,10 @@ class Redis(Commands):
             retries=self._rest_retries,
             retry_interval=self._rest_retry_interval,
             command=command,
+            upstash_sync_token_callback=self._update_sync_token
         )
 
+        print(res)
         return cast_response(command, res)
 
     def pipeline(self) -> "Pipeline":
