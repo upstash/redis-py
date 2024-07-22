@@ -49,7 +49,7 @@ async def async_execute(
     retry_interval: float,
     command: List,
     from_pipeline: bool = False,
-    upstash_sync_token_callback: Optional[Callable[[str], None]] = None
+    upstash_sync_token_callback: Optional[Callable[[str], None]] = None,
 ) -> Union[RESTResultT, List[RESTResultT]]:
     """
     Execute the given command over the REST API.
@@ -70,8 +70,7 @@ async def async_execute(
     for attempts_left in range(max(0, retries), -1, -1):
         try:
             async with session.post(url, headers=headers, json=command) as r:
-                headers = await r.headers
-                new_upstash_sync_token = headers.get("Upstash-Sync-Token")
+                new_upstash_sync_token = r.headers.get("Upstash-Sync-Token")
 
                 if upstash_sync_token_callback and new_upstash_sync_token:
                     upstash_sync_token_callback(new_upstash_sync_token)
@@ -91,12 +90,9 @@ async def async_execute(
         raise last_error
 
     if not from_pipeline:
-        return format_response(response, encoding) # type: ignore[arg-type]
+        return format_response(response, encoding)  # type: ignore[arg-type]
     else:
-        return [
-            format_response(sub_response, encoding)
-            for sub_response in response
-        ]
+        return [format_response(sub_response, encoding) for sub_response in response]
 
 
 def sync_execute(
@@ -108,7 +104,7 @@ def sync_execute(
     retry_interval: float,
     command: List[Any],
     from_pipeline: bool = False,
-    upstash_sync_token_callback: Optional[Callable[[str], None]] = None
+    upstash_sync_token_callback: Optional[Callable[[str], None]] = None,
 ) -> Union[RESTResultT, List[RESTResultT]]:
     command = _format_command(command, from_pipeline=from_pipeline)
 
@@ -117,13 +113,12 @@ def sync_execute(
 
     for attempts_left in range(max(0, retries), -1, -1):
         try:
-            response = session.post(url, headers=headers, json=command)
-
-            new_upstash_sync_token = response.headers.get("Upstash-Sync-Token")
+            r = session.post(url, headers=headers, json=command)
+            new_upstash_sync_token = r.headers.get("Upstash-Sync-Token")
             if upstash_sync_token_callback and new_upstash_sync_token:
                 upstash_sync_token_callback(new_upstash_sync_token)
 
-            response = response.json()
+            response = r.json()
 
             break  # Break the loop as soon as we receive a proper response
         except Exception as e:
@@ -141,13 +136,13 @@ def sync_execute(
         return format_response(response, encoding)
     else:
         return [
-            format_response(sub_response, encoding) # type: ignore[arg-type]
+            format_response(sub_response, encoding)  # type: ignore[arg-type]
             for sub_response in response
         ]
 
+
 def format_response(
-        response: Dict[str, Any],
-        encoding: Optional[Literal["base64"]]
+    response: Dict[str, Any], encoding: Optional[Literal["base64"]]
 ) -> RESTResultT:
     """
     Raise exception if the response is an error
@@ -156,7 +151,7 @@ def format_response(
     """
     if response.get("error"):
         raise UpstashError(response["error"])
-    
+
     result = response["result"]
 
     if encoding == "base64":
@@ -196,10 +191,8 @@ def _format_command(command: List[Any], from_pipeline: bool = False):
             _format_command(command=pipeline_command, from_pipeline=False)
             for pipeline_command in command
         ]
-    
+
     return [
-        element
-        if isinstance(element, (str, int, float))
-        else dumps(element)
+        element if isinstance(element, (str, int, float)) else dumps(element)
         for element in command
     ]

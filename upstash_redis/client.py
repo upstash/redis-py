@@ -8,6 +8,7 @@ from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, sync_execute
 from upstash_redis.typing import RESTResultT
 
+
 class Redis(Commands):
     """
     A Redis client that uses the Upstash REST API.
@@ -34,7 +35,7 @@ class Redis(Commands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
-        read_your_writes: bool = True
+        read_your_writes: bool = True,
     ):
         """
         Creates a new blocking Redis client.
@@ -70,7 +71,7 @@ class Redis(Commands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
-        read_your_writes: bool = True
+        read_your_writes: bool = True,
     ):
         """
         Load the credentials from environment.
@@ -88,7 +89,7 @@ class Redis(Commands):
             rest_retries,
             rest_retry_interval,
             allow_telemetry,
-            read_your_writes
+            read_your_writes,
         )
 
     def __enter__(self) -> "Redis":
@@ -110,6 +111,7 @@ class Redis(Commands):
 
     def _update_sync_token(self, new_token: str):
         self._upstash_sync_token = new_token
+
     def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
@@ -125,7 +127,7 @@ class Redis(Commands):
             retries=self._rest_retries,
             retry_interval=self._rest_retry_interval,
             command=command,
-            upstash_sync_token_callback=self._update_sync_token
+            upstash_sync_token_callback=self._update_sync_token,
         )
 
         print(res)
@@ -144,7 +146,7 @@ class Redis(Commands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             session=self._session,
-            multi_exec="pipeline"
+            multi_exec="pipeline",
         )
 
     def multi(self) -> "Pipeline":
@@ -160,12 +162,11 @@ class Redis(Commands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             session=self._session,
-            multi_exec="multi-exec"
+            multi_exec="multi-exec",
         )
 
 
 class Pipeline(PipelineCommands):
-
     def __init__(
         self,
         url: str,
@@ -176,7 +177,7 @@ class Pipeline(PipelineCommands):
         allow_telemetry: bool = True,
         headers: Optional[Dict[str, str]] = None,
         session: Optional[Session] = None,
-        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
+        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline",
     ):
         """
         Creates a new blocking Redis client.
@@ -203,7 +204,7 @@ class Pipeline(PipelineCommands):
 
         self._headers = headers or make_headers(token, rest_encoding, allow_telemetry)
         self._session = session or Session()
-        
+
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
@@ -222,7 +223,7 @@ class Pipeline(PipelineCommands):
         Executes the commands in the pipeline by sending them as a batch
         """
         url = f"{self._url}/{self._multi_exec}"
-        res: List[RESTResultT] = sync_execute( # type: ignore[assignment]
+        res: List[RESTResultT] = sync_execute(  # type: ignore[assignment]
             session=self._session,
             url=url,
             headers=self._headers,
@@ -230,7 +231,7 @@ class Pipeline(PipelineCommands):
             retries=self._rest_retries,
             retry_interval=self._rest_retry_interval,
             command=self._command_stack,
-            from_pipeline=True
+            from_pipeline=True,
         )
         response = [
             cast_response(command, response)

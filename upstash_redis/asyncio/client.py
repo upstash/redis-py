@@ -141,7 +141,7 @@ class Redis(AsyncCommands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             context_manager=self._context_manager,
-            multi_exec="pipeline"
+            multi_exec="pipeline",
         )
 
     def multi(self) -> "AsyncPipeline":
@@ -157,12 +157,11 @@ class Redis(AsyncCommands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             context_manager=self._context_manager,
-            multi_exec="multi-exec"
+            multi_exec="multi-exec",
         )
 
 
 class AsyncPipeline(PipelineCommands):
-
     def __init__(
         self,
         url: str,
@@ -173,7 +172,7 @@ class AsyncPipeline(PipelineCommands):
         allow_telemetry: bool = True,
         context_manager: Optional["_SessionContextManager"] = None,
         headers: Optional[Dict[str, str]] = None,
-        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
+        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline",
     ):
         """
         Creates a new blocking Redis client.
@@ -202,11 +201,11 @@ class AsyncPipeline(PipelineCommands):
         self._context_manager = context_manager or _SessionContextManager(
             ClientSession(), close_session=True
         )
-        
+
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
-    def execute(self, command: List) -> "AsyncPipeline": # type: ignore[override]
+    def execute(self, command: List) -> "AsyncPipeline":  # type: ignore[override]
         """
         Adds commnd to the command stack which will be sent as a batch
         later
@@ -221,10 +220,10 @@ class AsyncPipeline(PipelineCommands):
         Executes the commands in the pipeline by sending them as a batch
         """
         url = f"{self._url}/{self._multi_exec}"
-        
+
         context_manager = self._context_manager
         async with context_manager:
-            res: List[RESTResultT] = await async_execute( # type: ignore[assignment]
+            res: List[RESTResultT] = await async_execute(  # type: ignore[assignment]
                 session=context_manager.session,
                 url=url,
                 headers=self._headers,
@@ -232,7 +231,7 @@ class AsyncPipeline(PipelineCommands):
                 retries=self._rest_retries,
                 retry_interval=self._rest_retry_interval,
                 command=self._command_stack,
-                from_pipeline=True
+                from_pipeline=True,
             )
 
         response = [
