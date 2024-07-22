@@ -33,6 +33,7 @@ class Redis(AsyncCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
+        read_your_writes: bool = True,
     ):
         """
         Creates a new async Redis client.
@@ -43,6 +44,8 @@ class Redis(AsyncCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         self._url = url
@@ -54,6 +57,16 @@ class Redis(AsyncCommands):
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
+        self._read_your_writes = read_your_writes
+        self._sync_token = ""
+
+        def nop_sync_token_cb(_: str):
+            pass
+
+        self._sync_token_cb = (
+            self._update_sync_token if read_your_writes else nop_sync_token_cb
+        )
+
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._context_manager: Optional[_SessionContextManager] = None
 
@@ -64,6 +77,7 @@ class Redis(AsyncCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
+        read_your_writes: bool = True,
     ):
         """
         Load the credentials from environment.
@@ -72,6 +86,8 @@ class Redis(AsyncCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         return cls(
@@ -81,6 +97,7 @@ class Redis(AsyncCommands):
             rest_retries,
             rest_retry_interval,
             allow_telemetry,
+            read_your_writes,
         )
 
     async def __aenter__(self) -> "Redis":
@@ -105,6 +122,9 @@ class Redis(AsyncCommands):
             await self._context_manager.close_session()
             self._context_manager = None
 
+    def _update_sync_token(self, new_token: str):
+        self._sync_token = new_token
+
     async def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
@@ -115,6 +135,9 @@ class Redis(AsyncCommands):
                 ClientSession(), close_session=True
             )
 
+        if self._read_your_writes:
+            self._headers["Upstash-Sync-Token"] = self._sync_token
+
         async with context_manager:
             res = await async_execute(
                 session=context_manager.session,
@@ -124,6 +147,7 @@ class Redis(AsyncCommands):
                 retries=self._rest_retries,
                 retry_interval=self._rest_retry_interval,
                 command=command,
+                sync_token_cb=self._sync_token_cb,
             )
 
         return cast_response(command, res)

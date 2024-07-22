@@ -46,7 +46,8 @@ class Redis(Commands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
-        :param read_your_writes: whether the client should wait for the response of a write operation before sending the next one
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         self._url = url
@@ -59,7 +60,14 @@ class Redis(Commands):
         self._rest_retry_interval = rest_retry_interval
 
         self._read_your_writes = read_your_writes
-        self._upstash_sync_token = ""
+        self._sync_token = ""
+
+        def nop_sync_token_cb(_: str):
+            pass
+
+        self._sync_token_cb = (
+            self._update_sync_token if read_your_writes else nop_sync_token_cb
+        )
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
@@ -80,6 +88,8 @@ class Redis(Commands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         return cls(
@@ -110,14 +120,14 @@ class Redis(Commands):
         self._session.close()
 
     def _update_sync_token(self, new_token: str):
-        self._upstash_sync_token = new_token
+        self._sync_token = new_token
 
     def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
         """
         if self._read_your_writes:
-            self._headers["upstash-sync-token"] = self._upstash_sync_token
+            self._headers["Upstash-Sync-Token"] = self._sync_token
 
         res = sync_execute(
             session=self._session,
@@ -127,7 +137,7 @@ class Redis(Commands):
             retries=self._rest_retries,
             retry_interval=self._rest_retry_interval,
             command=command,
-            upstash_sync_token_callback=self._update_sync_token,
+            sync_token_cb=self._sync_token_cb,
         )
 
         return cast_response(command, res)

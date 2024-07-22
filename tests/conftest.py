@@ -122,12 +122,26 @@ def pytest_configure():
 
 
 @pytest_asyncio.fixture
-async def async_redis():
-    async with AsyncRedis.from_env(allow_telemetry=False) as redis:
-        yield redis
+async def async_redis(request):
+    if hasattr(request, "param"):
+        opts = request.param
+    else:
+        opts = {}
+
+    opts["allow_telemetry"] = False
+
+    async with AsyncRedis.from_env(**opts) as r:
+        yield r
 
 
 @pytest.fixture
-def redis():
-    with Redis.from_env(allow_telemetry=False) as redis:
-        yield redis
+def redis(request):
+    if hasattr(request, "param"):
+        opts = request.param
+    else:
+        opts = {}
+
+    opts["allow_telemetry"] = False
+
+    with Redis.from_env(**opts) as r:
+        yield r
