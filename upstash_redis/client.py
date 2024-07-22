@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Literal, Optional, Type, Dict
+from typing import Any, List, Literal, Optional, Type, Dict, Callable
 
 from requests import Session
 
@@ -62,13 +62,6 @@ class Redis(Commands):
         self._read_your_writes = read_your_writes
         self._sync_token = ""
 
-        def nop_sync_token_cb(_: str):
-            pass
-
-        self._sync_token_cb = (
-            self._update_sync_token if read_your_writes else nop_sync_token_cb
-        )
-
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
 
@@ -120,15 +113,18 @@ class Redis(Commands):
         self._session.close()
 
     def _update_sync_token(self, new_token: str):
-        self._sync_token = new_token
+        if self._read_your_writes:
+            self._sync_token = new_token
+
+    def _maybe_set_sync_token_header(self, headers: Dict[str, str]):
+        if self._read_your_writes:
+            headers["Upstash-Sync-Token"] = self._sync_token
 
     def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
         """
-        if self._read_your_writes:
-            self._headers["Upstash-Sync-Token"] = self._sync_token
-
+        self._maybe_set_sync_token_header(self._headers)
         res = sync_execute(
             session=self._session,
             url=self._url,
@@ -137,7 +133,7 @@ class Redis(Commands):
             retries=self._rest_retries,
             retry_interval=self._rest_retry_interval,
             command=command,
-            sync_token_cb=self._sync_token_cb,
+            sync_token_cb=self._update_sync_token,
         )
 
         return cast_response(command, res)
@@ -156,6 +152,8 @@ class Redis(Commands):
             headers=self._headers,
             session=self._session,
             multi_exec="pipeline",
+            set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            sync_token_cb=self._update_sync_token,
         )
 
     def multi(self) -> "Pipeline":
@@ -172,6 +170,8 @@ class Redis(Commands):
             headers=self._headers,
             session=self._session,
             multi_exec="multi-exec",
+            set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            sync_token_cb=self._update_sync_token,
         )
 
 
@@ -187,6 +187,8 @@ class Pipeline(PipelineCommands):
         headers: Optional[Dict[str, str]] = None,
         session: Optional[Session] = None,
         multi_exec: Literal["multi-exec", "pipeline"] = "pipeline",
+        set_sync_token_header_fn: Optional[Callable[[Dict[str, str]], None]] = None,
+        sync_token_cb: Optional[Callable[[str], None]] = None,
     ):
         """
         Creates a new blocking Redis client.
@@ -199,7 +201,9 @@ class Pipeline(PipelineCommands):
         :param allow_telemetry: whether anonymous telemetry can be collected
         :param headers: request headers
         :param session: A Requests session
-        :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
+        :param multiexec: Whether multi execution (transaction) or pipelining is to be used
+        :param set_sync_token_header_fn: Function to set the Upstash-Sync-Token header
+        :param sync_token_cb: Function to call when a new Upstash-Sync-Token response is received
         """
 
         self._url = url
@@ -217,6 +221,9 @@ class Pipeline(PipelineCommands):
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
+        self._set_sync_token_header_fn = set_sync_token_header_fn
+        self._sync_token_cb = sync_token_cb
+
     def execute(self, command: List) -> "Pipeline":
         """
         Adds commnd to the command stack which will be sent as a batch
@@ -232,6 +239,10 @@ class Pipeline(PipelineCommands):
         Executes the commands in the pipeline by sending them as a batch
         """
         url = f"{self._url}/{self._multi_exec}"
+
+        if self._set_sync_token_header_fn:
+            self._set_sync_token_header_fn(self._headers)
+
         res: List[RESTResultT] = sync_execute(  # type: ignore[assignment]
             session=self._session,
             url=url,
@@ -241,6 +252,7 @@ class Pipeline(PipelineCommands):
             retry_interval=self._rest_retry_interval,
             command=self._command_stack,
             from_pipeline=True,
+            sync_token_cb=self._sync_token_cb,
         )
         response = [
             cast_response(command, response)

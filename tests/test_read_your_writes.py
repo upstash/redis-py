@@ -48,6 +48,33 @@ async def test_should_update_sync_token_on_pipeline_async(async_redis: AsyncRedi
 
 
 @pytest.mark.parametrize("redis", [{"read_your_writes": True}], indirect=True)
+def test_should_update_sync_token_on_multiexec(redis: Redis):
+    initial_token = redis._sync_token
+
+    multi = redis.multi()
+    multi.set("key", "value")
+    multi.set("key2", "value2")
+    multi.exec()
+
+    updated_token = redis._sync_token
+    assert initial_token != updated_token
+
+
+@pytest.mark.parametrize("async_redis", [{"read_your_writes": True}], indirect=True)
+@pytest.mark.asyncio
+async def test_should_update_sync_token_on_multiexec_async(async_redis: AsyncRedis):
+    initial_token = async_redis._sync_token
+
+    multi = async_redis.multi()
+    multi.set("key", "value")
+    multi.set("key2", "value2")
+    await multi.exec()
+
+    updated_token = async_redis._sync_token
+    assert initial_token != updated_token
+
+
+@pytest.mark.parametrize("redis", [{"read_your_writes": True}], indirect=True)
 def test_updates_after_successful_lua_script_call(redis: Redis):
     initial_token = redis._sync_token
 
