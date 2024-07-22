@@ -130,7 +130,6 @@ class Redis(Commands):
             upstash_sync_token_callback=self._update_sync_token,
         )
 
-        print(res)
         return cast_response(command, res)
 
     def pipeline(self) -> "Pipeline":
