@@ -7,8 +7,8 @@ from upstash_redis import Redis
 def flush_db(redis: Redis):
     redis.delete("rocket", "space", "marine")
 
-def test_pipeline(redis: Redis):
 
+def test_pipeline(redis: Redis):
     pipeline = redis.pipeline()
 
     pipeline.incr("rocket")
@@ -23,8 +23,8 @@ def test_pipeline(redis: Redis):
     res = pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
 
-def test_multi(redis: Redis):
 
+def test_multi(redis: Redis):
     pipeline = redis.multi()
 
     pipeline.incr("rocket")
@@ -41,8 +41,8 @@ def test_multi(redis: Redis):
     res = pipeline.exec()
     assert res == [1, 2, 1, 3, 2, 4, "4", "2", None]
 
-def test_context_manager_usage(redis: Redis):
 
+def test_context_manager_usage(redis: Redis):
     with redis.pipeline() as pipeline:
         pipeline.incr("rocket")
         pipeline.incr("rocket")
@@ -57,7 +57,7 @@ def test_context_manager_usage(redis: Redis):
         pipeline.set("foo", "bar")
 
     assert result == [1, 2, 1, 3, 2, 4]
-    assert len(pipeline._command_stack) == 0 # pipeline is empty
+    assert len(pipeline._command_stack) == 0  # pipeline is empty
 
     # redis still works after pipeline is done
     result = redis.get("rocket")
@@ -71,6 +71,7 @@ def test_context_manager_usage(redis: Redis):
     res = get_pipeline.exec()
     assert res == ["4", "2", None]
 
+
 def test_context_manager_raise(redis: Redis):
     """
     Check that exceptions in context aren't silently ignored
@@ -81,6 +82,7 @@ def test_context_manager_raise(redis: Redis):
         with redis.pipeline() as pipeline:
             pipeline.incr("rocket")
             raise Exception("test")
+
 
 def test_run_pipeline_twice(redis: Redis):
     """

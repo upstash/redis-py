@@ -4,7 +4,7 @@ from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Callable
 
 from aiohttp import ClientSession
 from requests import Session
@@ -48,7 +48,8 @@ async def async_execute(
     retries: int,
     retry_interval: float,
     command: List,
-    from_pipeline: bool = False
+    from_pipeline: bool = False,
+    sync_token_cb: Optional[Callable[[str], None]] = None,
 ) -> Union[RESTResultT, List[RESTResultT]]:
     """
     Execute the given command over the REST API.
@@ -57,6 +58,7 @@ async def async_execute(
     :param retries: how many times an HTTP request will be retried if it fails
     :param retry_interval: how many seconds will be waited between each retry
     :param allow_telemetry: whether anonymous telemetry can be collected
+    :param sync_token_cb: This callback is called with the new Upstash Sync Token after each request to update the client's token
     """
 
     # Serialize the command; more specifically, write string-incompatible types as JSON strings.
@@ -68,6 +70,11 @@ async def async_execute(
     for attempts_left in range(max(0, retries), -1, -1):
         try:
             async with session.post(url, headers=headers, json=command) as r:
+                sync_token = r.headers.get("Upstash-Sync-Token")
+
+                if sync_token_cb and sync_token:
+                    sync_token_cb(sync_token)
+
                 response = await r.json()
                 break  # Break the loop as soon as we receive a proper response
         except Exception as e:
@@ -83,12 +90,9 @@ async def async_execute(
         raise last_error
 
     if not from_pipeline:
-        return format_response(response, encoding) # type: ignore[arg-type]
+        return format_response(response, encoding)  # type: ignore[arg-type]
     else:
-        return [
-            format_response(sub_response, encoding)
-            for sub_response in response
-        ]
+        return [format_response(sub_response, encoding) for sub_response in response]
 
 
 def sync_execute(
@@ -99,7 +103,8 @@ def sync_execute(
     retries: int,
     retry_interval: float,
     command: List[Any],
-    from_pipeline: bool = False
+    from_pipeline: bool = False,
+    sync_token_cb: Optional[Callable[[str], None]] = None,
 ) -> Union[RESTResultT, List[RESTResultT]]:
     command = _format_command(command, from_pipeline=from_pipeline)
 
@@ -108,7 +113,13 @@ def sync_execute(
 
     for attempts_left in range(max(0, retries), -1, -1):
         try:
-            response = session.post(url, headers=headers, json=command).json()
+            r = session.post(url, headers=headers, json=command)
+            sync_token = r.headers.get("Upstash-Sync-Token")
+            if sync_token_cb and sync_token:
+                sync_token_cb(sync_token)
+
+            response = r.json()
+
             break  # Break the loop as soon as we receive a proper response
         except Exception as e:
             last_error = e
@@ -121,18 +132,17 @@ def sync_execute(
 
         # Exhausted all retries, but no response is received
         raise last_error
-
     if not from_pipeline:
         return format_response(response, encoding)
     else:
         return [
-            format_response(sub_response, encoding) # type: ignore[arg-type]
+            format_response(sub_response, encoding)  # type: ignore[arg-type]
             for sub_response in response
         ]
 
+
 def format_response(
-        response: Dict[str, Any],
-        encoding: Optional[Literal["base64"]]
+    response: Dict[str, Any], encoding: Optional[Literal["base64"]]
 ) -> RESTResultT:
     """
     Raise exception if the response is an error
@@ -141,7 +151,7 @@ def format_response(
     """
     if response.get("error"):
         raise UpstashError(response["error"])
-    
+
     result = response["result"]
 
     if encoding == "base64":
@@ -181,10 +191,8 @@ def _format_command(command: List[Any], from_pipeline: bool = False):
             _format_command(command=pipeline_command, from_pipeline=False)
             for pipeline_command in command
         ]
-    
+
     return [
-        element
-        if isinstance(element, (str, int, float))
-        else dumps(element)
+        element if isinstance(element, (str, int, float)) else dumps(element)
         for element in command
     ]

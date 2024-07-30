@@ -1,5 +1,5 @@
 from os import environ
-from typing import Any, List, Literal, Optional, Type, Dict
+from typing import Any, List, Literal, Optional, Type, Dict, Callable
 
 from aiohttp import ClientSession
 
@@ -33,6 +33,7 @@ class Redis(AsyncCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
+        read_your_writes: bool = True,
     ):
         """
         Creates a new async Redis client.
@@ -43,6 +44,8 @@ class Redis(AsyncCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         self._url = url
@@ -54,6 +57,9 @@ class Redis(AsyncCommands):
         self._rest_retries = rest_retries
         self._rest_retry_interval = rest_retry_interval
 
+        self._read_your_writes = read_your_writes
+        self._sync_token = ""
+
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._context_manager: Optional[_SessionContextManager] = None
 
@@ -64,6 +70,7 @@ class Redis(AsyncCommands):
         rest_retries: int = 1,
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
+        read_your_writes: bool = True,
     ):
         """
         Load the credentials from environment.
@@ -72,6 +79,8 @@ class Redis(AsyncCommands):
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
         :param allow_telemetry: whether anonymous telemetry can be collected
+        :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
+            the effects of all earlier writes submitted by the same client.
         """
 
         return cls(
@@ -81,6 +90,7 @@ class Redis(AsyncCommands):
             rest_retries,
             rest_retry_interval,
             allow_telemetry,
+            read_your_writes,
         )
 
     async def __aenter__(self) -> "Redis":
@@ -105,6 +115,14 @@ class Redis(AsyncCommands):
             await self._context_manager.close_session()
             self._context_manager = None
 
+    def _update_sync_token(self, new_token: str):
+        if self._read_your_writes:
+            self._sync_token = new_token
+
+    def _maybe_set_sync_token_header(self, headers: Dict[str, str]):
+        if self._read_your_writes:
+            headers["Upstash-Sync-Token"] = self._sync_token
+
     async def execute(self, command: List) -> RESTResultT:
         """
         Executes the given command.
@@ -115,6 +133,7 @@ class Redis(AsyncCommands):
                 ClientSession(), close_session=True
             )
 
+        self._maybe_set_sync_token_header(self._headers)
         async with context_manager:
             res = await async_execute(
                 session=context_manager.session,
@@ -124,6 +143,7 @@ class Redis(AsyncCommands):
                 retries=self._rest_retries,
                 retry_interval=self._rest_retry_interval,
                 command=command,
+                sync_token_cb=self._update_sync_token,
             )
 
         return cast_response(command, res)
@@ -141,7 +161,9 @@ class Redis(AsyncCommands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             context_manager=self._context_manager,
-            multi_exec="pipeline"
+            multi_exec="pipeline",
+            set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            sync_token_cb=self._update_sync_token,
         )
 
     def multi(self) -> "AsyncPipeline":
@@ -157,12 +179,13 @@ class Redis(AsyncCommands):
             allow_telemetry=self._allow_telemetry,
             headers=self._headers,
             context_manager=self._context_manager,
-            multi_exec="multi-exec"
+            multi_exec="multi-exec",
+            set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            sync_token_cb=self._update_sync_token,
         )
 
 
 class AsyncPipeline(PipelineCommands):
-
     def __init__(
         self,
         url: str,
@@ -173,7 +196,9 @@ class AsyncPipeline(PipelineCommands):
         allow_telemetry: bool = True,
         context_manager: Optional["_SessionContextManager"] = None,
         headers: Optional[Dict[str, str]] = None,
-        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline"
+        multi_exec: Literal["multi-exec", "pipeline"] = "pipeline",
+        set_sync_token_header_fn: Optional[Callable[[Dict[str, str]], None]] = None,
+        sync_token_cb: Optional[Callable[[str], None]] = None,
     ):
         """
         Creates a new blocking Redis client.
@@ -186,7 +211,9 @@ class AsyncPipeline(PipelineCommands):
         :param allow_telemetry: whether anonymous telemetry can be collected
         :param context_manager: context manager
         :param headers: request headers
-        :param miltiexec: Whether multi execution (transaction) or pipelining is to be used
+        :param multiexec: Whether multi execution (transaction) or pipelining is to be used
+        :param set_sync_token_header_fn: Function to set the Upstash-Sync-Token header
+        :param sync_token_cb: Function to call when a new Upstash-Sync-Token response is received
         """
 
         self._url = url
@@ -202,11 +229,14 @@ class AsyncPipeline(PipelineCommands):
         self._context_manager = context_manager or _SessionContextManager(
             ClientSession(), close_session=True
         )
-        
+
         self._command_stack: List[List[str]] = []
         self._multi_exec = multi_exec
 
-    def execute(self, command: List) -> "AsyncPipeline": # type: ignore[override]
+        self._set_sync_token_header_fn = set_sync_token_header_fn
+        self._sync_token_cb = sync_token_cb
+
+    def execute(self, command: List) -> "AsyncPipeline":  # type: ignore[override]
         """
         Adds commnd to the command stack which will be sent as a batch
         later
@@ -221,10 +251,13 @@ class AsyncPipeline(PipelineCommands):
         Executes the commands in the pipeline by sending them as a batch
         """
         url = f"{self._url}/{self._multi_exec}"
-        
+
+        if self._set_sync_token_header_fn:
+            self._set_sync_token_header_fn(self._headers)
+
         context_manager = self._context_manager
         async with context_manager:
-            res: List[RESTResultT] = await async_execute( # type: ignore[assignment]
+            res: List[RESTResultT] = await async_execute(  # type: ignore[assignment]
                 session=context_manager.session,
                 url=url,
                 headers=self._headers,
@@ -232,7 +265,8 @@ class AsyncPipeline(PipelineCommands):
                 retries=self._rest_retries,
                 retry_interval=self._rest_retry_interval,
                 command=self._command_stack,
-                from_pipeline=True
+                from_pipeline=True,
+                sync_token_cb=self._sync_token_cb,
             )
 
         response = [
