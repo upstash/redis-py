@@ -689,7 +689,7 @@ class Commands:
         See https://redis.io/commands/scan
         """
 
-        command: List = ["SCAN", cursor]
+        command: List = ["SCAN", str(cursor)]
 
         if match is not None:
             command.extend(["MATCH", match])
@@ -1496,7 +1496,7 @@ class Commands:
         See https://redis.io/commands/hscan
         """
 
-        command: List = ["HSCAN", key, cursor]
+        command: List = ["HSCAN", key, str(cursor)]
 
         if match is not None:
             command.extend(["MATCH", match])
@@ -2571,7 +2571,7 @@ class Commands:
         See https://redis.io/commands/sscan
         """
 
-        command: List = ["SSCAN", key, cursor]
+        command: List = ["SSCAN", key, str(cursor)]
 
         if match is not None:
             command.extend(["MATCH", match])
@@ -3477,7 +3477,7 @@ class Commands:
         See https://redis.io/commands/zscan
         """
 
-        command: List = ["ZSCAN", key, cursor]
+        command: List = ["ZSCAN", key, str(cursor)]
 
         if match is not None:
             command.extend(["MATCH", match])
