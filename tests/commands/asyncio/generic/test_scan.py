@@ -24,3 +24,13 @@ async def test_with_count(async_redis: Redis) -> None:
 @mark.asyncio
 async def test_with_scan_type(async_redis: Redis) -> None:
     assert (await async_redis.scan(cursor=0, type="hash"))[1] == ["hash"]
+
+
+@mark.asyncio
+async def test_scan_multiple_times(async_redis: Redis) -> None:
+    cursor, keys = await async_redis.scan(cursor=0, count=1)
+    assert cursor != 0
+    assert len(keys) == 1
+    cursor, keys = await async_redis.scan(cursor=cursor, count=1)
+    assert cursor != 0
+    assert len(keys) == 1
