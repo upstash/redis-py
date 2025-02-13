@@ -5,6 +5,8 @@ from upstash_redis.format import (
     format_geopos,
     format_time,
     list_to_dict,
+    string_to_json,
+    string_list_to_json_list,
 )
 from upstash_redis.utils import GeoSearchResult
 
@@ -23,6 +25,16 @@ def test_format_bool_list() -> None:
 
 def test_format_float_list() -> None:
     assert format_float_list(raw=["1.1", "2.2", None]) == [1.1, 2.2, None]
+
+
+def test_string_to_json() -> None:
+    assert string_to_json(res='{"a": 1, "b": 2}') == {"a": 1, "b": 2}
+
+
+def test_string_list_to_json_list() -> None:
+    assert string_list_to_json_list(
+        res=['{"a": 1, "b": 2}', '{"c": 3, "d": 4}']
+    ) == [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
 
 
 def test_format_geo_members_with_distance_and_hash_and_coordinates() -> None:
