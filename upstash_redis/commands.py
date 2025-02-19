@@ -1,7 +1,8 @@
 import datetime
+import json
 from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
-from upstash_redis.typing import FloatMinMaxT, ValueT
+from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
 from upstash_redis.utils import (
     handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
@@ -4229,6 +4230,256 @@ class Commands:
         return self.execute(command)
 
 
+class JsonCommands:
+    def __init__(self, client: Commands):
+        self.client = client
+
+    def arrappend(self, key: str, path: str, *value: JSONValueT) -> ResponseT:
+        """
+        Appends one or more values to a JSON array stored at a key.
+
+        Returns the length of the array after the append operation.
+
+        See https://redis.io/commands/json.arrappend
+        """
+        if len(value) == 0:
+            raise Exception("At least one value must be specified.")
+
+        value = [f'"{i}"' if type(i) is str else i for i in value]
+
+        command: List = ["JSON.ARRAPPEND", key, path, *value]
+
+        return self.client.execute(command=command)
+
+    def arrindex(self, key: str, path: str, value: JSONValueT, start: int = 0, stop: int = 0) -> ResponseT:
+        """
+        Returns the index of the first occurrence of a value in a JSON array.
+
+        If the value is not found, None is returned.
+
+        See https://redis.io/commands/json.arrindex
+        """
+        if type(value) is str:
+            value = f'"{value}"'
+
+        command: List = ["JSON.ARRINDEX", key, path, value, start, stop]
+
+        return self.client.execute(command=command)
+
+    def arrinsert(self, key: str, path: str, index: int, *value: JSONValueT) -> ResponseT:
+        """
+        Inserts one or more values to a JSON array stored at a key at a specified index.
+
+        Returns the length of the array after the insert operation.
+
+        See https://redis.io/commands/json.arrinsert
+        """
+        if len(value) == 0:
+            raise Exception("At least one value must be specified.")
+
+        value = [f'"{i}"' if type(i) is str else i for i in value]
+
+        command: List = ["JSON.ARRINSERT", key, path, index, *value]
+
+        return self.client.execute(command=command)
+
+    def arrlen(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the length of a JSON array stored at a key.
+
+        See https://redis.io/commands/json.arrlen
+        """
+        command: List = ["JSON.ARRLEN", key, path]
+
+        return self.client.execute(command=command)
+
+    def arrpop(self, key: str, path: str, index: int) -> ResponseT:
+        """
+        Removes and returns the element at the specified index from a JSON array stored at a key.
+
+        If the index is negative, it is used as a negative index from the end of the array.
+
+        See https://redis.io/commands/json.arrpop
+        """
+        command: List = ["JSON.ARRPOP", key, path, index]
+
+        return self.client.execute(command=command)
+
+    def arrtrim(self, key: str, path: str, start: int, stop: int) -> ResponseT:
+        """
+        Trims a JSON array stored at a key to the specified range of elements.
+
+        Returns the length of the array after the trim operation.
+
+        See https://redis.io/commands/json.arrtrim
+        """
+        command: List = ["JSON.ARRTRIM", key, path, start, stop]
+
+        return self.client.execute(command=command)
+
+    def clear(self, key: str, path: str) -> ResponseT:
+        """
+        Sets the value at a specified path in a JSON document stored at a key to default value of the type.
+
+        See https://redis.io/commands/json.clear
+        """
+        command: List = ["JSON.CLEAR", key, path]
+
+        return self.client.execute(command=command)
+
+    def delete(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Removes the value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.del
+        """
+        command: List = ["JSON.DEL", key, path]
+
+        return self.client.execute(command=command)
+
+    def forget(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Removes the value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.forget
+        """
+        command: List = ["JSON.FORGET", key, path]
+
+        return self.client.execute(command=command)
+
+    def get(self, key: str, *path: str) -> ResponseT:
+        """
+        Returns the value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.get
+        """
+        command: List = ["JSON.GET", key]
+
+        if len(path) > 0:
+            command.extend(path)
+        else:
+            command.append('$')
+
+        return self.client.execute(command=command)
+
+    def mget(self, keys: List[str], path: str = '$') -> ResponseT:
+        """
+        Returns the values at the specified paths in multiple JSON documents stored at multiple keys.
+
+        See https://redis.io/commands/json.mget
+        """
+        if len(keys) == 0:
+            raise Exception("At least one path must be specified.")
+
+        command: List = ["JSON.MGET", *keys, path]
+
+        return self.client.execute(command=command)
+
+    def numincrby(self, key: str, path: str, increment: int) -> ResponseT:
+        """
+        Increments the number value at a specified path in a JSON document stored at a key by a specified amount.
+
+        Returns the value of the number after the increment operation.
+
+        See https://redis.io/commands/json.numincrby
+        """
+        command: List = ["JSON.NUMINCRBY", key, path, increment]
+
+        return self.client.execute(command=command)
+
+    def nummultby(self, key: str, path: str, multiply: int) -> ResponseT:
+        """
+        Multiplies the number value at a specified path in a JSON document stored at a key by a specified amount.
+
+        Returns the value of the number after the multiplication operation.
+
+        See https://redis.io/commands/json.nummultby
+        """
+        command: List = ["JSON.NUMMULTBY", key, path, multiply]
+
+        return self.client.execute(command=command)
+
+    def objkeys(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the object keys in the object at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.objkeys
+        """
+        command: List = ["JSON.OBJKEYS", key, path]
+
+        return self.client.execute(command=command)
+
+    def objlen(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the number of keys in the object at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.objlen
+        """
+        command: List = ["JSON.OBJLEN", key, path]
+
+        return self.client.execute(command=command)
+
+    def set(self, key: str, path: str, value: JSONValueT, nx: Optional[bool] = None, xx: Optional[bool] = None) -> ResponseT:
+        """
+        Sets the value at a specified path in a JSON document stored at a key.
+
+        Returns True if the value was set.
+
+        See https://redis.io/commands/json.set
+        """
+        if nx and xx:
+            raise Exception('"nx" and "xx" are mutually exclusive.')
+
+        command: List = ["JSON.SET", key, path, json.dumps(value)]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+
+        return self.client.execute(command=command)
+
+    def strappend(self, key: str, path: str, value: str) -> ResponseT:
+        """
+        Appends a string to the string value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.strappend
+        """
+        command: List = ["JSON.STRAPPEND", key, path, f'"{value}"']
+
+        return self.client.execute(command=command)
+
+    def strlen(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the length of the string value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.strlen
+        """
+        command: List = ["JSON.STRLEN", key, path]
+
+        return self.client.execute(command=command)
+
+    def toggle(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Toggles a boolean value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.toggle
+        """
+        command: List = ["JSON.TOGGLE", key, path]
+
+        return self.client.execute(command=command)
+
+    def type(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the type of the value at a specified path in a JSON document stored at a key.
+
+        See https://redis.io/commands/json.type
+        """
+        command: List = ["JSON.TYPE", key, path]
+
+        return self.client.execute(command=command)
+
+
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):
@@ -4318,6 +4569,8 @@ class BitFieldROCommands:
 
 
 AsyncCommands = Commands
+AsyncJsonCommands = JsonCommands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
 PipelineCommands = Commands
+PipelineJsonCommands = JsonCommands

@@ -3,7 +3,7 @@ from typing import Any, List, Literal, Optional, Type, Dict, Callable
 
 from aiohttp import ClientSession
 
-from upstash_redis.commands import AsyncCommands, PipelineCommands
+from upstash_redis.commands import AsyncCommands, PipelineCommands, AsyncJsonCommands, PipelineJsonCommands
 from upstash_redis.format import cast_response
 from upstash_redis.http import async_execute, make_headers
 from upstash_redis.typing import RESTResultT
@@ -51,6 +51,8 @@ class Redis(AsyncCommands):
         self._url = url
         self._token = token
 
+        self._json = AsyncJsonCommands(self)
+
         self._allow_telemetry = allow_telemetry
 
         self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
@@ -62,6 +64,10 @@ class Redis(AsyncCommands):
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._context_manager: Optional[_SessionContextManager] = None
+
+    @property
+    def json(self) -> AsyncJsonCommands:
+        return self._json
 
     @classmethod
     def from_env(
@@ -219,6 +225,8 @@ class AsyncPipeline(PipelineCommands):
         self._url = url
         self._token = token
 
+        self._json = PipelineJsonCommands(self)
+
         self._allow_telemetry = allow_telemetry
 
         self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
@@ -235,6 +243,10 @@ class AsyncPipeline(PipelineCommands):
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
         self._sync_token_cb = sync_token_cb
+
+    @property
+    def json(self) -> PipelineJsonCommands:
+        return self._json
 
     def execute(self, command: List) -> "AsyncPipeline":  # type: ignore[override]
         """
