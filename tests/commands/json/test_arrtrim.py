@@ -1,11 +1,12 @@
 import pytest
 from upstash_redis import Redis
+from upstash_redis.typing import JSONValueT
 
 
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_key = "json_arrtrim"
-    value = {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [5, 6, 7]}}
+    value: JSONValueT = {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [5, 6, 7]}}
     redis.json.set(json_key, "$", value)
     yield
     redis.delete(json_key)

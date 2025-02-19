@@ -215,7 +215,7 @@ class Pipeline(PipelineCommands):
         self._url = url
         self._token = token
 
-        self._json = JsonCommands(self)
+        self._json = PipelineJsonCommands(self)
 
         self._allow_telemetry = allow_telemetry
 

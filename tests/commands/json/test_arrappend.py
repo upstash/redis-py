@@ -1,11 +1,13 @@
 import pytest
 from upstash_redis import Redis
+from upstash_redis.typing import JSONValueT
+from typing import List
 
 
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_key = "json_arrappend"
-    value = {"int": 1, "array": [], "object": {"array": [ 1 ]}}
+    value: JSONValueT = {"int": 1, "array": [], "object": {"array": [ 1 ]}}
     redis.json.set(json_key, "$", value)
     yield
     redis.delete(json_key)
@@ -27,7 +29,7 @@ def test_arrappend_single_element(redis: Redis):
 def test_arrappend_multiple_elements(redis: Redis):
     key = "json_arrappend"
     path = "$.array"
-    new_values = [1, 'new val', 1.5, True, [1], {"key": "value"}]
+    new_values: List[JSONValueT] = [1, 'new val', 1.5, True, [1], {"key": "value"}]
 
     assert redis.json.arrappend(key, path, *new_values) == [6]
     assert redis.json.get(key, path) == [[1, 'new val', 1.5, True, [1], {"key": "value"}]]
