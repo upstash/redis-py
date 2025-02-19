@@ -29,8 +29,8 @@ classifiers = [
 packages = [{ include = "upstash_redis" }]
 
 [tool.poetry.dependencies]
-python = "^3.8"
-aiohttp = "^3.8.4"
+python = "^3.9"
+aiohttp = "^3.10.11"
 requests = "^2.31.0"
 
 [tool.poetry.group.dev.dependencies]
