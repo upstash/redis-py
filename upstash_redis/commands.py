@@ -4301,7 +4301,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def arrtrim(self, key: str, path: str = '$', start: int = 0, stop: int = 0) -> ResponseT:
+    def arrtrim(self, key: str, path: str, start: int, stop: int) -> ResponseT:
         """
         Trims a JSON array stored at a key to the specified range of elements.
 
