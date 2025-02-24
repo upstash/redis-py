@@ -4234,7 +4234,7 @@ class JsonCommands:
     def __init__(self, client: Commands):
         self.client = client
 
-    def arrappend(self, key: str, path: str, *value: JSONValueT) -> ResponseT:
+    def arrappend(self, key: str, path: str = '$', *value: JSONValueT) -> ResponseT:
         """
         Appends one or more values to a JSON array stored at a key.
 
@@ -4242,8 +4242,6 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrappend
         """
-        if len(value) == 0:
-            raise Exception("At least one value must be specified.")
 
         value = [f'"{i}"' if type(i) is str else i for i in value]
 
@@ -4274,8 +4272,6 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrinsert
         """
-        if len(value) == 0:
-            raise Exception("At least one value must be specified.")
 
         value = [f'"{i}"' if type(i) is str else i for i in value]
 
@@ -4293,7 +4289,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def arrpop(self, key: str, path: str, index: int) -> ResponseT:
+    def arrpop(self, key: str, path: str = '$', index: int = -1) -> ResponseT:
         """
         Removes and returns the element at the specified index from a JSON array stored at a key.
 
@@ -4305,7 +4301,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def arrtrim(self, key: str, path: str, start: int, stop: int) -> ResponseT:
+    def arrtrim(self, key: str, path: str = '$', start: int = 0, stop: int = 0) -> ResponseT:
         """
         Trims a JSON array stored at a key to the specified range of elements.
 
@@ -4317,7 +4313,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def clear(self, key: str, path: str) -> ResponseT:
+    def clear(self, key: str, path: str = '$') -> ResponseT:
         """
         Sets the value at a specified path in a JSON document stored at a key to default value of the type.
 
@@ -4361,17 +4357,41 @@ class JsonCommands:
             command.append('$')
 
         return self.client.execute(command=command)
+    def merge(self, key: str, path: str, value: JSONValueT) -> ResponseT:
+        """
+        Merges the value at a specified path in a JSON document stored at a key.
 
-    def mget(self, keys: List[str], path: str = '$') -> ResponseT:
+        Returns true if the value was merged.
+
+        See https://redis.io/commands/json.merge
+        """
+        command: List = ["JSON.MERGE", key, path, json.dumps(value)]
+
+        return self.client.execute(command=command)
+
+    def mget(self, keys: List[str], path: str) -> ResponseT:
         """
         Returns the values at the specified paths in multiple JSON documents stored at multiple keys.
 
         See https://redis.io/commands/json.mget
         """
-        if len(keys) == 0:
-            raise Exception("At least one path must be specified.")
 
         command: List = ["JSON.MGET", *keys, path]
+
+        return self.client.execute(command=command)
+
+    def mset(self, key_path_value_tuples: List[Tuple[str, str, JSONValueT]]) -> ResponseT:
+        """
+        Sets the values at specified paths in multiple JSON documents stored at multiple keys.
+
+        Returns True if the values were set.
+
+        See https://redis.io/commands/json.mset
+        """
+        command = ["JSON.MSET"]
+
+        for key, path, value in key_path_value_tuples:
+            command.extend([key, path, json.dumps(value)])
 
         return self.client.execute(command=command)
 
@@ -4419,6 +4439,16 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
+    def resp(self, key: str, path: str = '$') -> ResponseT:
+        """
+        Returns the value at a specified path in redis serialization protocol format.
+
+        See https://redis.io/commands/json.resp
+        """
+        command: List = ["JSON.RESP", key, path]
+
+        return self.client.execute(command=command)
+
     def set(self, key: str, path: str, value: JSONValueT, nx: Optional[bool] = None, xx: Optional[bool] = None) -> ResponseT:
         """
         Sets the value at a specified path in a JSON document stored at a key.
@@ -4427,8 +4457,6 @@ class JsonCommands:
 
         See https://redis.io/commands/json.set
         """
-        if nx and xx:
-            raise Exception('"nx" and "xx" are mutually exclusive.')
 
         command: List = ["JSON.SET", key, path, json.dumps(value)]
 
