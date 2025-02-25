@@ -16,13 +16,15 @@ def test_arrinsert_single_element(redis: Redis):
     key = "json_arrinsert"
     path = "$.array"
 
-    assert redis.json.arrinsert(key, path,  0,1) == [1]
-    assert redis.json.arrinsert(key, path,  0, 'new val') == [2]
-    assert redis.json.arrinsert(key, path,  0, 1.5) == [3]
-    assert redis.json.arrinsert(key, path,  0, True) == [4]
-    assert redis.json.arrinsert(key, path,  0, [1]) == [5]
-    assert redis.json.arrinsert(key, path,  0, {"key": "value"}) == [6]
-    assert redis.json.get(key, path) == [[ {"key": "value"}, [1],True , 1.5, 'new val', 1 ]]
+    assert redis.json.arrinsert(key, path, 0, 1) == [1]
+    assert redis.json.arrinsert(key, path, 0, "new val") == [2]
+    assert redis.json.arrinsert(key, path, 0, 1.5) == [3]
+    assert redis.json.arrinsert(key, path, 0, True) == [4]
+    assert redis.json.arrinsert(key, path, 0, [1]) == [5]
+    assert redis.json.arrinsert(key, path, 0, {"key": "value"}) == [6]
+    assert redis.json.get(key, path) == [
+        [{"key": "value"}, [1], True, 1.5, "new val", 1]
+    ]
 
 
 def test_arrinsert_multiple_elements(redis: Redis):

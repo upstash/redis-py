@@ -35,4 +35,3 @@ def test_toggle_wildcard(redis: Redis):
     assert redis.json.get(key, path) == [True, False]
     assert redis.json.toggle(key, path) == [0, 1]
     assert redis.json.get(key, path) == [False, True]
-

@@ -32,9 +32,10 @@ def test_string_to_json() -> None:
 
 
 def test_string_list_to_json_list() -> None:
-    assert string_list_to_json_list(
-        res=['{"a": 1, "b": 2}', '{"c": 3, "d": 4}']
-    ) == [{"a": 1, "b": 2}, {"c": 3, "d": 4}]
+    assert string_list_to_json_list(res=['{"a": 1, "b": 2}', '{"c": 3, "d": 4}']) == [
+        {"a": 1, "b": 2},
+        {"c": 3, "d": 4},
+    ]
 
 
 def test_format_geo_members_with_distance_and_hash_and_coordinates() -> None:

@@ -15,4 +15,6 @@ def setup_json(redis: Redis):
 def test_resp(redis: Redis):
     key = "json_resp"
 
-    assert redis.json.resp(key, "$") == [['{', 'object', ['{', 'array', ['[', 1, 2, 3]]]]
+    assert redis.json.resp(key, "$") == [
+        ["{", "object", ["{", "array", ["[", 1, 2, 3]]]
+    ]

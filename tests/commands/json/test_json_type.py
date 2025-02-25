@@ -6,7 +6,14 @@ from upstash_redis.typing import JSONValueT
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_key = "json_type"
-    value: JSONValueT = {"number": 1, "array": [1, 2, 3, 4], "object": {"number": 3.1415}, "str": "test", "bool": True, "null": None}
+    value: JSONValueT = {
+        "number": 1,
+        "array": [1, 2, 3, 4],
+        "object": {"number": 3.1415},
+        "str": "test",
+        "bool": True,
+        "null": None,
+    }
     redis.json.set(json_key, "$", value)
     yield
     redis.delete(json_key)
@@ -73,7 +80,3 @@ def test_type_wildcard(redis: Redis):
     path = "$..number"
 
     assert redis.json.type(key, path) == ["number", "integer"]
-
-
-
-

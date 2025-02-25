@@ -6,7 +6,11 @@ from upstash_redis.typing import JSONValueT
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_key = "json_delete"
-    value: JSONValueT = {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [1, 2, 3]}}
+    value: JSONValueT = {
+        "int": 1,
+        "array": [1, 2, 3, 4],
+        "object": {"array": [1, 2, 3]},
+    }
     redis.json.set(json_key, "$", value)
     yield
     redis.delete(json_key)
