@@ -3,7 +3,7 @@ from typing import Any, List, Literal, Optional, Type, Dict, Callable
 
 from requests import Session
 
-from upstash_redis.commands import Commands, PipelineCommands
+from upstash_redis.commands import Commands, PipelineCommands, JsonCommands, PipelineJsonCommands
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, sync_execute
 from upstash_redis.typing import RESTResultT
@@ -53,6 +53,8 @@ class Redis(Commands):
         self._url = url
         self._token = token
 
+        self._json = JsonCommands(self)
+
         self._allow_telemetry = allow_telemetry
 
         self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
@@ -64,6 +66,10 @@ class Redis(Commands):
 
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
         self._session = Session()
+
+    @property
+    def json(self) -> JsonCommands:
+        return self._json
 
     @classmethod
     def from_env(
@@ -209,6 +215,8 @@ class Pipeline(PipelineCommands):
         self._url = url
         self._token = token
 
+        self._json = PipelineJsonCommands(self)
+
         self._allow_telemetry = allow_telemetry
 
         self._rest_encoding: Optional[Literal["base64"]] = rest_encoding
@@ -223,6 +231,10 @@ class Pipeline(PipelineCommands):
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
         self._sync_token_cb = sync_token_cb
+
+    @property
+    def json(self) -> PipelineJsonCommands:
+        return self._json
 
     def execute(self, command: List) -> "Pipeline":
         """

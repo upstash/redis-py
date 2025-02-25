@@ -1,4 +1,5 @@
 from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
+from json import loads
 
 from upstash_redis.utils import GeoSearchResult
 from upstash_redis.typing import RESTResultT
@@ -134,6 +135,17 @@ def set_formatter(res, command):
     if "GET" in options:
         return res
     return res == "OK"
+
+
+def string_to_json(res, command=None):
+    if res is None:
+        return None
+
+    return loads(res)
+
+
+def string_list_to_json_list(res, command=None):
+    return [string_to_json(value, command) for value in res]
 
 
 def ok_to_bool(res, command):
@@ -292,6 +304,14 @@ FORMATTERS: Dict[str, Callable] = {
     "HRANDFIELD": format_hrandfield,
     "HSCAN": hscan_formatter,
     "HSETNX": to_bool,
+    "JSON.ARRPOP": string_list_to_json_list,
+    "JSON.GET": string_to_json,
+    "JSON.MERGE": ok_to_bool,
+    "JSON.MGET": string_list_to_json_list,
+    "JSON.MSET": ok_to_bool,
+    "JSON.NUMINCRBY": string_to_json,
+    "JSON.NUMMULTBY": string_to_json,
+    "JSON.SET": ok_to_bool,
     "PFADD": to_bool,
     "PFMERGE": ok_to_bool,
     "TIME": format_time,
