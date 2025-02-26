@@ -9,17 +9,11 @@ import pytest_asyncio
 from upstash_redis import Redis
 from upstash_redis.asyncio import Redis as AsyncRedis
 
-dotenv.load_dotenv(override=True)
+dotenv.load_dotenv()
 
-URL = environ.get(
-    "UPSTASH_REDIS_REST_URL",
-    dotenv.dotenv_values().get("UPSTASH_REDIS_REST_URL"),
-)
+URL = environ["UPSTASH_REDIS_REST_URL"]
 
-TOKEN = environ.get(
-    "UPSTASH_REDIS_REST_TOKEN",
-    dotenv.dotenv_values().get("UPSTASH_REDIS_REST_TOKEN"),
-)
+TOKEN = environ["UPSTASH_REDIS_REST_TOKEN"]
 
 HEADERS: Dict[str, str] = {"Authorization": f"Bearer {TOKEN}"}
 
