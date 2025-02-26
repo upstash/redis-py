@@ -1,5 +1,4 @@
 import datetime
-import json
 from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
@@ -4234,7 +4233,7 @@ class JsonCommands:
     def __init__(self, client: Commands):
         self.client = client
 
-    def arrappend(self, key: str, path: str = "$", *value: JSONValueT) -> ResponseT:
+    def arrappend(self, key: str, path: str = "$", *values: JSONValueT) -> ResponseT:
         """
         Appends one or more values to a JSON array stored at a key.
 
@@ -4242,10 +4241,12 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrappend
         """
-
-        value = [f'"{i}"' if type(i) is str else i for i in value]
-
-        command: List = ["JSON.ARRAPPEND", key, path, *value]
+        command: List = ["JSON.ARRAPPEND", key, path]
+        for value in values:
+            if isinstance(value, str):
+                command.append(f'"{value}"')
+            else:
+                command.append(value)
 
         return self.client.execute(command=command)
 
@@ -4259,7 +4260,7 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrindex
         """
-        if type(value) is str:
+        if isinstance(value, str):
             value = f'"{value}"'
 
         command: List = ["JSON.ARRINDEX", key, path, value, start, stop]
@@ -4267,7 +4268,7 @@ class JsonCommands:
         return self.client.execute(command=command)
 
     def arrinsert(
-        self, key: str, path: str, index: int, *value: JSONValueT
+        self, key: str, path: str, index: int, *values: JSONValueT
     ) -> ResponseT:
         """
         Inserts one or more values to a JSON array stored at a key at a specified index.
@@ -4276,10 +4277,12 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrinsert
         """
-
-        value = [f'"{i}"' if type(i) is str else i for i in value]
-
-        command: List = ["JSON.ARRINSERT", key, path, index, *value]
+        command: List = ["JSON.ARRINSERT", key, path, index]
+        for value in values:
+            if isinstance(value, str):
+                command.append(f'"{value}"')
+            else:
+                command.append(value)
 
         return self.client.execute(command=command)
 
@@ -4347,7 +4350,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def get(self, key: str, *path: str) -> ResponseT:
+    def get(self, key: str, *paths: str) -> ResponseT:
         """
         Returns the value at a specified path in a JSON document stored at a key.
 
@@ -4355,8 +4358,8 @@ class JsonCommands:
         """
         command: List = ["JSON.GET", key]
 
-        if len(path) > 0:
-            command.extend(path)
+        if len(paths) > 0:
+            command.extend(paths)
         else:
             command.append("$")
 
@@ -4370,7 +4373,10 @@ class JsonCommands:
 
         See https://redis.io/commands/json.merge
         """
-        command: List = ["JSON.MERGE", key, path, json.dumps(value)]
+        if isinstance(value, str):
+            value = f'"{value}"'
+
+        command: List = ["JSON.MERGE", key, path, value]
 
         return self.client.execute(command=command)
 
@@ -4398,7 +4404,10 @@ class JsonCommands:
         command = ["JSON.MSET"]
 
         for key, path, value in key_path_value_tuples:
-            command.extend([key, path, json.dumps(value)])
+            if isinstance(value, str):
+                value = f'"{value}"'
+
+            command.extend([key, path, value])
 
         return self.client.execute(command=command)
 
@@ -4471,8 +4480,10 @@ class JsonCommands:
 
         See https://redis.io/commands/json.set
         """
+        if isinstance(value, str):
+            value = f'"{value}"'
 
-        command: List = ["JSON.SET", key, path, json.dumps(value)]
+        command: List = ["JSON.SET", key, path, value]
 
         if nx:
             command.append("NX")
