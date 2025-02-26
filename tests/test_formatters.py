@@ -1,5 +1,4 @@
 from upstash_redis.format import (
-    format_bool_list,
     format_float_list,
     format_geo_search_result,
     format_geopos,
@@ -7,6 +6,7 @@ from upstash_redis.format import (
     list_to_dict,
     string_to_json,
     string_list_to_json_list,
+    list_to_optional_bool_list,
 )
 from upstash_redis.utils import GeoSearchResult
 
@@ -17,10 +17,6 @@ def test_list_to_dict() -> None:
         "b": "2",
         "c": 3,
     }
-
-
-def test_format_bool_list() -> None:
-    assert format_bool_list(raw=[1, 0, 1, 1, 0]) == [True, False, True, True, False]
 
 
 def test_format_float_list() -> None:
@@ -165,3 +161,12 @@ def test_format_geo_positions() -> None:
 
 def test_format_server_time() -> None:
     assert format_time(raw=["1620752099", "12"]) == (1620752099, 12)
+
+
+def test_list_to_optional_bool_list() -> None:
+    assert list_to_optional_bool_list([1, 0, None, 1], None) == [
+        True,
+        False,
+        None,
+        True,
+    ]

@@ -1,8 +1,8 @@
-from typing import Callable, Dict, List, Literal, Optional, Tuple, Union
 from json import loads
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
-from upstash_redis.utils import GeoSearchResult
 from upstash_redis.typing import RESTResultT
+from upstash_redis.utils import GeoSearchResult
 
 
 def list_to_dict(raw: List, command=None) -> Dict:
@@ -100,14 +100,6 @@ def format_pubsub_numsub_return(raw: List[Union[str, int]]) -> Dict[str, int]:
     return list_to_dict(raw=raw)
 
 
-def format_bool_list(raw: List[Literal[0, 1]]) -> List[bool]:
-    """
-    Format a list of boolean integers.
-    """
-
-    return [bool(value) for value in raw]
-
-
 def format_time(raw: List[str], command=None) -> Tuple[int, int]:
     return (int(raw[0]), int(raw[1]))
 
@@ -158,6 +150,10 @@ def to_bool(res, command):
 
 def list_to_bool_list(res, command):
     return list(map(bool, res))
+
+
+def list_to_optional_bool_list(res, commands):
+    return [bool(value) if value is not None else None for value in res]
 
 
 def float_or_none(res, command):
@@ -312,6 +308,7 @@ FORMATTERS: Dict[str, Callable] = {
     "JSON.NUMINCRBY": string_to_json,
     "JSON.NUMMULTBY": string_to_json,
     "JSON.SET": ok_to_bool,
+    "JSON.TOGGLE": list_to_optional_bool_list,
     "PFADD": to_bool,
     "PFMERGE": ok_to_bool,
     "TIME": format_time,
