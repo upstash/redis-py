@@ -1,4 +1,5 @@
 import pytest
+
 from upstash_redis import Redis
 from upstash_redis.typing import JSONValueT
 
