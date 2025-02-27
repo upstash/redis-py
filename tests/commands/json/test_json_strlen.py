@@ -29,4 +29,3 @@ def test_strlen_wildcard(redis: Redis):
     path = "$..str"
 
     assert redis.json.strlen(key, path) == [6, 4]
-

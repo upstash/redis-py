@@ -6,7 +6,11 @@ from upstash_redis.typing import JSONValueT
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_key = "json_get"
-    value: JSONValueT = {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [1, 2, 3]}}
+    value: JSONValueT = {
+        "int": 1,
+        "array": [1, 2, 3, 4],
+        "object": {"array": [1, 2, 3]},
+    }
     redis.json.set(json_key, "$", value)
     yield
     redis.delete(json_key)
@@ -15,7 +19,9 @@ def setup_json(redis: Redis):
 def test_get(redis: Redis):
     key = "json_get"
 
-    assert redis.json.get(key) == [{"int": 1, "array": [1, 2, 3, 4], "object": {"array": [1, 2, 3]}}]
+    assert redis.json.get(key) == [
+        {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [1, 2, 3]}}
+    ]
 
 
 def test_get_path(redis: Redis):
@@ -27,7 +33,11 @@ def test_get_path(redis: Redis):
 def test_get_multiple_path(redis: Redis):
     key = "json_get"
     paths = ["$.array", "$.object", "$.int"]
-    assert redis.json.get(key, *paths) == {"$.array": [[1, 2, 3, 4]], "$.object": [{"array": [1, 2, 3]}], "$.int": [1]}
+    assert redis.json.get(key, *paths) == {
+        "$.array": [[1, 2, 3, 4]],
+        "$.object": [{"array": [1, 2, 3]}],
+        "$.int": [1],
+    }
 
 
 def test_get_nonexisting_key(redis: Redis):

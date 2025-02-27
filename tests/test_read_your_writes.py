@@ -116,7 +116,7 @@ def test_should_not_update_sync_state_with_opt_out_ryw(redis: Redis):
 @pytest.mark.parametrize("async_redis", [{"read_your_writes": False}], indirect=True)
 @pytest.mark.asyncio
 async def test_should_not_update_sync_state_with_opt_out_ryw_async(
-    async_redis: AsyncRedis
+    async_redis: AsyncRedis,
 ):
     initial_token = async_redis._sync_token
     await async_redis.set("key", "value")
@@ -133,7 +133,7 @@ def test_should_update_sync_state_with_default_behavior(redis: Redis):
 
 @pytest.mark.asyncio
 async def test_should_update_sync_state_with_default_behavior_async(
-    async_redis: AsyncRedis
+    async_redis: AsyncRedis,
 ):
     initial_token = async_redis._sync_token
     await async_redis.set("key", "value")

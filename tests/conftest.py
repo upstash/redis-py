@@ -1,22 +1,25 @@
 from os import environ
 from typing import Dict, List
 
+import dotenv
+import httpx
 import pytest
 import pytest_asyncio
-import requests
 
 from upstash_redis import Redis
 from upstash_redis.asyncio import Redis as AsyncRedis
 
+dotenv.load_dotenv()
+
+URL = environ["UPSTASH_REDIS_REST_URL"]
+
+TOKEN = environ["UPSTASH_REDIS_REST_TOKEN"]
+
+HEADERS: Dict[str, str] = {"Authorization": f"Bearer {TOKEN}"}
+
 """
 Flush and fill the testing database with the necessary data.
 """
-
-url: str = environ["UPSTASH_REDIS_REST_URL"] + "/pipeline"
-token: str = environ["UPSTASH_REDIS_REST_TOKEN"]
-
-headers: Dict[str, str] = {"Authorization": f"Bearer {token}"}
-
 commands: List[List] = [
     # Flush the database.
     ["FLUSHDB"],
@@ -116,9 +119,9 @@ commands: List[List] = [
 
 
 def pytest_configure():
-    with requests.post(url, headers=headers, json=commands) as r:
-        if r.status_code != 200:
-            raise RuntimeError(r.json()["error"])
+    r = httpx.post(f"{URL}/pipeline", headers=HEADERS, json=commands)
+    if r.status_code != 200:
+        raise RuntimeError(r.json()["error"])
 
 
 @pytest_asyncio.fixture

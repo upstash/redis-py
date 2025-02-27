@@ -1,13 +1,12 @@
+import asyncio
 import os
 import time
-from asyncio import sleep
 from base64 import b64decode
 from json import dumps
 from platform import python_version
-from typing import Any, Dict, List, Literal, Optional, Union, Callable
+from typing import Any, Dict, List, Literal, Optional, Union, Callable, Type
 
-from aiohttp import ClientSession
-from requests import Session
+import httpx
 
 from upstash_redis import __version__
 from upstash_redis.errors import UpstashError
@@ -16,7 +15,7 @@ from upstash_redis.typing import RESTResultT
 
 def make_headers(
     token: str, encoding: Optional[Literal["base64"]], allow_telemetry: bool
-) -> Dict[str, str]:
+) -> Dict[str, Any]:
     headers = {
         "Authorization": f"Bearer {token}",
     }
@@ -40,105 +39,145 @@ def make_headers(
     return headers
 
 
-async def async_execute(
-    session: ClientSession,
-    url: str,
-    headers: Dict[str, str],
-    encoding: Optional[Literal["base64"]],
-    retries: int,
-    retry_interval: float,
-    command: List,
-    from_pipeline: bool = False,
-    sync_token_cb: Optional[Callable[[str], None]] = None,
-) -> Union[RESTResultT, List[RESTResultT]]:
-    """
-    Execute the given command over the REST API.
+class SyncHttpClient:
+    def __init__(
+        self,
+        encoding: Optional[Literal["base64"]],
+        retries: int,
+        retry_interval: float,
+        sync_token_cb: Optional[Callable[[str], None]] = None,
+    ):
+        self._encoding = encoding
+        self._retries = retries
+        self._retry_interval = retry_interval
+        self._sync_token_cb = sync_token_cb
+        self._client = httpx.Client(timeout=None)
 
-    :param encoding: the encoding that can be used by the REST API to parse the response before sending it
-    :param retries: how many times an HTTP request will be retried if it fails
-    :param retry_interval: how many seconds will be waited between each retry
-    :param allow_telemetry: whether anonymous telemetry can be collected
-    :param sync_token_cb: This callback is called with the new Upstash Sync Token after each request to update the client's token
-    """
+    def execute(
+        self,
+        url: str,
+        headers: Dict[str, str],
+        command: List,
+        from_pipeline: bool = False,
+    ) -> Union[RESTResultT, List[RESTResultT]]:
+        command = _format_command(command, from_pipeline=from_pipeline)
 
-    # Serialize the command; more specifically, write string-incompatible types as JSON strings.
-    command = _format_command(command, from_pipeline=from_pipeline)
+        response: Optional[Dict[str, Any]] = None
+        last_error: Optional[Exception] = None
 
-    response: Optional[Union[Dict, List[Dict]]] = None
-    last_error: Optional[Exception] = None
+        for attempts_left in range(max(0, self._retries), -1, -1):
+            try:
+                r = self._client.post(url, headers=headers, json=command)
+                sync_token = r.headers.get("Upstash-Sync-Token")
+                if self._sync_token_cb and sync_token:
+                    self._sync_token_cb(sync_token)
 
-    for attempts_left in range(max(0, retries), -1, -1):
-        try:
-            async with session.post(url, headers=headers, json=command) as r:
+                response = r.json()
+
+                break  # Break the loop as soon as we receive a proper response
+            except Exception as e:
+                last_error = e
+
+                if attempts_left > 0:
+                    time.sleep(self._retry_interval)
+
+        if response is None:
+            assert last_error is not None
+
+            # Exhausted all retries, but no response is received
+            raise last_error
+        if not from_pipeline:
+            return format_response(response, self._encoding)
+        else:
+            return [
+                format_response(sub_response, self._encoding)  # type: ignore[arg-type]
+                for sub_response in response
+            ]
+
+    def close(self):
+        self._client.close()
+
+    def __enter__(self) -> "SyncHttpClient":
+        return self
+
+    def __exit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Any,
+    ) -> None:
+        self.close()
+
+
+class AsyncHttpClient:
+    def __init__(
+        self,
+        encoding: Optional[Literal["base64"]],
+        retries: int,
+        retry_interval: float,
+        sync_token_cb: Optional[Callable[[str], None]] = None,
+    ):
+        self._encoding = encoding
+        self._retries = retries
+        self._retry_interval = retry_interval
+        self._sync_token_cb = sync_token_cb
+        self._client = httpx.AsyncClient(timeout=None)
+
+    async def execute(
+        self,
+        url: str,
+        headers: Dict[str, str],
+        command: List,
+        from_pipeline: bool = False,
+    ) -> Union[RESTResultT, List[RESTResultT]]:
+        command = _format_command(command, from_pipeline=from_pipeline)
+
+        response: Optional[Union[Dict, List[Dict]]] = None
+        last_error: Optional[Exception] = None
+
+        for attempts_left in range(max(0, self._retries), -1, -1):
+            try:
+                r = await self._client.post(url, headers=headers, json=command)
                 sync_token = r.headers.get("Upstash-Sync-Token")
 
-                if sync_token_cb and sync_token:
-                    sync_token_cb(sync_token)
+                if self._sync_token_cb and sync_token:
+                    self._sync_token_cb(sync_token)
 
-                response = await r.json()
+                response = r.json()
                 break  # Break the loop as soon as we receive a proper response
-        except Exception as e:
-            last_error = e
+            except Exception as e:
+                last_error = e
 
-            if attempts_left > 0:
-                await sleep(retry_interval)
+                if attempts_left > 0:
+                    await asyncio.sleep(self._retry_interval)
 
-    if response is None:
-        assert last_error is not None
+        if response is None:
+            assert last_error is not None
 
-        # Exhausted all retries, but no response is received
-        raise last_error
+            # Exhausted all retries, but no response is received
+            raise last_error
 
-    if not from_pipeline:
-        return format_response(response, encoding)  # type: ignore[arg-type]
-    else:
-        return [format_response(sub_response, encoding) for sub_response in response]
+        if not from_pipeline:
+            return format_response(response, self._encoding)  # type: ignore[arg-type]
+        else:
+            return [
+                format_response(sub_response, self._encoding)
+                for sub_response in response
+            ]
 
+    async def close(self):
+        await self._client.aclose()
 
-def sync_execute(
-    session: Session,
-    url: str,
-    headers: Dict[str, str],
-    encoding: Optional[Literal["base64"]],
-    retries: int,
-    retry_interval: float,
-    command: List[Any],
-    from_pipeline: bool = False,
-    sync_token_cb: Optional[Callable[[str], None]] = None,
-) -> Union[RESTResultT, List[RESTResultT]]:
-    command = _format_command(command, from_pipeline=from_pipeline)
+    async def __aenter__(self) -> "AsyncHttpClient":
+        return self
 
-    response: Optional[Dict[str, Any]] = None
-    last_error: Optional[Exception] = None
-
-    for attempts_left in range(max(0, retries), -1, -1):
-        try:
-            r = session.post(url, headers=headers, json=command)
-            sync_token = r.headers.get("Upstash-Sync-Token")
-            if sync_token_cb and sync_token:
-                sync_token_cb(sync_token)
-
-            response = r.json()
-
-            break  # Break the loop as soon as we receive a proper response
-        except Exception as e:
-            last_error = e
-
-            if attempts_left > 0:
-                time.sleep(retry_interval)
-
-    if response is None:
-        assert last_error is not None
-
-        # Exhausted all retries, but no response is received
-        raise last_error
-    if not from_pipeline:
-        return format_response(response, encoding)
-    else:
-        return [
-            format_response(sub_response, encoding)  # type: ignore[arg-type]
-            for sub_response in response
-        ]
+    async def __aexit__(
+        self,
+        exc_type: Optional[Type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Any,
+    ) -> None:
+        await self.close()
 
 
 def format_response(

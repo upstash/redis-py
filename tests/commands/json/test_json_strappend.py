@@ -31,4 +31,3 @@ def test_strappend_wildcard(redis: Redis):
 
     assert redis.json.strappend(key, path, "_append") == [13, 11]
     assert redis.json.get(key, path) == ["test_1_append", "test_append"]
-

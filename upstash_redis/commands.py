@@ -1,5 +1,4 @@
 import datetime
-import json
 from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
@@ -639,9 +638,9 @@ class Commands:
         redis.set("key2", "World")
 
         # Rename failed because "key2" already exists.
-        assert redis.renamenx("key1", "key2") == False
+        assert redis.renamenx("key1", "key2") is False
 
-        assert redis.renamenx("key1", "key3") == True
+        assert redis.renamenx("key1", "key3") is True
 
         assert redis.get("key1") is None
         assert redis.get("key2") == "World"
@@ -1559,8 +1558,8 @@ class Commands:
 
         Example:
         ```python
-        assert redis.hsetnx("myhash", "field1", "Hello") == True
-        assert redis.hsetnx("myhash", "field1", "World") == False
+        assert redis.hsetnx("myhash", "field1", "Hello") is True
+        assert redis.hsetnx("myhash", "field1", "World") is False
         ```
 
         See https://redis.io/commands/hsetnx
@@ -1926,11 +1925,11 @@ class Commands:
         ```python
         redis.rpush("mylist", "one", "two", "three")
 
-        assert redis.lset("mylist", 1, "Hello") == True
+        assert redis.lset("mylist", 1, "Hello") is True
 
         assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
 
-        assert redis.lset("mylist", 5, "Hello") == False
+        assert redis.lset("mylist", 5, "Hello") is False
 
         assert redis.lrange("mylist", 0, -1) == ["one", "Hello", "three"]
         ```
@@ -1956,7 +1955,7 @@ class Commands:
         ```python
         redis.rpush("mylist", "one", "two", "three")
 
-        assert redis.ltrim("mylist", 0, 1) == True
+        assert redis.ltrim("mylist", 0, 1) is True
 
         assert redis.lrange("mylist", 0, -1) == ["one", "two"]
         ```
@@ -2431,7 +2430,7 @@ class Commands:
 
         redis.sadd("dest", "four")
 
-        assert redis.smove("src", "dest", "three") == True
+        assert redis.smove("src", "dest", "three") is True
 
         assert redis.smembers("source") == {"one", "two"}
 
@@ -3269,7 +3268,7 @@ class Commands:
 
         assert redis.zrank("myset", "a") == 0
 
-        assert redis.zrank("myset", "d") == None
+        assert redis.zrank("myset", "d") is None
 
         assert redis.zrank("myset", "b") == 1
 
@@ -3703,7 +3702,7 @@ class Commands:
 
         assert redis.getdel("key") == "value"
 
-        assert redis.get("key") == None
+        assert redis.get("key") is None
         ```
 
         See https://redis.io/commands/getdel
@@ -4003,15 +4002,15 @@ class Commands:
 
         Example:
         ```python
-        assert redis.set("key", "value") == True
+        assert redis.set("key", "value") is True
 
         assert redis.get("key") == "value"
 
         # Only set the key if it does not already exist.
-        assert redis.set("key", "value", nx=True) == False
+        assert redis.set("key", "value", nx=True) is False
 
         # Only set the key if it already exists.
-        assert redis.set("key", "value", xx=True) == True
+        assert redis.set("key", "value", xx=True) is True
 
         # Get the old value stored at the key.
         assert redis.set("key", "new-value", get=True) == "value"
@@ -4089,10 +4088,10 @@ class Commands:
         Example:
         ```python
         # The key does not exist, so it will be set.
-        assert redis.setnx("key", "value") == True
+        assert redis.setnx("key", "value") is True
 
         # The key already exists, so it will not be set.
-        assert redis.setnx("key", "value") == False
+        assert redis.setnx("key", "value") is False
         ```
 
         See https://redis.io/commands/setnx
@@ -4234,7 +4233,7 @@ class JsonCommands:
     def __init__(self, client: Commands):
         self.client = client
 
-    def arrappend(self, key: str, path: str = '$', *value: JSONValueT) -> ResponseT:
+    def arrappend(self, key: str, path: str = "$", *values: JSONValueT) -> ResponseT:
         """
         Appends one or more values to a JSON array stored at a key.
 
@@ -4242,14 +4241,18 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrappend
         """
-
-        value = [f'"{i}"' if type(i) is str else i for i in value]
-
-        command: List = ["JSON.ARRAPPEND", key, path, *value]
+        command: List = ["JSON.ARRAPPEND", key, path]
+        for value in values:
+            if isinstance(value, str):
+                command.append(f'"{value}"')
+            else:
+                command.append(value)
 
         return self.client.execute(command=command)
 
-    def arrindex(self, key: str, path: str, value: JSONValueT, start: int = 0, stop: int = 0) -> ResponseT:
+    def arrindex(
+        self, key: str, path: str, value: JSONValueT, start: int = 0, stop: int = 0
+    ) -> ResponseT:
         """
         Returns the index of the first occurrence of a value in a JSON array.
 
@@ -4257,14 +4260,16 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrindex
         """
-        if type(value) is str:
+        if isinstance(value, str):
             value = f'"{value}"'
 
         command: List = ["JSON.ARRINDEX", key, path, value, start, stop]
 
         return self.client.execute(command=command)
 
-    def arrinsert(self, key: str, path: str, index: int, *value: JSONValueT) -> ResponseT:
+    def arrinsert(
+        self, key: str, path: str, index: int, *values: JSONValueT
+    ) -> ResponseT:
         """
         Inserts one or more values to a JSON array stored at a key at a specified index.
 
@@ -4272,14 +4277,16 @@ class JsonCommands:
 
         See https://redis.io/commands/json.arrinsert
         """
-
-        value = [f'"{i}"' if type(i) is str else i for i in value]
-
-        command: List = ["JSON.ARRINSERT", key, path, index, *value]
+        command: List = ["JSON.ARRINSERT", key, path, index]
+        for value in values:
+            if isinstance(value, str):
+                command.append(f'"{value}"')
+            else:
+                command.append(value)
 
         return self.client.execute(command=command)
 
-    def arrlen(self, key: str, path: str = '$') -> ResponseT:
+    def arrlen(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the length of a JSON array stored at a key.
 
@@ -4289,7 +4296,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def arrpop(self, key: str, path: str = '$', index: int = -1) -> ResponseT:
+    def arrpop(self, key: str, path: str = "$", index: int = -1) -> ResponseT:
         """
         Removes and returns the element at the specified index from a JSON array stored at a key.
 
@@ -4313,7 +4320,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def clear(self, key: str, path: str = '$') -> ResponseT:
+    def clear(self, key: str, path: str = "$") -> ResponseT:
         """
         Sets the value at a specified path in a JSON document stored at a key to default value of the type.
 
@@ -4323,7 +4330,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def delete(self, key: str, path: str = '$') -> ResponseT:
+    def delete(self, key: str, path: str = "$") -> ResponseT:
         """
         Removes the value at a specified path in a JSON document stored at a key.
 
@@ -4333,7 +4340,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def forget(self, key: str, path: str = '$') -> ResponseT:
+    def forget(self, key: str, path: str = "$") -> ResponseT:
         """
         Removes the value at a specified path in a JSON document stored at a key.
 
@@ -4343,7 +4350,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def get(self, key: str, *path: str) -> ResponseT:
+    def get(self, key: str, *paths: str) -> ResponseT:
         """
         Returns the value at a specified path in a JSON document stored at a key.
 
@@ -4351,12 +4358,13 @@ class JsonCommands:
         """
         command: List = ["JSON.GET", key]
 
-        if len(path) > 0:
-            command.extend(path)
+        if len(paths) > 0:
+            command.extend(paths)
         else:
-            command.append('$')
+            command.append("$")
 
         return self.client.execute(command=command)
+
     def merge(self, key: str, path: str, value: JSONValueT) -> ResponseT:
         """
         Merges the value at a specified path in a JSON document stored at a key.
@@ -4365,7 +4373,10 @@ class JsonCommands:
 
         See https://redis.io/commands/json.merge
         """
-        command: List = ["JSON.MERGE", key, path, json.dumps(value)]
+        if isinstance(value, str):
+            value = f'"{value}"'
+
+        command: List = ["JSON.MERGE", key, path, value]
 
         return self.client.execute(command=command)
 
@@ -4380,7 +4391,9 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def mset(self, key_path_value_tuples: List[Tuple[str, str, JSONValueT]]) -> ResponseT:
+    def mset(
+        self, key_path_value_tuples: List[Tuple[str, str, JSONValueT]]
+    ) -> ResponseT:
         """
         Sets the values at specified paths in multiple JSON documents stored at multiple keys.
 
@@ -4391,7 +4404,10 @@ class JsonCommands:
         command = ["JSON.MSET"]
 
         for key, path, value in key_path_value_tuples:
-            command.extend([key, path, json.dumps(value)])
+            if isinstance(value, str):
+                value = f'"{value}"'
+
+            command.extend([key, path, value])
 
         return self.client.execute(command=command)
 
@@ -4419,7 +4435,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def objkeys(self, key: str, path: str = '$') -> ResponseT:
+    def objkeys(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the object keys in the object at a specified path in a JSON document stored at a key.
 
@@ -4429,7 +4445,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def objlen(self, key: str, path: str = '$') -> ResponseT:
+    def objlen(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the number of keys in the object at a specified path in a JSON document stored at a key.
 
@@ -4439,7 +4455,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def resp(self, key: str, path: str = '$') -> ResponseT:
+    def resp(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the value at a specified path in redis serialization protocol format.
 
@@ -4449,7 +4465,14 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def set(self, key: str, path: str, value: JSONValueT, nx: Optional[bool] = None, xx: Optional[bool] = None) -> ResponseT:
+    def set(
+        self,
+        key: str,
+        path: str,
+        value: JSONValueT,
+        nx: Optional[bool] = None,
+        xx: Optional[bool] = None,
+    ) -> ResponseT:
         """
         Sets the value at a specified path in a JSON document stored at a key.
 
@@ -4457,8 +4480,10 @@ class JsonCommands:
 
         See https://redis.io/commands/json.set
         """
+        if isinstance(value, str):
+            value = f'"{value}"'
 
-        command: List = ["JSON.SET", key, path, json.dumps(value)]
+        command: List = ["JSON.SET", key, path, value]
 
         if nx:
             command.append("NX")
@@ -4477,7 +4502,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def strlen(self, key: str, path: str = '$') -> ResponseT:
+    def strlen(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the length of the string value at a specified path in a JSON document stored at a key.
 
@@ -4487,7 +4512,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def toggle(self, key: str, path: str = '$') -> ResponseT:
+    def toggle(self, key: str, path: str = "$") -> ResponseT:
         """
         Toggles a boolean value at a specified path in a JSON document stored at a key.
 
@@ -4497,7 +4522,7 @@ class JsonCommands:
 
         return self.client.execute(command=command)
 
-    def type(self, key: str, path: str = '$') -> ResponseT:
+    def type(self, key: str, path: str = "$") -> ResponseT:
         """
         Returns the type of the value at a specified path in a JSON document stored at a key.
 

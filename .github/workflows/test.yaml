@@ -24,6 +24,14 @@ jobs:
       - name: Set up Poetry environment
         run: poetry install --no-root
 
+      - name: Run ruff
+        run: |
+          poetry run ruff check .
+
+      - name: Run ruff format
+        run: |
+          poetry run ruff format --check .
+
       - name: Run mypy
         run: |
           poetry run mypy --show-error-codes .

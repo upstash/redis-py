@@ -1,4 +1,5 @@
 import pytest
+
 from upstash_redis import Redis
 from upstash_redis.typing import JSONValueT
 
@@ -6,8 +7,16 @@ from upstash_redis.typing import JSONValueT
 @pytest.fixture(autouse=True)
 def setup_json(redis: Redis):
     json_keys = ["json_mget_1", "json_mget_2"]
-    value1: JSONValueT = {"int": 1, "array": [1, 2, 3, 4], "object": {"array": [1, 2, 3]}}
-    value2: JSONValueT = {"int": 2, "array": [2, 2, 3, 4], "object": {"array": [2, 2, 3]}}
+    value1: JSONValueT = {
+        "int": 1,
+        "array": [1, 2, 3, 4],
+        "object": {"array": [1, 2, 3]},
+    }
+    value2: JSONValueT = {
+        "int": 2,
+        "array": [2, 2, 3, 4],
+        "object": {"array": [2, 2, 3]},
+    }
     redis.json.set(json_keys[0], "$", value1)
     redis.json.set(json_keys[1], "$", value2)
     yield
@@ -33,4 +42,7 @@ def test_mget_wildcard(redis: Redis):
     keys = ["json_mget_1", "json_mget_2"]
     path = "$..array"
 
-    assert redis.json.mget(keys, path) == [[[1, 2, 3], [1, 2, 3, 4]], [[2, 2, 3], [2, 2, 3, 4]]]
+    assert redis.json.mget(keys, path) == [
+        [[1, 2, 3], [1, 2, 3, 4]],
+        [[2, 2, 3], [2, 2, 3, 4]],
+    ]
