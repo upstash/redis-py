@@ -2136,6 +2136,56 @@ class Commands:
 
         return self.execute(command)
 
+    def eval_ro(
+        self,
+        script: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> ResponseT:
+        """
+        Evaluates a read-only Lua script in the server
+
+        :param script: the read-only Lua script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        assert redis.eval_ro("return 1 + 1") == 2
+
+        assert redis.eval_ro("return KEYS[1]", keys=["mykey"]) == "mykey"
+
+        assert redis.eval_ro("return ARGV[1]", args=["Hello"]) == "Hello"
+
+        script = \"\"\"
+        local value = redis.call("GET", KEYS[1])
+        return value
+        \"\"\"
+
+        redis.set("mykey", "Hello")
+
+        assert redis.eval_ro(script, keys=["mykey"]) == "Hello"
+        ```
+
+        See https://redis.io/commands/eval_ro
+
+        The number of keys is calculated automatically.
+        """
+
+        command: List = ["EVAL_RO", script]
+
+        if keys is not None:
+            command.extend([len(keys), *keys])
+        else:
+            command.append(0)
+
+        if args:
+            command.extend(args)
+
+        return self.execute(command)
+
     def evalsha(
         self,
         sha1: str,
@@ -2163,6 +2213,44 @@ class Commands:
         """
 
         command: List = ["EVALSHA", sha1]
+
+        if keys is not None:
+            command.extend([len(keys), *keys])
+        else:
+            command.append(0)
+
+        if args:
+            command.extend(args)
+
+        return self.execute(command)
+
+    def evalsha_ro(
+        self,
+        sha1: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> ResponseT:
+        """
+        Evaluates a read-only Lua script in the server, cached by its SHA1 digest.
+
+        :param sha1: the SHA1 digest of the read-only script.
+        :param keys: the list of keys that can be referenced in the script.
+        :param args: the list of arguments that can be referenced in the script.
+
+        Returns the result of the script.
+
+        Example:
+        ```python
+        result = redis.evalsha_ro("fb67a0c03b48ddbf8b4c9b011e779563bdbc28cb", args=["hello"])
+        assert result = "hello"
+        ```
+
+        See https://redis.io/commands/evalsha_ro
+
+        The number of keys is calculated automatically.
+        """
+
+        command: List = ["EVALSHA_RO", sha1]
 
         if keys is not None:
             command.extend([len(keys), *keys])
