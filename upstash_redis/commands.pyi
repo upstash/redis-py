@@ -269,7 +269,19 @@ class Commands:
         keys: Optional[List[str]] = None,
         args: Optional[List[str]] = None,
     ) -> Any: ...
+    def eval_ro(
+        self,
+        script: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> Any: ...
     def evalsha(
+        self,
+        sha1: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> Any: ...
+    def evalsha_ro(
         self,
         sha1: str,
         keys: Optional[List[str]] = None,
@@ -756,7 +768,19 @@ class AsyncCommands:
         keys: Optional[List[str]] = None,
         args: Optional[List[str]] = None,
     ) -> Any: ...
+    async def eval_ro(
+        self,
+        script: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> Any: ...
     async def evalsha(
+        self,
+        sha1: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> Any: ...
+    async def evalsha_ro(
         self,
         sha1: str,
         keys: Optional[List[str]] = None,
@@ -1284,7 +1308,19 @@ class PipelineCommands:
         keys: Optional[List[str]] = None,
         args: Optional[List[str]] = None,
     ) -> PipelineCommands: ...
+    def eval_ro(
+        self,
+        script: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> PipelineCommands: ...
     def evalsha(
+        self,
+        sha1: str,
+        keys: Optional[List[str]] = None,
+        args: Optional[List[str]] = None,
+    ) -> PipelineCommands: ...
+    def evalsha_ro(
         self,
         sha1: str,
         keys: Optional[List[str]] = None,
