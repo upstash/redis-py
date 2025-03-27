@@ -363,7 +363,7 @@ class Commands:
             command.append("LT")
 
         return self.execute(command)
-    
+
     def hexpire(
         self,
         key: str,
