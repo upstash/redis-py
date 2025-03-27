@@ -363,6 +363,66 @@ class Commands:
             command.append("LT")
 
         return self.execute(command)
+    
+    def hexpire(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        seconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
+        """
+        Sets a timeout on a hash field in seconds.
+        After the timeout has expired, the hash field will automatically be deleted.
+
+        :param key: The key of the hash.
+        :param field: The field within the hash to set the expiry for.
+        :param seconds: The timeout in seconds as an int or a datetime.timedelta object.
+        :param nx: Set expiry only when the field has no expiry.
+        :param xx: Set expiry only when the field has an existing expiry.
+        :param gt: Set expiry only when the new expiry is greater than the current one.
+        :param lt: Set expiry only when the new expiry is less than the current one.
+
+        Example:
+        ```python
+        # With seconds
+        redis.hset("myhash", "field1", "value1")
+        redis.hexpire("myhash", "field1", 5)
+
+        assert redis.hget("myhash", "field1") == "value1"
+
+        time.sleep(5)
+
+        assert redis.hget("myhash", "field1") is None
+
+        # With a timedelta
+        redis.hset("myhash", "field1", "value1")
+        redis.hexpire("myhash", "field1", datetime.timedelta(seconds=5))
+        ```
+
+        See https://redis.io/commands/hexpire for more details on expiration behavior.
+        """
+
+        if isinstance(seconds, datetime.timedelta):
+            seconds = int(seconds.total_seconds())
+
+        command: List = ["HEXPIRE", key, seconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
 
     def expireat(
         self,
