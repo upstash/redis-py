@@ -115,7 +115,7 @@ def test_hexpire_returns_minus2_if_field_does_not_exist(redis: Redis):
     hash_name = "myhash"
     field = "field1"
     field2 = "field2"
-    redis.hset(hash_name, field, 10)
+    redis.hset(hash_name, field, "10")
     assert redis.hexpire(hash_name, field2, 1) == [-2]
 
 

@@ -420,7 +420,7 @@ class Commands:
         if lt:
             command.append("LT")
 
-        if isinstance(fields, str):  
+        if isinstance(fields, str):
             fields = [fields]
 
         command.extend(["FIELDS", len(fields), *fields])
