@@ -15,11 +15,11 @@ def test_hpexpiretime_returns_correct_expiry(redis: Redis):
     value = "value1"
 
     redis.hset(hash_name, field, value)
-    redis.hpexpire(hash_name, field, 1500)
+    redis.hpexpire(hash_name, field, 500)
     expiry_time_ms = redis.hpexpiretime(hash_name, [field])[0]
 
     assert expiry_time_ms > 0
-    assert expiry_time_ms <= int(time.time() * 1000) + 1500
+    assert expiry_time_ms <= int(time.time() * 1000) + 1000
 
 
 def test_hpexpiretime_returns_minus1_if_no_expiry(redis: Redis):

@@ -576,7 +576,7 @@ class Commands:
 
         return self.execute(command)
 
-    def httl(self, key: str, *fields: List[str]) -> ResponseT:
+    def httl(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
         Retrieve the time-to-live (TTL) of one or more fields within a hash in seconds.
 
@@ -589,10 +589,14 @@ class Commands:
             its TTL may be reported as -2. If the field exists but has no associated TTL, it may
             be reported as -1.
         """
+
+        if isinstance(fields, str):
+            fields = [fields]
+
         command: List = ["HTTL", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hpttl(self, key: str, *fields: List[str]) -> ResponseT:
+    def hpttl(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
         Retrieve the time-to-live (TTL) of one or more fields in a hash, in milliseconds.
 
@@ -604,10 +608,14 @@ class Commands:
             ResponseT: The TTL of the specified fields in milliseconds. If a field does not exist,
                    the response may indicate this (e.g., by returning a specific value like -2).
         """
+
+        if isinstance(fields, str):
+            fields = [fields]
+
         command: List = ["HPTTL", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hexpiretime(self, key: str, *fields: List[str]) -> ResponseT:
+    def hexpiretime(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
         Retrieve the expiration time of one or more hash fields in a Redis hash.
 
@@ -625,10 +633,14 @@ class Commands:
             - This command is specific to certain Redis modules or extensions
               and may not be available in all Redis setups.
         """
+
+        if isinstance(fields, str):
+            fields = [fields]
+
         command: List = ["HEXPIRETIME", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hpexpiretime(self, key: str, *fields: List[str]) -> ResponseT:
+    def hpexpiretime(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
         Retrieve the expiration time of one or more hash fields in a Redis hash.
 
@@ -647,10 +659,14 @@ class Commands:
             This command is specific to the Redis server and requires the
             `HPEXPIRETIME` command to be supported by the server.
         """
+
+        if isinstance(fields, str):
+            fields = [fields]
+
         command: List = ["HPEXPIRETIME", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hpersist(self, key: str, *fields: List[str]) -> ResponseT:
+    def hpersist(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
         Removes the expiration from one or more fields in a hash.
 
@@ -661,6 +677,10 @@ class Commands:
         Returns:
             ResponseT: The response from the Redis server indicating the result of the operation.
         """
+
+        if isinstance(fields, str):
+            fields = [fields]
+
         command: List = ["HPERSIST", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
