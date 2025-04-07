@@ -427,6 +427,247 @@ class Commands:
 
         return self.execute(command)
 
+    def hpexpire(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
+        """
+        Sets a timeout on a hash field in milliseconds.
+        After the timeout has expired, the hash field will automatically be deleted.
+
+        :param key: The key of the hash.
+        :param fields: The field(s) within the hash to set the expiry for.
+        :param milliseconds: The timeout in milliseconds as an int or a datetime.timedelta object.
+        :param nx: Set expiry only when the field has no expiry.
+        :param xx: Set expiry only when the field has an existing expiry.
+        :param gt: Set expiry only when the new expiry is greater than the current one.
+        :param lt: Set expiry only when the new expiry is less than the current one.
+        """
+        if isinstance(milliseconds, datetime.timedelta):
+            milliseconds = int(milliseconds.total_seconds() * 1000)
+
+        command: List = ["HPEXPIRE", key, milliseconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
+        if isinstance(fields, str):
+            fields = [fields]
+
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
+
+    def hexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
+        """
+        Set an expiration time for specific fields in a hash at a given Unix timestamp.
+
+        Args:
+            key (str): The key of the hash.
+            fields (Union[str, List[str]]): The field or list of fields in the hash to set the expiration for.
+            unix_time_seconds (Union[int, datetime.datetime]): The Unix timestamp (in seconds) at which the fields should expire.
+            Can be provided as an integer or a `datetime.datetime` object.
+            nx (bool, optional): If True, set the expiration only if the fields do not already have an expiration. Defaults to False.
+            xx (bool, optional): If True, set the expiration only if the fields already have an expiration. Defaults to False.
+            gt (bool, optional): If True, set the expiration only if the new expiration time is greater than the current one. Defaults to False.
+            lt (bool, optional): If True, set the expiration only if the new expiration time is less than the current one. Defaults to False.
+
+        Returns:
+            ResponseT: The response from the Redis server.
+
+        Raises:
+            ValueError: If the `unix_time_seconds` is not a valid Unix timestamp or `fields` is not a valid string or list of strings.
+
+        Example:
+            ```python
+            redis.hexpireat(
+            key="my_hash",
+            fields=["field1", "field2"],
+            unix_time_seconds=1672531200,
+            nx=True
+            )
+        """
+        if isinstance(unix_time_seconds, datetime.datetime):
+            unix_time_seconds = int(unix_time_seconds.timestamp())
+
+        command: List = ["HEXPIREAT", key, unix_time_seconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
+        if isinstance(fields, str):
+            fields = [fields]
+
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
+
+    def hpexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> ResponseT:
+        """
+        Set an expiration time for specific fields in a hash at a given Unix timestamp in milliseconds.
+
+        Args:
+            key (str): The key of the hash.
+            fields (Union[str, List[str]]): The field or list of fields in the hash to set the expiration for.
+            unix_time_milliseconds (Union[int, datetime.datetime]): The Unix timestamp in milliseconds at which the fields should expire. 
+            Can be provided as an integer or a `datetime.datetime` object.
+            nx (bool, optional): If True, set the expiration only if the fields do not already have an expiration. Defaults to False.
+            xx (bool, optional): If True, set the expiration only if the fields already have an expiration. Defaults to False.
+            gt (bool, optional): If True, set the expiration only if the new expiration time is greater than the current one. Defaults to False.
+            lt (bool, optional): If True, set the expiration only if the new expiration time is less than the current one. Defaults to False.
+
+        Returns:
+            ResponseT: The response from the Redis server.
+        """
+        if isinstance(unix_time_milliseconds, datetime.datetime):
+            unix_time_milliseconds = int(unix_time_milliseconds.timestamp() * 1000)
+
+        command: List = ["HPEXPIREAT", key, unix_time_milliseconds]
+
+        if nx:
+            command.append("NX")
+        if xx:
+            command.append("XX")
+        if gt:
+            command.append("GT")
+        if lt:
+            command.append("LT")
+
+        if isinstance(fields, str):
+            fields = [fields]
+
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
+
+    def httl(self, key: str, *fields: List[str]) -> ResponseT:
+        """
+        Retrieve the time-to-live (TTL) of one or more fields within a hash in seconds.
+
+        Args:
+            key (str): The key of the hash.
+            *fields (List[str]): One or more field names within the hash to check the TTL for.
+
+        Returns:
+            ResponseT: The TTL of the specified hash fields in seconds. If a field does not exist, 
+            its TTL may be reported as -2. If the field exists but has no associated TTL, it may 
+            be reported as -1.
+        """
+        command: List = ["HTTL", key, "FIELDS", len(fields), *fields]
+        return self.execute(command)
+
+    def hpttl(self, key: str, *fields: List[str]) -> ResponseT:
+        """
+        Retrieve the time-to-live (TTL) of one or more fields in a hash, in milliseconds.
+
+        Args:
+            key (str): The key of the hash.
+            *fields (List[str]): One or more field names within the hash to check the TTL for.
+
+        Returns:
+            ResponseT: The TTL of the specified fields in milliseconds. If a field does not exist, 
+                   the response may indicate this (e.g., by returning a specific value like -2).
+        """
+        command: List = ["HPTTL", key, "FIELDS", len(fields), *fields]
+        return self.execute(command)
+
+    def hexpiretime(
+        self, key: str, *fields: List[str]
+    ) -> ResponseT:
+        """
+        Retrieve the expiration time of one or more hash fields in a Redis hash.
+
+        Args:
+            key (str): The key of the Redis hash.
+            *fields (List[str]): One or more field names within the hash.
+
+        Returns:
+            ResponseT: The expiration time(s) of the specified field(s) in seconds 
+            or as a datetime object, depending on the Redis server's response.
+
+        Note:
+            - If a field does not exist or does not have an expiration time, 
+              the response may vary depending on the Redis server's behavior.
+            - This command is specific to certain Redis modules or extensions 
+              and may not be available in all Redis setups.
+        """
+        command: List = ["HEXPIRETIME", key, "FIELDS", len(fields), *fields]
+        return self.execute(command)
+
+    def hpexpiretime(
+        self, key: str, *fields: List[str]
+    ) -> ResponseT:
+        """
+        Retrieve the expiration time of one or more hash fields in a Redis hash.
+
+        Args:
+            key (str): The key of the hash in Redis.
+            *fields (List[str]): One or more field names within the hash.
+
+        Returns:
+            ResponseT: The expiration time of the specified hash fields in 
+            milliseconds, or as a datetime object if applicable. If a field 
+            does not have an expiration time, the response may indicate this 
+            (e.g., by returning a special value such as -1 or None, depending 
+            on the Redis server's behavior).
+
+        Note:
+            This command is specific to the Redis server and requires the 
+            `HPEXPIRETIME` command to be supported by the server.
+        """
+        command: List = ["HPEXPIRETIME", key, "FIELDS", len(fields), *fields]
+        return self.execute(command)
+
+    def hpersist(self, key: str, *fields: List[str]) -> ResponseT:
+        """
+        Removes the expiration from one or more fields in a hash.
+
+        Args:
+            key (str): The key of the hash.
+            *fields (List[str]): One or more field names within the hash to remove expiration from.
+
+        Returns:
+            ResponseT: The response from the Redis server indicating the result of the operation.
+        """
+        command: List = ["HPERSIST", key, "FIELDS", len(fields), *fields]
+        return self.execute(command)
+
     def expireat(
         self,
         key: str,
