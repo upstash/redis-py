@@ -545,7 +545,7 @@ class Commands:
         Args:
             key (str): The key of the hash.
             fields (Union[str, List[str]]): The field or list of fields in the hash to set the expiration for.
-            unix_time_milliseconds (Union[int, datetime.datetime]): The Unix timestamp in milliseconds at which the fields should expire. 
+            unix_time_milliseconds (Union[int, datetime.datetime]): The Unix timestamp in milliseconds at which the fields should expire.
             Can be provided as an integer or a `datetime.datetime` object.
             nx (bool, optional): If True, set the expiration only if the fields do not already have an expiration. Defaults to False.
             xx (bool, optional): If True, set the expiration only if the fields already have an expiration. Defaults to False.
@@ -585,8 +585,8 @@ class Commands:
             *fields (List[str]): One or more field names within the hash to check the TTL for.
 
         Returns:
-            ResponseT: The TTL of the specified hash fields in seconds. If a field does not exist, 
-            its TTL may be reported as -2. If the field exists but has no associated TTL, it may 
+            ResponseT: The TTL of the specified hash fields in seconds. If a field does not exist,
+            its TTL may be reported as -2. If the field exists but has no associated TTL, it may
             be reported as -1.
         """
         command: List = ["HTTL", key, "FIELDS", len(fields), *fields]
@@ -601,15 +601,13 @@ class Commands:
             *fields (List[str]): One or more field names within the hash to check the TTL for.
 
         Returns:
-            ResponseT: The TTL of the specified fields in milliseconds. If a field does not exist, 
+            ResponseT: The TTL of the specified fields in milliseconds. If a field does not exist,
                    the response may indicate this (e.g., by returning a specific value like -2).
         """
         command: List = ["HPTTL", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hexpiretime(
-        self, key: str, *fields: List[str]
-    ) -> ResponseT:
+    def hexpiretime(self, key: str, *fields: List[str]) -> ResponseT:
         """
         Retrieve the expiration time of one or more hash fields in a Redis hash.
 
@@ -618,21 +616,19 @@ class Commands:
             *fields (List[str]): One or more field names within the hash.
 
         Returns:
-            ResponseT: The expiration time(s) of the specified field(s) in seconds 
+            ResponseT: The expiration time(s) of the specified field(s) in seconds
             or as a datetime object, depending on the Redis server's response.
 
         Note:
-            - If a field does not exist or does not have an expiration time, 
+            - If a field does not exist or does not have an expiration time,
               the response may vary depending on the Redis server's behavior.
-            - This command is specific to certain Redis modules or extensions 
+            - This command is specific to certain Redis modules or extensions
               and may not be available in all Redis setups.
         """
         command: List = ["HEXPIRETIME", key, "FIELDS", len(fields), *fields]
         return self.execute(command)
 
-    def hpexpiretime(
-        self, key: str, *fields: List[str]
-    ) -> ResponseT:
+    def hpexpiretime(self, key: str, *fields: List[str]) -> ResponseT:
         """
         Retrieve the expiration time of one or more hash fields in a Redis hash.
 
@@ -641,14 +637,14 @@ class Commands:
             *fields (List[str]): One or more field names within the hash.
 
         Returns:
-            ResponseT: The expiration time of the specified hash fields in 
-            milliseconds, or as a datetime object if applicable. If a field 
-            does not have an expiration time, the response may indicate this 
-            (e.g., by returning a special value such as -1 or None, depending 
+            ResponseT: The expiration time of the specified hash fields in
+            milliseconds, or as a datetime object if applicable. If a field
+            does not have an expiration time, the response may indicate this
+            (e.g., by returning a special value such as -1 or None, depending
             on the Redis server's behavior).
 
         Note:
-            This command is specific to the Redis server and requires the 
+            This command is specific to the Redis server and requires the
             `HPEXPIRETIME` command to be supported by the server.
         """
         command: List = ["HPEXPIRETIME", key, "FIELDS", len(fields), *fields]
