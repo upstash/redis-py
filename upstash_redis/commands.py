@@ -485,7 +485,7 @@ class Commands:
         """
         Set an expiration time for specific fields in a hash at a given Unix timestamp.
 
-        :param key: (str): The key of the hash.
+        :param key: The key of the hash.
         :param fields: The field or list of fields in the hash to set the expiration for.
         :param unix_time_seconds: the timeout in seconds as int or datetime.timedelta object
         :param nx: Set expiry only when the key has no expiry
