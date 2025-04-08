@@ -448,6 +448,8 @@ class Commands:
         :param xx: Set expiry only when the field has an existing expiry.
         :param gt: Set expiry only when the new expiry is greater than the current one.
         :param lt: Set expiry only when the new expiry is less than the current one.
+
+        See https://redis.io/commands/hexpire
         """
         if isinstance(milliseconds, datetime.timedelta):
             milliseconds = int(milliseconds.total_seconds() * 1000)
@@ -483,30 +485,21 @@ class Commands:
         """
         Set an expiration time for specific fields in a hash at a given Unix timestamp.
 
-        Args:
-            key (str): The key of the hash.
-            fields (Union[str, List[str]]): The field or list of fields in the hash to set the expiration for.
-            unix_time_seconds (Union[int, datetime.datetime]): The Unix timestamp (in seconds) at which the fields should expire.
-            Can be provided as an integer or a `datetime.datetime` object.
-            nx (bool, optional): If True, set the expiration only if the fields do not already have an expiration. Defaults to False.
-            xx (bool, optional): If True, set the expiration only if the fields already have an expiration. Defaults to False.
-            gt (bool, optional): If True, set the expiration only if the new expiration time is greater than the current one. Defaults to False.
-            lt (bool, optional): If True, set the expiration only if the new expiration time is less than the current one. Defaults to False.
-
-        Returns:
-            ResponseT: The response from the Redis server.
-
-        Raises:
-            ValueError: If the `unix_time_seconds` is not a valid Unix timestamp or `fields` is not a valid string or list of strings.
+        :param key: (str): The key of the hash.
+        :param fields: The field or list of fields in the hash to set the expiration for.
+        :param unix_time_seconds: the timeout in seconds as int or datetime.timedelta object
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
         Example:
-            ```python
-            redis.hexpireat(
-            key="my_hash",
-            fields=["field1", "field2"],
-            unix_time_seconds=1672531200,
-            nx=True
-            )
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hexpireat("my_hash", ["field1", "field2"], 1672531200)
+        ```
+
+        See https://redis.io/commands/hexpireat
         """
         if isinstance(unix_time_seconds, datetime.datetime):
             unix_time_seconds = int(unix_time_seconds.timestamp())
@@ -542,18 +535,21 @@ class Commands:
         """
         Set an expiration time for specific fields in a hash at a given Unix timestamp in milliseconds.
 
-        Args:
-            key (str): The key of the hash.
-            fields (Union[str, List[str]]): The field or list of fields in the hash to set the expiration for.
-            unix_time_milliseconds (Union[int, datetime.datetime]): The Unix timestamp in milliseconds at which the fields should expire.
-            Can be provided as an integer or a `datetime.datetime` object.
-            nx (bool, optional): If True, set the expiration only if the fields do not already have an expiration. Defaults to False.
-            xx (bool, optional): If True, set the expiration only if the fields already have an expiration. Defaults to False.
-            gt (bool, optional): If True, set the expiration only if the new expiration time is greater than the current one. Defaults to False.
-            lt (bool, optional): If True, set the expiration only if the new expiration time is less than the current one. Defaults to False.
+        :param key: The key of the hash.
+        :param fields: The field or list of fields in the hash to set the expiration for.
+        :param unix_time_milliseconds: the timeout milliseconds as int or datetime.timedelta object
+        :param nx: Set expiry only when the key has no expiry
+        :param xx: Set expiry only when the key has an existing expiry
+        :param gt: Set expiry only when the new expiry is greater than current one
+        :param lt: Set expiry only when the new expiry is less than current one
 
-        Returns:
-            ResponseT: The response from the Redis server.
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        ```
+
+        See https://redis.io/commands/hpexpireat
         """
         if isinstance(unix_time_milliseconds, datetime.datetime):
             unix_time_milliseconds = int(unix_time_milliseconds.timestamp() * 1000)
@@ -580,14 +576,17 @@ class Commands:
         """
         Retrieve the time-to-live (TTL) of one or more fields within a hash in seconds.
 
-        Args:
-            key (str): The key of the hash.
-            *fields (List[str]): One or more field names within the hash to check the TTL for.
+        :param key: The key of the hash.
+        :param fields: One or more field names within the hash to check the TTL for.
 
-        Returns:
-            ResponseT: The TTL of the specified hash fields in seconds. If a field does not exist,
-            its TTL may be reported as -2. If the field exists but has no associated TTL, it may
-            be reported as -1.
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        redis.httl("myhash", "field1")
+        ```
+
+        See https://redis.io/commands/httl
         """
 
         if isinstance(fields, str):
@@ -598,15 +597,19 @@ class Commands:
 
     def hpttl(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
-        Retrieve the time-to-live (TTL) of one or more fields in a hash, in milliseconds.
+        Retrieve the time-to-live (TTL) of one or more fields within a hash in milliseconds.
 
-        Args:
-            key (str): The key of the hash.
-            *fields (List[str]): One or more field names within the hash to check the TTL for.
+        :param key: The key of the hash.
+        :param fields: One or more field names within the hash to check the TTL for.
 
-        Returns:
-            ResponseT: The TTL of the specified fields in milliseconds. If a field does not exist,
-                   the response may indicate this (e.g., by returning a specific value like -2).
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        redis.hpttl("myhash", "field1")
+        ```
+
+        See https://redis.io/commands/hpttl
         """
 
         if isinstance(fields, str):
@@ -617,21 +620,20 @@ class Commands:
 
     def hexpiretime(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
-        Retrieve the expiration time of one or more hash fields in a Redis hash.
+        Retrieve the expiration time (as unix timestamp seconds) of one or more
+        hash fields in a Redis hash.
 
-        Args:
-            key (str): The key of the Redis hash.
-            *fields (List[str]): One or more field names within the hash.
+        :param key: The key of the Redis hash.
+        :param fields: One or more field names within the hash.
 
-        Returns:
-            ResponseT: The expiration time(s) of the specified field(s) in seconds
-            or as a datetime object, depending on the Redis server's response.
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        redis.hexpiretime("myhash", "field1")
+        ```
 
-        Note:
-            - If a field does not exist or does not have an expiration time,
-              the response may vary depending on the Redis server's behavior.
-            - This command is specific to certain Redis modules or extensions
-              and may not be available in all Redis setups.
+        See https://redis.io/commands/hexpiretime
         """
 
         if isinstance(fields, str):
@@ -642,22 +644,20 @@ class Commands:
 
     def hpexpiretime(self, key: str, fields: Union[str, List[str]]) -> ResponseT:
         """
-        Retrieve the expiration time of one or more hash fields in a Redis hash.
+        Retrieve the expiration time (as unix timestamp in milliseconds) of one or
+        more hash fields in a Redis hash.
 
-        Args:
-            key (str): The key of the hash in Redis.
-            *fields (List[str]): One or more field names within the hash.
+        :param key: The key of the Redis hash.
+        :param fields: One or more field names within the hash.
 
-        Returns:
-            ResponseT: The expiration time of the specified hash fields in
-            milliseconds, or as a datetime object if applicable. If a field
-            does not have an expiration time, the response may indicate this
-            (e.g., by returning a special value such as -1 or None, depending
-            on the Redis server's behavior).
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        redis.hpexpiretime("myhash", "field1")
+        ```
 
-        Note:
-            This command is specific to the Redis server and requires the
-            `HPEXPIRETIME` command to be supported by the server.
+        See https://redis.io/commands/hpexpiretime
         """
 
         if isinstance(fields, str):
@@ -670,12 +670,17 @@ class Commands:
         """
         Removes the expiration from one or more fields in a hash.
 
-        Args:
-            key (str): The key of the hash.
-            *fields (List[str]): One or more field names within the hash to remove expiration from.
+        :param key: The key of the Redis hash.
+        :param fields: One or more field names within the hash to remove expiration from.
 
-        Returns:
-            ResponseT: The response from the Redis server indicating the result of the operation.
+        Example:
+        ```python
+        redis.hset("myhash", "field1", "value1")
+        redis.hpexpireat("my_hash", ["field1", "field2"], 1672531200000)
+        redis.hpersist("myhash", "field1")
+        ```
+
+        See https://redis.io/commands/hpersist
         """
 
         if isinstance(fields, str):
