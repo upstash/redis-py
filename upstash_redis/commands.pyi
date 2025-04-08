@@ -202,6 +202,41 @@ class Commands:
         gt: bool = False,
         lt: bool = False,
     ) -> List[int]: ...
+    def hpexpire(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    def hexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    def hpexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    def httl(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    def hpttl(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    def hexpiretime(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    def hpexpiretime(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    def hpersist(self, key: str, fields: Union[str, List[str]]) -> int: ...
     def hget(self, key: str, field: str) -> Optional[str]: ...
     def hgetall(self, key: str) -> Dict[str, str]: ...
     def hincrby(self, key: str, field: str, increment: int) -> int: ...
@@ -710,7 +745,46 @@ class AsyncCommands:
         xx: bool = False,
         gt: bool = False,
         lt: bool = False,
-    ) -> int: ...
+    ) -> List[int]: ...
+    async def hpexpire(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    async def hexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    async def hpexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> List[int]: ...
+    async def httl(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    async def hpttl(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
+    async def hexpiretime(
+        self, key: str, fields: Union[str, List[str]]
+    ) -> List[int]: ...
+    async def hpexpiretime(
+        self, key: str, fields: Union[str, List[str]]
+    ) -> List[int]: ...
+    async def hpersist(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
     async def hget(self, key: str, field: str) -> Optional[str]: ...
     async def hgetall(self, key: str) -> Dict[str, str]: ...
     async def hincrby(self, key: str, field: str, increment: int) -> int: ...
@@ -1263,6 +1337,45 @@ class PipelineCommands:
         gt: bool = False,
         lt: bool = False,
     ) -> PipelineCommands: ...
+    def hpexpire(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        milliseconds: Union[int, datetime.timedelta],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> PipelineCommands: ...
+    def hexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_seconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> PipelineCommands: ...
+    def hpexpireat(
+        self,
+        key: str,
+        fields: Union[str, List[str]],
+        unix_time_milliseconds: Union[int, datetime.datetime],
+        nx: bool = False,
+        xx: bool = False,
+        gt: bool = False,
+        lt: bool = False,
+    ) -> PipelineCommands: ...
+    def httl(self, key: str, fields: Union[str, List[str]]) -> PipelineCommands: ...
+    def hpttl(self, key: str, fields: Union[str, List[str]]) -> PipelineCommands: ...
+    def hexpiretime(
+        self, key: str, fields: Union[str, List[str]]
+    ) -> PipelineCommands: ...
+    def hpexpiretime(
+        self, key: str, fields: Union[str, List[str]]
+    ) -> PipelineCommands: ...
+    def hpersist(self, key: str, fields: Union[str, List[str]]) -> PipelineCommands: ...
     def hget(self, key: str, field: str) -> PipelineCommands: ...
     def hgetall(self, key: str) -> PipelineCommands: ...
     def hincrby(self, key: str, field: str, increment: int) -> PipelineCommands: ...
