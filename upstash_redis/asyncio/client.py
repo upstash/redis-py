@@ -35,7 +35,7 @@ class Redis(AsyncCommands):
         rest_encoding: Optional[Literal["base64"]] = "base64",
         rest_retries: int = 1,
         rest_retry_interval: float = 3,  # Seconds.
-        allow_telemetry: bool = True,
+        allow_telemetry: bool = False,
         read_your_writes: bool = True,
     ):
         """
