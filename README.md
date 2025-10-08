@@ -112,6 +112,58 @@ redis.bitfield_ro("test_key_2") \
   .execute()
 ```
 
+### Redis Streams
+
+Redis Streams provide a powerful data structure for handling real-time data. The SDK supports all stream commands:
+
+```python
+from upstash_redis import Redis
+
+redis = Redis.from_env()
+
+# Add entries to a stream
+entry_id = redis.xadd("mystream", "*", {"field1": "value1", "field2": "value2"})
+print(f"Added entry: {entry_id}")
+
+# Read from stream
+messages = redis.xread({"mystream": "0-0"})
+print(f"Messages: {messages}")
+
+# Create consumer group
+redis.xgroup_create("mystream", "mygroup", "$")
+
+# Read as part of consumer group  
+messages = redis.xreadgroup("mygroup", "consumer1", {"mystream": ">"})
+
+# Acknowledge processed messages
+if messages:
+    message_ids = [msg[0] for msg in messages[0][1]]
+    redis.xack("mystream", "mygroup", *message_ids)
+
+# Get stream length
+length = redis.xlen("mystream")
+print(f"Stream length: {length}")
+```
+
+For async usage:
+
+```python
+from upstash_redis.asyncio import Redis
+
+redis = Redis.from_env()
+
+async def stream_example():
+    # Add entries to a stream
+    entry_id = await redis.xadd("mystream", "*", {"user": "alice", "action": "login"})
+    
+    # Read from stream
+    messages = await redis.xread({"mystream": "0-0"})
+    
+    # Consumer group operations
+    await redis.xgroup_create("mystream", "processors", "$")
+    messages = await redis.xreadgroup("processors", "worker1", {"mystream": ">"})
+```
+
 ### Custom commands
 If you want to run a command that hasn't been implemented, you can use the `execute` function of your client instance
 and pass the command as a `list`.

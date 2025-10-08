@@ -4641,6 +4641,555 @@ class Commands:
 
         return self.execute(command)
 
+    # Redis Streams Commands
+
+    def xadd(
+        self,
+        key: str,
+        id: str,
+        data: Dict[str, Any],
+        maxlen: Optional[int] = None,
+        approximate_trim: bool = True,
+        nomkstream: bool = False,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Adds an entry to a stream.
+
+        Example:
+        ```python
+        stream_id = redis.xadd("mystream", "*", {"field1": "value1", "field2": "value2"})
+        print(stream_id)  # e.g., "1609459200000-0"
+        ```
+
+        See https://redis.io/commands/xadd
+        """
+        command: List = ["XADD", key]
+
+        # Handle NOMKSTREAM option
+        if nomkstream:
+            command.append("NOMKSTREAM")
+
+        # Handle trimming options
+        if maxlen is not None:
+            command.append("MAXLEN")
+            if approximate_trim:
+                command.append("~")
+            else:
+                command.append("=")
+            command.append(str(maxlen))
+            if limit is not None:
+                command.extend(["LIMIT", str(limit)])
+        elif minid is not None:
+            command.append("MINID")
+            if approximate_trim:
+                command.append("~")
+            else:
+                command.append("=")
+            command.append(minid)
+            if limit is not None:
+                command.extend(["LIMIT", str(limit)])
+
+        # Add stream ID
+        command.append(id)
+
+        # Add field-value pairs
+        for field, value in data.items():
+            command.extend([field, str(value)])
+
+        return self.execute(command)
+
+    def xack(self, key: str, group: str, *ids: str) -> ResponseT:
+        """
+        Acknowledges one or more messages in a consumer group.
+
+        Example:
+        ```python
+        acknowledged = redis.xack("mystream", "mygroup", "1609459200000-0", "1609459200001-0")
+        print(acknowledged)  # 2
+        ```
+
+        See https://redis.io/commands/xack
+        """
+        command: List = ["XACK", key, group] + list(ids)
+        return self.execute(command)
+
+    def xdel(self, key: str, *ids: str) -> ResponseT:
+        """
+        Removes one or more entries from a stream.
+
+        Example:
+        ```python
+        deleted = redis.xdel("mystream", "1609459200000-0", "1609459200001-0")
+        print(deleted)  # 2
+        ```
+
+        See https://redis.io/commands/xdel
+        """
+        command: List = ["XDEL", key] + list(ids)
+        return self.execute(command)
+
+    def xgroup_create(
+        self,
+        key: str,
+        group: str,
+        id: str = "$",
+        mkstream: bool = False,
+    ) -> ResponseT:
+        """
+        Creates a new consumer group for a stream.
+        
+        Note: The ENTRIESREAD option is not supported in Upstash Redis.
+
+        Example:
+        ```python
+        result = redis.xgroup_create("mystream", "mygroup", "0", mkstream=True)
+        print(result)  # "OK"
+        ```
+
+        See https://redis.io/commands/xgroup-create
+        """
+        command: List = ["XGROUP", "CREATE", key, group, id]
+
+        if mkstream:
+            command.append("MKSTREAM")
+
+        return self.execute(command)
+
+    def xgroup_createconsumer(self, key: str, group: str, consumer: str) -> ResponseT:
+        """
+        Creates a consumer in a consumer group.
+
+        Example:
+        ```python
+        result = redis.xgroup_createconsumer("mystream", "mygroup", "myconsumer")
+        print(result)  # 1 (consumer was created) or 0 (consumer already existed)
+        ```
+
+        See https://redis.io/commands/xgroup-createconsumer
+        """
+        command: List = ["XGROUP", "CREATECONSUMER", key, group, consumer]
+        return self.execute(command)
+
+    def xgroup_delconsumer(self, key: str, group: str, consumer: str) -> ResponseT:
+        """
+        Deletes a consumer from a consumer group.
+
+        Example:
+        ```python
+        pending_count = redis.xgroup_delconsumer("mystream", "mygroup", "myconsumer")
+        print(pending_count)  # Number of pending messages deleted
+        ```
+
+        See https://redis.io/commands/xgroup-delconsumer
+        """
+        command: List = ["XGROUP", "DELCONSUMER", key, group, consumer]
+        return self.execute(command)
+
+    def xgroup_destroy(self, key: str, group: str) -> ResponseT:
+        """
+        Destroys a consumer group.
+
+        Example:
+        ```python
+        result = redis.xgroup_destroy("mystream", "mygroup")
+        print(result)  # 1 (group was destroyed) or 0 (group didn't exist)
+        ```
+
+        See https://redis.io/commands/xgroup-destroy
+        """
+        command: List = ["XGROUP", "DESTROY", key, group]
+        return self.execute(command)
+
+    def xgroup_setid(
+        self, key: str, group: str, id: str, entries_read: Optional[int] = None
+    ) -> ResponseT:
+        """
+        Sets the consumer group last delivered ID to something else.
+
+        Example:
+        ```python
+        result = redis.xgroup_setid("mystream", "mygroup", "$")
+        print(result)  # "OK"
+        ```
+
+        See https://redis.io/commands/xgroup-setid
+        """
+        command: List = ["XGROUP", "SETID", key, group, id]
+
+        if entries_read is not None:
+            command.extend(["ENTRIESREAD", str(entries_read)])
+
+        return self.execute(command)
+
+    def xinfo_consumers(self, key: str, group: str) -> ResponseT:
+        """
+        Returns information about consumers in a consumer group.
+
+        Example:
+        ```python
+        consumers = redis.xinfo_consumers("mystream", "mygroup")
+        print(consumers)  # List of consumer information
+        ```
+
+        See https://redis.io/commands/xinfo-consumers
+        """
+        command: List = ["XINFO", "CONSUMERS", key, group]
+        return self.execute(command)
+
+    def xinfo_groups(self, key: str) -> ResponseT:
+        """
+        Returns information about consumer groups in a stream.
+
+        Example:
+        ```python
+        groups = redis.xinfo_groups("mystream")
+        print(groups)  # List of group information
+        ```
+
+        See https://redis.io/commands/xinfo-groups
+        """
+        command: List = ["XINFO", "GROUPS", key]
+        return self.execute(command)
+
+    def xlen(self, key: str) -> ResponseT:
+        """
+        Returns the length of a stream.
+
+        Example:
+        ```python
+        length = redis.xlen("mystream")
+        print(length)  # e.g., 42
+        ```
+
+        See https://redis.io/commands/xlen
+        """
+        command: List = ["XLEN", key]
+        return self.execute(command)
+
+    def xpending(
+        self,
+        key: str,
+        group: str,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        count: Optional[int] = None,
+        consumer: Optional[str] = None,
+        idle: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Returns information about pending messages in a consumer group.
+
+        :param key: The stream key
+        :param group: The consumer group name
+        :param start: Start ID for detailed info
+        :param end: End ID for detailed info
+        :param count: Number of entries to return
+        :param consumer: Filter by specific consumer
+        :param idle: Minimum idle time in milliseconds
+
+        Note: start, end, and count must all be provided together for detailed information.
+        If none are provided, returns summary information.
+
+        Example:
+        ```python
+        # Get general pending info
+        pending = redis.xpending("mystream", "mygroup")
+        print(pending)  # [count, start_id, end_id, consumers]
+
+        # Get detailed pending info
+        detailed = redis.xpending("mystream", "mygroup", "-", "+", 10)
+        print(detailed)  # List of detailed pending message info
+
+        # Get detailed info for specific consumer
+        detailed = redis.xpending("mystream", "mygroup", "-", "+", 10, "consumer1")
+        ```
+
+        See https://redis.io/commands/xpending
+        """
+        command: List = ["XPENDING", key, group]
+
+        # Check if any of start, end, count are provided
+        detailed_args_provided = [start is not None, end is not None, count is not None]
+
+        if any(detailed_args_provided):
+            # If any are provided, all must be provided
+            if not all(detailed_args_provided):
+                raise ValueError(
+                    "start, end, and count must all be provided together for detailed XPENDING"
+                )
+
+            if idle is not None:
+                command.extend(["IDLE", str(idle)])
+            command.extend([start, end, str(count)])
+            if consumer is not None:
+                command.append(consumer)
+
+        return self.execute(command)
+
+    def xrange(
+        self,
+        key: str,
+        start: str = "-",
+        end: str = "+",
+        count: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Returns entries from a stream within a range.
+
+        Example:
+        ```python
+        entries = redis.xrange("mystream", "-", "+", count=10)
+        print(entries)  # List of [id, fields] pairs
+        ```
+
+        See https://redis.io/commands/xrange
+        """
+        command: List = ["XRANGE", key, start, end]
+
+        if count is not None:
+            command.extend(["COUNT", str(count)])
+
+        return self.execute(command)
+
+    def xread(
+        self,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+        block: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Reads entries from one or more streams.
+
+        Example:
+        ```python
+        # Non-blocking read
+        entries = redis.xread({"mystream": "0-0"}, count=10)
+        print(entries)  # List of [stream, entries] pairs
+
+        # Blocking read (not supported in Upstash Redis)
+        # entries = redis.xread({"mystream": "$"}, block=1000)
+        ```
+
+        See https://redis.io/commands/xread
+        """
+        command: List = ["XREAD"]
+
+        if count is not None:
+            command.extend(["COUNT", str(count)])
+
+        if block is not None:
+            command.extend(["BLOCK", str(block)])
+
+        command.append("STREAMS")
+
+        # Add stream names
+        for stream_key in streams.keys():
+            command.append(stream_key)
+
+        # Add stream IDs
+        for stream_id in streams.values():
+            command.append(stream_id)
+
+        return self.execute(command)
+
+    def xreadgroup(
+        self,
+        group: str,
+        consumer: str,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+        block: Optional[int] = None,
+        noack: bool = False,
+    ) -> ResponseT:
+        """
+        Reads entries from streams using a consumer group.
+
+        Example:
+        ```python
+        # Read new messages
+        entries = redis.xreadgroup("mygroup", "myconsumer", {"mystream": ">"}, count=10)
+        print(entries)  # List of [stream, entries] pairs
+
+        # Read pending messages
+        pending = redis.xreadgroup("mygroup", "myconsumer", {"mystream": "0"}, count=10)
+        print(pending)
+        ```
+
+        See https://redis.io/commands/xreadgroup
+        """
+        command: List = ["XREADGROUP", "GROUP", group, consumer]
+
+        if count is not None:
+            command.extend(["COUNT", str(count)])
+
+        if block is not None:
+            command.extend(["BLOCK", str(block)])
+
+        if noack:
+            command.append("NOACK")
+
+        command.append("STREAMS")
+
+        # Add stream names
+        for stream_key in streams.keys():
+            command.append(stream_key)
+
+        # Add stream IDs
+        for stream_id in streams.values():
+            command.append(stream_id)
+
+        return self.execute(command)
+
+    def xrevrange(
+        self,
+        key: str,
+        end: str = "+",
+        start: str = "-",
+        count: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Returns entries from a stream within a range in reverse order.
+
+        Example:
+        ```python
+        entries = redis.xrevrange("mystream", "+", "-", count=10)
+        print(entries)  # List of [id, fields] pairs in reverse order
+        ```
+
+        See https://redis.io/commands/xrevrange
+        """
+        command: List = ["XREVRANGE", key, end, start]
+
+        if count is not None:
+            command.extend(["COUNT", str(count)])
+
+        return self.execute(command)
+
+    def xtrim(
+        self,
+        key: str,
+        maxlen: Optional[int] = None,
+        approximate: bool = True,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Trims a stream to a specified size or minimum ID.
+
+        Example:
+        ```python
+        # Trim by length
+        trimmed = redis.xtrim("mystream", maxlen=1000, approximate=True)
+        print(trimmed)  # Number of entries removed
+
+        # Trim by minimum ID
+        trimmed = redis.xtrim("mystream", minid="1609459200000-0")
+        print(trimmed)
+        ```
+
+        See https://redis.io/commands/xtrim
+        """
+        command: List = ["XTRIM", key]
+
+        if maxlen is not None:
+            command.append("MAXLEN")
+            if approximate:
+                command.append("~")
+            else:
+                command.append("=")
+            command.append(str(maxlen))
+        elif minid is not None:
+            command.append("MINID")
+            if approximate:
+                command.append("~")
+            else:
+                command.append("=")
+            command.append(minid)
+        else:
+            raise ValueError("Either maxlen or minid must be specified")
+
+        if limit is not None:
+            command.extend(["LIMIT", str(limit)])
+
+        return self.execute(command)
+
+    def xclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        *ids: str,
+        justid: bool = False,
+    ) -> ResponseT:
+        """
+        Changes ownership of pending messages to a different consumer.
+        
+        Note: Upstash Redis only supports basic XCLAIM functionality.
+        Advanced options like IDLE, TIME, RETRYCOUNT, FORCE, and LASTID are not supported.
+
+        :param key: The stream key
+        :param group: The consumer group name
+        :param consumer: The consumer name to claim messages for
+        :param min_idle_time: Minimum idle time in milliseconds
+        :param ids: Message IDs to claim (variable arguments)
+        :param justid: Return only message IDs instead of full messages
+
+        Example:
+        ```python
+        claimed = redis.xclaim(
+            "mystream", "mygroup", "newconsumer",
+            3600000, "1609459200000-0", "1609459200001-0"
+        )
+        print(claimed)  # List of claimed messages
+        ```
+
+        See https://redis.io/commands/xclaim
+        """
+        command: List = ["XCLAIM", key, group, consumer, str(min_idle_time)]
+        command.extend(ids)
+
+        if justid:
+            command.append("JUSTID")
+
+        return self.execute(command)
+
+    def xautoclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        start: str,
+        count: Optional[int] = None,
+        justid: bool = False,
+    ) -> ResponseT:
+        """
+        Automatically claims pending messages that have been idle for too long.
+
+        Example:
+        ```python
+        result = redis.xautoclaim(
+            "mystream", "mygroup", "myconsumer",
+            3600000, "0-0", count=10
+        )
+        print(result)  # [next_start, claimed_messages]
+        ```
+
+        See https://redis.io/commands/xautoclaim
+        """
+        command: List = ["XAUTOCLAIM", key, group, consumer, str(min_idle_time), start]
+
+        if count is not None:
+            command.extend(["COUNT", str(count)])
+
+        if justid:
+            command.append("JUSTID")
+
+        return self.execute(command)
+
 
 class JsonCommands:
     def __init__(self, client: Commands):
