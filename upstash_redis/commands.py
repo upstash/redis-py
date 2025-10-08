@@ -4739,7 +4739,7 @@ class Commands:
     ) -> ResponseT:
         """
         Creates a new consumer group for a stream.
-        
+
         Note: The ENTRIESREAD option is not supported in Upstash Redis.
 
         Example:
@@ -5126,7 +5126,7 @@ class Commands:
     ) -> ResponseT:
         """
         Changes ownership of pending messages to a different consumer.
-        
+
         Note: Upstash Redis only supports basic XCLAIM functionality.
         Advanced options like IDLE, TIME, RETRYCOUNT, FORCE, and LASTID are not supported.
 

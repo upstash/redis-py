@@ -45,20 +45,6 @@ def test_xgroup_create_without_mkstream_should_fail(redis: Redis):
         redis.xgroup_create(key, group, "$")
 
 
-def test_xgroup_create_basic(redis: Redis):
-    """Test basic consumer group creation"""
-    key = "test_stream"
-    group = "test_group"
-
-    # Add some entries
-    for i in range(5):
-        redis.xadd(key, "*", {"field": f"value{i}"})
-
-    # Create group
-    result = redis.xgroup_create(key, group, "0")
-    assert result == "OK"
-
-
 def test_xgroup_createconsumer(redis: Redis):
     """Test creating a consumer in a group"""
     key = "test_stream"
@@ -74,7 +60,7 @@ def test_xgroup_createconsumer(redis: Redis):
     assert result == 1  # Consumer was created
 
 
-@pytest.mark.skip(reason="Consumer creation behavior differs in Upstash Redis")  
+@pytest.mark.skip(reason="Consumer creation behavior differs in Upstash Redis")
 def test_xgroup_createconsumer_already_exists(redis: Redis):
     """Test creating a consumer that already exists"""
     key = "test_stream"

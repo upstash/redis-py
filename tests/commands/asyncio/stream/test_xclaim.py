@@ -36,35 +36,6 @@ async def test_xclaim_basic(async_redis: Redis):
 
 
 @pytest.mark.asyncio
-async def test_xclaim_basic(async_redis: Redis):
-    """Test basic XCLAIM functionality"""
-    # Add multiple entries
-    for i in range(5):
-        await async_redis.xadd("mystream", "*", {"field": f"value{i}"})
-
-    # Create group and read some messages
-    await async_redis.xgroup_create("mystream", "mygroup", "0")
-    result = await async_redis.xreadgroup(
-        "mygroup", "consumer1", {"mystream": ">"}, count=3
-    )
-
-    # Get message IDs
-    message_ids = [entry[0] for entry in result[0][1]]
-
-    # Claim messages
-    claimed = await async_redis.xclaim(
-        "mystream",
-        "mygroup",
-        "consumer2",
-        0,  # min_idle_time
-        *message_ids,  # message IDs to claim
-    )
-
-    assert isinstance(claimed, list)
-    assert len(claimed) >= len(message_ids)
-
-
-@pytest.mark.asyncio
 async def test_xclaim_with_justid(async_redis: Redis):
     """Test XCLAIM with JUSTID option"""
     # Add entries and create group
