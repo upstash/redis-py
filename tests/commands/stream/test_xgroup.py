@@ -60,26 +60,6 @@ def test_xgroup_createconsumer(redis: Redis):
     assert result == 1  # Consumer was created
 
 
-@pytest.mark.skip(reason="Consumer creation behavior differs in Upstash Redis")
-def test_xgroup_createconsumer_already_exists(redis: Redis):
-    """Test creating a consumer that already exists"""
-    key = "test_stream"
-    group = "test_group"
-    consumer = "test_consumer"
-
-    # Create stream and group
-    redis.xadd(key, "*", {"field": "value"})
-    redis.xgroup_create(key, group, "0")
-
-    # Create consumer first time
-    result1 = redis.xgroup_createconsumer(key, group, consumer)
-    assert result1 == 1
-
-    # Try to create same consumer again
-    result2 = redis.xgroup_createconsumer(key, group, consumer)
-    assert result2 == 0  # Consumer already existed
-
-
 def test_xgroup_delconsumer(redis: Redis):
     """Test deleting a consumer from a group"""
     key = "test_stream"

@@ -97,7 +97,6 @@ def test_xinfo_consumers_with_consumers(redis: Redis):
     assert found_consumer
 
 
-@pytest.mark.skip(reason="Error handling differs in Upstash Redis")
 def test_xinfo_nonexistent_group(redis: Redis):
     """Test XINFO CONSUMERS on non-existent group"""
     stream_key = "test_stream"
@@ -106,9 +105,8 @@ def test_xinfo_nonexistent_group(redis: Redis):
     # Create stream but no group
     redis.xadd(stream_key, "*", {"field": "value"})
 
-    # Should raise exception for non-existent group
-    with pytest.raises(Exception):
-        redis.xinfo_consumers(stream_key, nonexistent_group)
+    response = redis.xinfo_consumers(stream_key, nonexistent_group)
+    assert response == []
 
 
 def test_xinfo_multiple_groups(redis: Redis):

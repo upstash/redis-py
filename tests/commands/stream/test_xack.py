@@ -137,7 +137,6 @@ def test_xack_partial_acknowledge(redis: Redis):
     assert pending_info[0] == 2  # 2 messages still pending
 
 
-@pytest.mark.skip(reason="Error handling differs in Upstash Redis")
 def test_xack_wrong_group_name(redis: Redis):
     """Test acknowledging with wrong group name"""
     stream_key = "test_stream"
@@ -154,6 +153,5 @@ def test_xack_wrong_group_name(redis: Redis):
     # Read the message
     redis.xreadgroup(group, consumer, {stream_key: ">"}, count=1)
 
-    # Try to acknowledge with wrong group name - should fail or return 0
-    with pytest.raises(Exception):
-        redis.xack(stream_key, wrong_group, message_id)
+    response = redis.xack(stream_key, wrong_group, message_id)
+    assert response == 0

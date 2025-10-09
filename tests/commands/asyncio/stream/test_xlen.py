@@ -50,16 +50,15 @@ async def test_xlen_after_deletion(async_redis: Redis):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Trimming behavior differs in Upstash Redis")
 async def test_xlen_after_trimming(async_redis: Redis):
     """Test XLEN after trimming stream"""
     # Add multiple entries
-    for i in range(10):
+    for i in range(130):
         await async_redis.xadd("mystream", "*", {"field": f"value{i}"})
 
     # Initial length
     length = await async_redis.xlen("mystream")
-    assert length == 10
+    assert length == 130
 
     # Trim to 5 entries
     trimmed = await async_redis.xtrim("mystream", maxlen=5)
