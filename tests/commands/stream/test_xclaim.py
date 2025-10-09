@@ -173,15 +173,18 @@ def test_xautoclaim_basic(redis: Redis):
         count=10,
     )
 
-    # Should return [next_start, claimed_messages]
+    # Should return [next_start, claimed_messages] or [next_start, claimed_messages, deleted_message_ids]
     assert isinstance(result, list)
-    assert len(result) == 2
+    assert len(result) >= 2
 
     next_start = result[0]
     claimed_messages = result[1]
+    # Third element (deleted_message_ids) may or may not be present depending on Redis version
+    deleted_message_ids = result[2] if len(result) > 2 else []
 
     assert isinstance(next_start, str)
     assert isinstance(claimed_messages, list)
+    assert isinstance(deleted_message_ids, list)
 
 
 def test_xautoclaim_with_count_limit(redis: Redis):
@@ -227,7 +230,10 @@ def test_xautoclaim_justid_option(redis: Redis):
 
     # With JUSTID, claimed messages should be just IDs
     assert isinstance(result, list)
-    if len(result) > 1 and len(result[1]) > 0:
+    assert (
+        len(result) >= 2
+    )  # [next_start, claimed_messages] or [next_start, claimed_messages, deleted_message_ids]
+    if len(result[1]) > 0:
         # Each claimed item should be a string ID, not [id, data] pair
         claimed_item = result[1][0]
         assert isinstance(claimed_item, str)
@@ -255,8 +261,15 @@ def test_xautoclaim_no_idle_messages(redis: Redis):
     )
 
     # Should return empty claimed messages
-    next_start, claimed_messages = result
+    assert isinstance(result, list)
+    assert len(result) >= 2
+
+    claimed_messages = result[1]
+    # Third element (deleted_message_ids) may or may not be present depending on Redis version
+    deleted_message_ids = result[2] if len(result) > 2 else []
+
     assert claimed_messages == []
+    assert isinstance(deleted_message_ids, list)
 
 
 def test_xclaim_nonexistent_message(redis: Redis):
