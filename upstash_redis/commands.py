@@ -4957,7 +4957,6 @@ class Commands:
         self,
         streams: Dict[str, str],
         count: Optional[int] = None,
-        block: Optional[int] = None,
     ) -> ResponseT:
         """
         Reads entries from one or more streams.
@@ -4967,9 +4966,6 @@ class Commands:
         # Non-blocking read
         entries = redis.xread({"mystream": "0-0"}, count=10)
         print(entries)  # List of [stream, entries] pairs
-
-        # Blocking read (not supported in Upstash Redis)
-        # entries = redis.xread({"mystream": "$"}, block=1000)
         ```
 
         See https://redis.io/commands/xread
@@ -4978,9 +4974,6 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", str(count)])
-
-        if block is not None:
-            command.extend(["BLOCK", str(block)])
 
         command.append("STREAMS")
 
@@ -5000,7 +4993,6 @@ class Commands:
         consumer: str,
         streams: Dict[str, str],
         count: Optional[int] = None,
-        block: Optional[int] = None,
         noack: bool = False,
     ) -> ResponseT:
         """
@@ -5023,9 +5015,6 @@ class Commands:
 
         if count is not None:
             command.extend(["COUNT", str(count)])
-
-        if block is not None:
-            command.extend(["BLOCK", str(block)])
 
         if noack:
             command.append("NOACK")
