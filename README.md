@@ -177,12 +177,12 @@ We collect the following:
 - Platform (Vercel, AWS)
 - Python Runtime version
 
-You can opt out by passing `allow_telemetry: False` when initializing the Redis client:
+You can opt out by passing `allow_telemetry=False` when initializing the Redis client:
 
 ```py
 redis = Redis(
   # ...,
-  allow_telemetry: False,
+  allow_telemetry=False,
 )
 ```
 
