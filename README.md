@@ -168,6 +168,25 @@ print(result)
 # prints [True, 2, '2']
 ```
 
+# Telemetry
+
+This library sends anonymous telemetry data to help us improve your experience.
+We collect the following:
+
+- SDK version
+- Platform (Vercel, AWS)
+- Python Runtime version
+
+You can opt out by passing `allow_telemetry: False` when initializing the Redis client:
+
+```py
+redis = Redis(
+  # ...,
+  allow_telemetry: False,
+)
+```
+
+
 # Encoding
 Although Redis can store invalid JSON data, there might be problems with the deserialization.
 To avoid this, the Upstash REST proxy is capable of encoding the data as base64 on the server and then sending it to the client to be
