@@ -612,7 +612,7 @@ class Commands:
         start: str = "-",
         end: str = "+",
         count: Optional[int] = None,
-    ) -> List[List[Any]]: ...
+    ) -> List[Tuple[str, List[str]]]: ...
     def xread(
         self,
         streams: Dict[str, str],
@@ -1261,7 +1261,7 @@ class AsyncCommands:
         start: str = "-",
         end: str = "+",
         count: Optional[int] = None,
-    ) -> List[List[Any]]: ...
+    ) -> List[Tuple[str, List[str]]]: ...
     async def xread(
         self,
         streams: Dict[str, str],
