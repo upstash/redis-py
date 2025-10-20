@@ -565,7 +565,7 @@ class Commands:
         start: str = "0-0",
         count: Optional[int] = None,
         justid: Optional[bool] = None,
-    ) -> List[List[str]]: ...
+    ) -> Union[List[List[Any]], List[str]]: ...
     def xclaim(
         self,
         key: str,
@@ -1212,7 +1212,7 @@ class AsyncCommands:
         start: str = "0-0",
         count: Optional[int] = None,
         justid: Optional[bool] = None,
-    ) -> List[List[str]]: ...
+    ) -> Union[List[List[Any]], List[str]]: ...
     async def xclaim(
         self,
         key: str,
@@ -1221,7 +1221,7 @@ class AsyncCommands:
         min_idle_time: int,
         *ids: str,
         justid: Optional[bool] = None,
-    ) -> List[List[Any]]: ...
+    ) -> Union[List[List[Any]], List[str]]: ...
     async def xdel(self, key: str, *ids: str) -> int: ...
     async def xgroup_create(
         self,

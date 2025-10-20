@@ -299,11 +299,8 @@ FORMATTERS: Dict[str, Callable] = {
     "XRANGE": format_xrange_response,
     "XREVRANGE": format_xrange_response,
     "XPENDING": format_xpending_response,
-    "XGROUP CREATE": ok_to_bool,
     "XGROUP DESTROY": to_bool,
     "XGROUP CREATECONSUMER": to_bool,
-    "XGROUP DELCONSUMER": to_bool,
-    "XGROUP SETID": ok_to_bool,
 }
 
 
