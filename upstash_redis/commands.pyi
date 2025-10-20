@@ -565,7 +565,7 @@ class Commands:
         start: str = "0-0",
         count: Optional[int] = None,
         justid: Optional[bool] = None,
-    ) -> Union[List[List[Any]], List[str]]: ...
+    ) -> Tuple[str, List[Any], List[str]]: ...
     def xclaim(
         self,
         key: str,
@@ -1212,7 +1212,7 @@ class AsyncCommands:
         start: str = "0-0",
         count: Optional[int] = None,
         justid: Optional[bool] = None,
-    ) -> Union[List[List[Any]], List[str]]: ...
+    ) -> Tuple[str, List[Any], List[str]]: ...
     async def xclaim(
         self,
         key: str,
