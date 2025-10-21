@@ -32,7 +32,8 @@ async def test_with_arguments(async_redis: Redis) -> None:
 
 @mark.asyncio
 async def test_with_keys_and_arguments(async_redis: Redis) -> None:
-    sha1_digest = await execute_on_http("SCRIPT", "LOAD", "return {ARGV[1], KEYS[1]}")
+    # Load the script using the same Redis client instance
+    sha1_digest = await async_redis.script_load("return {ARGV[1], KEYS[1]}")
 
     assert isinstance(sha1_digest, str)
     assert await async_redis.evalsha_ro(sha1_digest, keys=["a"], args=["b"]) == [

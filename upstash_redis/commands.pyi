@@ -544,6 +544,103 @@ class Commands:
         self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     def script_load(self, script: str) -> str: ...
+    def xadd(
+        self,
+        key: str,
+        id: str,
+        data: Mapping[str, ValueT],
+        maxlen: Optional[int] = None,
+        approximate_trim: bool = True,
+        nomkstream: bool = False,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> str: ...
+    def xack(self, key: str, group: str, *ids: str) -> int: ...
+    def xautoclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        start: str = "0-0",
+        count: Optional[int] = None,
+        justid: Optional[bool] = None,
+    ) -> Tuple[str, List[Any], List[str]]: ...
+    def xclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        *ids: str,
+        justid: Optional[bool] = None,
+    ) -> Union[List[List[Any]], List[str]]: ...
+    def xdel(self, key: str, *ids: str) -> int: ...
+    def xgroup_create(
+        self,
+        key: str,
+        group: str,
+        id: str = "$",
+        mkstream: Optional[bool] = None,
+    ) -> str: ...
+    def xgroup_createconsumer(self, key: str, group: str, consumer: str) -> int: ...
+    def xgroup_delconsumer(self, key: str, group: str, consumer: str) -> int: ...
+    def xgroup_destroy(self, key: str, group: str) -> int: ...
+    def xgroup_setid(
+        self,
+        key: str,
+        group: str,
+        id: str,
+        entries_read: Optional[int] = None,
+    ) -> str: ...
+    def xinfo_consumers(self, key: str, group: str) -> List[List[Any]]: ...
+    def xinfo_groups(self, key: str) -> List[List[Any]]: ...
+    def xlen(self, key: str) -> int: ...
+    def xpending(
+        self,
+        key: str,
+        group: str,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        count: Optional[int] = None,
+        consumer: Optional[str] = None,
+        idle: Optional[int] = None,
+    ) -> Any: ...
+    def xrange(
+        self,
+        key: str,
+        start: str = "-",
+        end: str = "+",
+        count: Optional[int] = None,
+    ) -> List[Tuple[str, List[str]]]: ...
+    def xread(
+        self,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+    ) -> List[List[Any]]: ...
+    def xreadgroup(
+        self,
+        group: str,
+        consumer: str,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+        noack: Optional[bool] = None,
+    ) -> List[List[Any]]: ...
+    def xrevrange(
+        self,
+        key: str,
+        end: str = "+",
+        start: str = "-",
+        count: Optional[int] = None,
+    ) -> List[List[Any]]: ...
+    def xtrim(
+        self,
+        key: str,
+        maxlen: Optional[int] = None,
+        approximate: Optional[bool] = None,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> int: ...
 
 class AsyncCommands:
     def __init__(self): ...
@@ -1094,6 +1191,105 @@ class AsyncCommands:
         self, flush_type: Optional[Literal["ASYNC", "SYNC"]] = None
     ) -> bool: ...
     async def script_load(self, script: str) -> str: ...
+    async def xadd(
+        self,
+        key: str,
+        id: str,
+        data: Mapping[str, ValueT],
+        maxlen: Optional[int] = None,
+        approximate_trim: bool = True,
+        nomkstream: bool = False,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> str: ...
+    async def xack(self, key: str, group: str, *ids: str) -> int: ...
+    async def xautoclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        start: str = "0-0",
+        count: Optional[int] = None,
+        justid: Optional[bool] = None,
+    ) -> Tuple[str, List[Any], List[str]]: ...
+    async def xclaim(
+        self,
+        key: str,
+        group: str,
+        consumer: str,
+        min_idle_time: int,
+        *ids: str,
+        justid: Optional[bool] = None,
+    ) -> Union[List[List[Any]], List[str]]: ...
+    async def xdel(self, key: str, *ids: str) -> int: ...
+    async def xgroup_create(
+        self,
+        key: str,
+        group: str,
+        id: str = "$",
+        mkstream: Optional[bool] = None,
+    ) -> bool: ...
+    async def xgroup_createconsumer(
+        self, key: str, group: str, consumer: str
+    ) -> int: ...
+    async def xgroup_delconsumer(self, key: str, group: str, consumer: str) -> int: ...
+    async def xgroup_destroy(self, key: str, group: str) -> int: ...
+    async def xgroup_setid(
+        self,
+        key: str,
+        group: str,
+        id: str,
+        entries_read: Optional[int] = None,
+    ) -> bool: ...
+    async def xinfo_consumers(self, key: str, group: str) -> List[List[Any]]: ...
+    async def xinfo_groups(self, key: str) -> List[List[Any]]: ...
+    async def xlen(self, key: str) -> int: ...
+    async def xpending(
+        self,
+        key: str,
+        group: str,
+        start: Optional[str] = None,
+        end: Optional[str] = None,
+        count: Optional[int] = None,
+        consumer: Optional[str] = None,
+        idle: Optional[int] = None,
+    ) -> Any: ...
+    async def xrange(
+        self,
+        key: str,
+        start: str = "-",
+        end: str = "+",
+        count: Optional[int] = None,
+    ) -> List[Tuple[str, List[str]]]: ...
+    async def xread(
+        self,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+    ) -> List[List[Any]]: ...
+    async def xreadgroup(
+        self,
+        group: str,
+        consumer: str,
+        streams: Dict[str, str],
+        count: Optional[int] = None,
+        noack: Optional[bool] = None,
+    ) -> List[List[Any]]: ...
+    async def xrevrange(
+        self,
+        key: str,
+        end: str = "+",
+        start: str = "-",
+        count: Optional[int] = None,
+    ) -> List[List[Any]]: ...
+    async def xtrim(
+        self,
+        key: str,
+        maxlen: Optional[int] = None,
+        approximate: Optional[bool] = None,
+        minid: Optional[str] = None,
+        limit: Optional[int] = None,
+    ) -> int: ...
 
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str): ...

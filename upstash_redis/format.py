@@ -200,6 +200,32 @@ def format_sorted_set_response_with_score(res, command):
     return res
 
 
+def format_xread_response(res, command):
+    """Format XREAD/XREADGROUP response to convert stream entries."""
+    if res is None:
+        return []
+    if not res:
+        return res
+
+    # Return as-is to maintain Redis-compatible format
+    return res
+
+
+def format_xrange_response(res, command):
+    """Format XRANGE/XREVRANGE response to convert entries."""
+    if not res:
+        return res
+
+    # Return as-is to maintain Redis-compatible format
+    return res
+
+
+def format_xpending_response(res, command):
+    """Format XPENDING response."""
+    # Return as-is to maintain Redis-compatible format
+    return res
+
+
 FORMATTERS: Dict[str, Callable] = {
     "COPY": to_bool,
     "EXPIRE": to_bool,
@@ -268,6 +294,13 @@ FORMATTERS: Dict[str, Callable] = {
     "LSET": ok_to_bool,
     "SCRIPT FLUSH": ok_to_bool,
     "SCRIPT EXISTS": to_bool_list,
+    "XREAD": format_xread_response,
+    "XREADGROUP": format_xread_response,
+    "XRANGE": format_xrange_response,
+    "XREVRANGE": format_xrange_response,
+    "XPENDING": format_xpending_response,
+    "XGROUP DESTROY": to_bool,
+    "XGROUP CREATECONSUMER": to_bool,
 }
 
 
