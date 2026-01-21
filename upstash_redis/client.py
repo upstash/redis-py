@@ -144,7 +144,7 @@ class Redis(Commands):
             headers=self._headers,
             command=command,
         )
-        return cast_response(command, res)
+        return cast_response(command, res, self)
 
     def pipeline(self) -> "Pipeline":
         """
@@ -156,6 +156,7 @@ class Redis(Commands):
             http=self._http,
             multi_exec="pipeline",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            original_client=self
         )
 
     def multi(self) -> "Pipeline":
@@ -168,6 +169,7 @@ class Redis(Commands):
             http=self._http,
             multi_exec="multi-exec",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            original_client=self
         )
 
 
@@ -179,6 +181,7 @@ class Pipeline(PipelineCommands):
         http: SyncHttpClient,
         multi_exec: Literal["multi-exec", "pipeline"],
         set_sync_token_header_fn: Callable[[Dict[str, str]], None],
+        original_client: Optional[Redis],
     ):
         self._url = f"{url}/{multi_exec}"
         self._headers = headers
@@ -188,6 +191,7 @@ class Pipeline(PipelineCommands):
         self._command_stack: List[List[str]] = []
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
+        self._original_client = original_client
 
     @property
     def json(self) -> PipelineJsonCommands:
@@ -216,7 +220,7 @@ class Pipeline(PipelineCommands):
             from_pipeline=True,
         )
         response = [
-            cast_response(command, response)
+            cast_response(command, response, self._original_client)
             for command, response in zip(self._command_stack, res)
         ]
         self.reset()

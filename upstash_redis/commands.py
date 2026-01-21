@@ -5506,7 +5506,7 @@ class SearchCommands:
         language = None,
         skipInitialScan: bool = False,
         existsOk: bool = False,
-    ) -> "SearchIndexCommands":
+    ) -> ResponseT:
         """Create a new search index."""
         params: CreateIndexParams = {
             "name": name,
@@ -5522,20 +5522,11 @@ class SearchCommands:
             params["existsOk"] = existsOk
         
         command = build_create_index_command(params)
-        result = self.client.execute(command)
-        
-        # Handle async
-        if hasattr(result, "__await__"):
-            async def _async_create():
-                await result
-                return SearchIndexCommands(self.client, name, schema)
-            return _async_create()
-        
-        return SearchIndexCommands(self.client, name, schema)
+        return self.client.execute(command)
     
-    def index(self, name: str, schema = None) -> "SearchIndexCommands":
+    def index(self, name: str) -> "SearchIndexCommands":
         """Initialize a SearchIndexCommands instance for an existing index."""
-        return SearchIndexCommands(self.client, name, schema)
+        return SearchIndexCommands(self.client, name)
 
 
 class SearchIndexCommands:
@@ -5544,10 +5535,9 @@ class SearchIndexCommands:
     
     This class provides methods to query, count, describe, and drop an index.
     """
-    def __init__(self, client: Commands, name: str, schema = None):
+    def __init__(self, client: Commands, name: str):
         self.client = client
         self.name = name
-        self.schema = schema
     
     def wait_indexing(self) -> ResponseT:
         """

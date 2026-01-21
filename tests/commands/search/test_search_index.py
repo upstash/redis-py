@@ -478,20 +478,9 @@ class TestDrop:
 class TestIndexMethod:
     """Tests for redis.search.index method."""
 
-    def test_index_without_schema(self, redis_client: Redis):
+    def test_index(self, redis_client: Redis):
         """Test creating a SearchIndex instance without schema."""
         index = redis_client.search.index("test-index")
 
         assert index is not None
         assert index.name == "test-index"
-        assert index.schema is None
-
-    def test_index_with_schema(self, redis_client: Redis):
-        """Test creating a SearchIndex instance with schema."""
-        schema = {"name": "TEXT", "age": {"type": "U64", "fast": True}}
-
-        index = redis_client.search.index("test-index", schema)
-
-        assert index is not None
-        assert index.name == "test-index"
-        assert index.schema == schema

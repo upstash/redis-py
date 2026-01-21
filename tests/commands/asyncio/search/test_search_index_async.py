@@ -44,7 +44,7 @@ class TestAsyncQuery:
     """Tests for async query operations."""
 
     @pytest_asyncio.fixture
-    async def query_index(self, async_redis_client, cleanup_indexes):
+    async def query_index(self, async_redis_client: Redis, cleanup_indexes):
         """Create a test index with data for querying."""
         name = f"test-async-query-{random_id()}"
         prefix = f"{name}:"

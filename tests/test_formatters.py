@@ -15,7 +15,7 @@ from upstash_redis.utils import GeoSearchResult
 
 
 def test_list_to_dict() -> None:
-    assert to_dict(["a", "1", "b", "2", "c", 3], None) == {
+    assert to_dict(["a", "1", "b", "2", "c", 3], None, None) == {
         "a": "1",
         "b": "2",
         "c": 3,
@@ -23,15 +23,15 @@ def test_list_to_dict() -> None:
 
 
 def test_format_float_list() -> None:
-    assert to_optional_float_list(["1.1", "2.2", None], None) == [1.1, 2.2, None]
+    assert to_optional_float_list(["1.1", "2.2", None], None, None) == [1.1, 2.2, None]
 
 
 def test_string_to_json() -> None:
-    assert string_to_json('{"a": 1, "b": 2}', None) == {"a": 1, "b": 2}
+    assert string_to_json('{"a": 1, "b": 2}', None, None) == {"a": 1, "b": 2}
 
 
 def test_string_list_to_json_list() -> None:
-    assert to_json_list(['{"a": 1, "b": 2}', '{"c": 3, "d": 4}'], None) == [
+    assert to_json_list(['{"a": 1, "b": 2}', '{"c": 3, "d": 4}'], None, None) == [
         {"a": 1, "b": 2},
         {"c": 3, "d": 4},
     ]
@@ -155,7 +155,7 @@ def test_format_geo_members_with_hash_and_coordinates() -> None:
 
 
 def test_format_geo_positions() -> None:
-    assert format_geopos([["1.0", "2.5"], ["3.1", "4.2"], None], None) == [
+    assert format_geopos([["1.0", "2.5"], ["3.1", "4.2"], None], None, None) == [
         (1.0, 2.5),
         (3.1, 4.2),
         None,
@@ -163,11 +163,11 @@ def test_format_geo_positions() -> None:
 
 
 def test_format_server_time() -> None:
-    assert format_time(["1620752099", "12"], None) == (1620752099, 12)
+    assert format_time(["1620752099", "12"], None, None) == (1620752099, 12)
 
 
 def test_list_to_optional_bool_list() -> None:
-    assert to_optional_bool_list([1, 0, None, 1], None) == [
+    assert to_optional_bool_list([1, 0, None, 1], None, None) == [
         True,
         False,
         None,
@@ -181,7 +181,7 @@ def test_format_search_query_response() -> None:
         ["doc:1", 0.95, [["name", "Laptop"], ["price", "999"]]],
         ["doc:2", 0.85, [["name", "Phone"], ["price", "699"]]],
     ]
-    result = format_search_query_response(raw_response, None)
+    result = format_search_query_response(raw_response, None, None)
     
     assert len(result) == 2
     assert result[0]["key"] == "doc:1"
@@ -199,7 +199,7 @@ def test_format_search_query_response_with_nested_paths() -> None:
     raw_response = [
         ["doc:1", 0.95, [["user.name", "John"], ["user.age", "30"]]],
     ]
-    result = format_search_query_response(raw_response, None)
+    result = format_search_query_response(raw_response, None, None)
     
     assert len(result) == 1
     assert result[0]["key"] == "doc:1"
@@ -213,7 +213,7 @@ def test_format_search_query_response_with_dollar_key() -> None:
     raw_response = [
         ["doc:1", 1.0, [["$", {"name": "Laptop", "price": 999}]]],
     ]
-    result = format_search_query_response(raw_response, None)
+    result = format_search_query_response(raw_response, None, None)
     
     assert len(result) == 1
     assert result[0]["key"] == "doc:1"
@@ -228,7 +228,7 @@ def test_format_search_query_response_without_fields() -> None:
         ["doc:1", 0.95],
         ["doc:2", 0.85],
     ]
-    result = format_search_query_response(raw_response, None)
+    result = format_search_query_response(raw_response, None, None)
     
     assert len(result) == 2
     assert result[0]["key"] == "doc:1"
@@ -252,7 +252,7 @@ def test_format_search_describe_response() -> None:
             ["active", "BOOL"],
         ],
     ]
-    result = format_search_describe_response(raw_response, None)
+    result = format_search_describe_response(raw_response, None, None)
     
     assert result["name"] == "myindex"
     assert result["dataType"] == "json"
@@ -278,7 +278,7 @@ def test_format_search_describe_response_with_all_options() -> None:
             ["score", "I64", "FAST"],
         ],
     ]
-    result = format_search_describe_response(raw_response, None)
+    result = format_search_describe_response(raw_response, None, None)
     
     assert result["name"] == "fullindex"
     assert result["dataType"] == "hash"
@@ -291,7 +291,7 @@ def test_format_search_describe_response_with_all_options() -> None:
 
 def test_format_search_count_response() -> None:
     # Test count response with int
-    assert format_search_count_response(42, None) == {"count": 42}
+    assert format_search_count_response(42, None, None) == {"count": 42}
     
     # Test count response with string
-    assert format_search_count_response("100", None) == {"count": 100}
+    assert format_search_count_response("100", None, None) == {"count": 100}
