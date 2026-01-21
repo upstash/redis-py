@@ -288,7 +288,17 @@ def deserialize_query_response(raw_response: List[Any]) -> List[QueryResult]:
 
                 # If $ key exists (full document), use its contents
                 if "$" in data:
-                    data = data["$"]
+                    dollar_value = data["$"]
+                    # Parse JSON string if needed
+                    if isinstance(dollar_value, str):
+                        import json
+                        try:
+                            data = json.loads(dollar_value)
+                        except (json.JSONDecodeError, ValueError):
+                            # If parsing fails, use the string as-is
+                            data = dollar_value
+                    else:
+                        data = dollar_value
 
                 result["data"] = data
 

@@ -259,71 +259,127 @@ class TestQueryString:
         index = string_index["index"]
         result = index.query(filter={"name": {"$eq": "Laptop"}})
 
-        assert len(result) > 0
+        # Should find 2 laptops: Laptop Pro and Laptop Basic
+        assert len(result) == 2
+        for r in result:
+            assert "key" in r
+            # Verify key has the expected prefix
+            assert string_index["name"] in r["key"]
+            # Verify score is numeric
+            assert "score" in r
+            assert isinstance(float(r["score"]), float)
 
     def test_query_text_fuzzy(self, string_index: StringIndexFixture):
         """Test querying with fuzzy search for typo tolerance."""
         index = string_index["index"]
         result = index.query(filter={"name": {"$fuzzy": "laptopp"}})
 
-        assert len(result) > 0
+        # Fuzzy search should find Laptop variants despite typo
+        assert len(result) >= 2
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_text_phrase(self, string_index: StringIndexFixture):
         """Test querying with phrase matching."""
         index = string_index["index"]
         result = index.query(filter={"description": {"$phrase": "wireless mouse"}})
 
-        assert len(result) > 0
+        # Should find exactly the Wireless Mouse item
+        assert len(result) == 1
+        assert "key" in result[0]
+        assert "score" in result[0]
+        assert isinstance(float(result[0]["score"]), float)
+        # Check data field exists
+        if "data" in result[0]:
+            # Check description field in data
+            assert "description" in result[0]["data"] or "name" in result[0]["data"]
 
     def test_query_text_regex(self, string_index: StringIndexFixture):
         """Test querying with regex pattern."""
         index = string_index["index"]
         result = index.query(filter={"name": {"$regex": "Laptop.*"}})
 
-        assert len(result) > 0
+        # Should find both Laptop Pro and Laptop Basic
+        assert len(result) == 2
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_numeric_gt(self, string_index: StringIndexFixture):
         """Test querying with $gt on numeric field."""
         index = string_index["index"]
         result = index.query(filter={"price": {"$gt": 500}})
 
-        assert len(result) > 0
+        # Should find Laptop Pro (1299.99) and Laptop Basic (599.99)
+        assert len(result) == 2
+        for r in result:
+            assert "key" in r
+            assert "score" in r
+            assert isinstance(float(r["score"]), float)
+            # Check data field with price
+            if "data" in r:
+                assert "price" in r["data"]
+                # Verify price is greater than 500
+                price_value = r["data"]["price"]
+                assert isinstance(price_value, (int, float, str))
+                assert float(price_value) > 500
 
     def test_query_numeric_gte(self, string_index: StringIndexFixture):
         """Test querying with $gte on numeric field."""
         index = string_index["index"]
         result = index.query(filter={"stock": {"$gte": 100}})
 
-        assert len(result) > 0
+        # Should find items with stock >= 100 (Laptop Basic: 100, Mouse: 200, Cable: 500, Case: 300)
+        assert len(result) == 4
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_numeric_lt(self, string_index: StringIndexFixture):
         """Test querying with $lt on numeric field."""
         index = string_index["index"]
         result = index.query(filter={"price": {"$lt": 50}})
 
-        assert len(result) > 0
+        # Should find Wireless Mouse (29.99), USB Cable (9.99), Phone Case (19.99)
+        assert len(result) == 3
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_numeric_lte(self, string_index: StringIndexFixture):
         """Test querying with $lte on numeric field."""
         index = string_index["index"]
         result = index.query(filter={"stock": {"$lte": 50}})
 
-        assert len(result) > 0
+        # Should find only Laptop Pro (stock: 50)
+        assert len(result) == 1
+        assert "key" in result[0]
+        assert "score" in result[0]
+        assert isinstance(float(result[0]["score"]), float)
+        # Check data field with stock
+        if "data" in result[0]:
+            assert "stock" in result[0]["data"]
+            stock_value = result[0]["data"]["stock"]
+            assert isinstance(stock_value, (int, float, str))
+            assert float(stock_value) <= 50
 
     def test_query_boolean_eq(self, string_index: StringIndexFixture):
         """Test querying with $eq on boolean field."""
         index = string_index["index"]
         result = index.query(filter={"active": {"$eq": False}})
 
-        assert len(result) > 0
+        # Should find only Phone Case (active: False)
+        assert len(result) == 1
+        assert "key" in result[0]
+        assert "score" in result[0]
+        assert isinstance(float(result[0]["score"]), float)
+        # Check data field with active
+        if "data" in result[0]:
+            assert "active" in result[0]["data"]
+            # Verify active is False
+            assert result[0]["data"]["active"] in (False, "false", "False", 0, "0")
 
     def test_query_with_limit(self, string_index: StringIndexFixture):
         """Test querying with limit option."""
         index = string_index["index"]
         result = index.query(filter={"category": {"$eq": "electronics"}}, limit=2)
 
-        assert len(result) > 0
-        assert len(result) <= 2
+        # Should limit to exactly 2 results even though 3 match
+        assert len(result) == 2
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_with_pagination(self, string_index: StringIndexFixture):
         """Test querying with offset for pagination."""
@@ -336,8 +392,14 @@ class TestQueryString:
             filter={"category": {"$eq": "electronics"}}, limit=2, offset=2
         )
 
-        assert len(first_page) > 0
-        # second_page might be empty if there are only 2-3 results
+        # Should get 2 items on first page
+        assert len(first_page) == 2
+        # Should get 1 item on second page (3 total electronics)
+        assert len(second_page) == 1
+        # Pages should have different items
+        first_keys = {r["key"] for r in first_page}
+        second_keys = {r["key"] for r in second_page}
+        assert first_keys.isdisjoint(second_keys)
 
     def test_query_with_sort_asc(self, string_index: StringIndexFixture):
         """Test querying with sortBy ascending."""
@@ -348,7 +410,9 @@ class TestQueryString:
             limit=3,
         )
 
-        assert len(result) > 0
+        # Should get all 3 electronics items sorted by price
+        assert len(result) == 3
+        assert all("key" in r and "score" in r for r in result)
 
     def test_query_with_sort_desc(self, string_index: StringIndexFixture):
         """Test querying with sortBy descending."""
@@ -359,25 +423,82 @@ class TestQueryString:
             limit=3,
         )
 
-        assert len(result) > 0
+        # Should get all 3 electronics items sorted by price descending
+        assert len(result) == 3
+        assert all("key" in r and "score" in r for r in result)
+
+    def test_query_with_all_fields(self, string_index: StringIndexFixture):
+        """Test querying returns all fields when select is not specified."""
+        index = string_index["index"]
+        result = index.query(filter={"name": {"$eq": "Wireless Mouse"}}, limit=1)
+
+        # Should get complete result with all fields
+        assert len(result) == 1
+        item = result[0]
+        
+        # Verify structure
+        assert "key" in item
+        assert "score" in item
+        assert isinstance(float(item["score"]), float)
+        assert "data" in item
+        
+        # Verify all fields are present in data (values are strings for string dataType)
+        data = item["data"]
+        assert data["name"] == "Wireless Mouse"
+        assert data["description"] == "Ergonomic wireless mouse"
+        assert data["category"] == "electronics"
+        assert float(data["price"]) == 29.99
+        assert int(data["stock"]) == 200
+        assert data["active"] in (True, "true", "True")
 
     def test_query_no_content(self, string_index: StringIndexFixture):
         """Test querying with noContent (keys only)."""
         index = string_index["index"]
-        result = index.query(filter={"category": {"$eq": "electronics"}}, select={})
+        result = index.query(
+            filter={"name": {"$eq": "Wireless Mouse"}},
+            select={},
+            limit=1
+        )
 
-        assert len(result) > 0
+        # Should get only key and score, no data field
+        assert len(result) == 1
+        item = result[0]
+        
+        assert "key" in item
+        assert "score" in item
+        assert isinstance(float(item["score"]), float)
+        # With noContent, data field should not be present
+        assert "data" not in item
 
     def test_query_with_return_fields(self, string_index: StringIndexFixture):
         """Test querying with specific return fields."""
         index = string_index["index"]
         result = index.query(
-            filter={"category": {"$eq": "electronics"}},
-            select={"category": True},
-            highlight={"fields": []},
+            filter={"name": {"$eq": "Wireless Mouse"}},
+            select={"price": True, "stock": True},
+            limit=1
         )
 
-        assert len(result) > 0
+        # Should get only specified fields
+        assert len(result) == 1
+        item = result[0]
+        
+        assert "key" in item
+        assert "score" in item
+        assert isinstance(float(item["score"]), float)
+        assert "data" in item
+        
+        # Verify only selected fields are present (values are strings for string dataType)
+        data = item["data"]
+        assert "price" in data
+        assert float(data["price"]) == 29.99
+        assert "stock" in data
+        assert int(data["stock"]) == 200
+        # Other fields should not be present
+        assert "name" not in data
+        assert "description" not in data
+        assert "category" not in data
+        assert "active" not in data
 
 
 class TestCount:
@@ -422,7 +543,8 @@ class TestCount:
         result = index.count({"type": {"$eq": "A"}})
 
         assert "count" in result
-        assert result["count"] > 0
+        # Should count exactly 5 documents of type A (indices 0-4)
+        assert result["count"] == 5
 
     def test_count_with_numeric_filter(self, count_index: CountIndexFixture):
         """Test counting with numeric filter."""
@@ -430,7 +552,8 @@ class TestCount:
         result = index.count({"value": {"$eq": 5}})
 
         assert "count" in result
-        assert result["count"] > 0
+        # Should count exactly 1 document with value 5
+        assert result["count"] == 1
 
 
 class TestDescribe:
