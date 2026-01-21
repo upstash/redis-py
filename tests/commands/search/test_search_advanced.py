@@ -6,12 +6,12 @@ from typing import List, TypedDict, Generator
 import pytest
 
 from upstash_redis import Redis
-from upstash_redis.search_index import SearchIndex
+from upstash_redis.commands import SearchIndexCommands
 
 
 class IndexFixture(TypedDict):
     """Type definition for index fixtures."""
-    index: SearchIndex
+    index: SearchIndexCommands
     redis: Redis
     keys: List[str]
     name: str

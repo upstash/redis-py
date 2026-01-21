@@ -6,11 +6,11 @@ from upstash_redis.commands import (
     PipelineCommands,
     JsonCommands,
     PipelineJsonCommands,
+    SearchCommands,
 )
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, SyncHttpClient
 from upstash_redis.typing import RESTResultT
-from upstash_redis.search_namespace import SearchNamespace
 
 
 class Redis(Commands):
@@ -63,7 +63,7 @@ class Redis(Commands):
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
 
         self._json = JsonCommands(self)
-        self._search = SearchNamespace(self)
+        self._search = SearchCommands(self)
         self._http = SyncHttpClient(
             encoding=rest_encoding,
             retries=rest_retries,
@@ -76,7 +76,7 @@ class Redis(Commands):
         return self._json
 
     @property
-    def search(self) -> SearchNamespace:
+    def search(self) -> SearchCommands:
         return self._search
 
     @classmethod

@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
 from upstash_redis.utils import GeoSearchResult
+from upstash_redis.search_types import NestedIndexSchema, FlatIndexSchema
 
 class Commands:
     def bitcount(
@@ -2028,3 +2029,75 @@ class AsyncJsonCommands:
     async def strlen(self, key: str, path: str = "$") -> List[Union[int, None]]: ...
     async def toggle(self, key: str, path: str = "$") -> List[Union[bool, None]]: ...
     async def type(self, key: str, path: str = "$") -> List[str]: ...
+
+class SearchCommands:
+    def __init__(self, client: Commands): ...
+    def create_index(
+        self,
+        *,
+        name: str,
+        schema: Union[NestedIndexSchema, FlatIndexSchema],
+        dataType: str,
+        prefix: Union[str, List[str]],
+        language: Optional[str] = None,
+        skipInitialScan: bool = False,
+        existsOk: bool = False,
+    ) -> SearchIndexCommands: ...
+    def index(
+        self,
+        name: str,
+        schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None
+    ) -> SearchIndexCommands: ...
+
+class SearchIndexCommands:
+    def __init__(self, client: Commands, name: str, schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None): ...
+    def wait_indexing(self) -> Any: ...
+    def describe(self) -> Dict[str, Any]: ...
+    def query(
+        self,
+        *,
+        filter: Dict[str, Any],
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        orderBy: Optional[Dict[str, str]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]: ...
+    def count(self, filter: Dict[str, Any]) -> Dict[str, int]: ...
+    def drop(self) -> int: ...
+
+class AsyncSearchCommands:
+    def __init__(self, client: AsyncCommands): ...
+    async def create_index(
+        self,
+        *,
+        name: str,
+        schema: Union[NestedIndexSchema, FlatIndexSchema],
+        dataType: str,
+        prefix: Union[str, List[str]],
+        language: Optional[str] = None,
+        skipInitialScan: bool = False,
+        existsOk: bool = False,
+    ) -> AsyncSearchIndexCommands: ...
+    def index(
+        self,
+        name: str,
+        schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None
+    ) -> AsyncSearchIndexCommands: ...
+
+class AsyncSearchIndexCommands:
+    def __init__(self, client: AsyncCommands, name: str, schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None): ...
+    async def wait_indexing(self) -> Any: ...
+    async def describe(self) -> Dict[str, Any]: ...
+    async def query(
+        self,
+        *,
+        filter: Dict[str, Any],
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        orderBy: Optional[Dict[str, str]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]: ...
+    async def count(self, filter: Dict[str, Any]) -> Dict[str, int]: ...
+    async def drop(self) -> int: ...

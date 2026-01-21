@@ -9,6 +9,8 @@ from upstash_redis.utils import (
     handle_zrangebylex_exceptions,
     number_are_not_none,
 )
+from upstash_redis.search_types import CreateIndexParams, QueryOptions
+from upstash_redis.search_utils import build_create_index_command, build_query_command
 
 ResponseT = Union[Awaitable, Any]
 
@@ -5484,6 +5486,153 @@ class JsonCommands:
         return self.client.execute(command=command)
 
 
+class SearchCommands:
+    """
+    Search commands namespace.
+    
+    This class provides methods for search index operations.
+    It follows the same pattern as JsonCommands.
+    """
+    def __init__(self, client: Commands):
+        self.client = client
+    
+    def create_index(
+        self,
+        *,
+        name: str,
+        schema,
+        dataType: str,
+        prefix,
+        language = None,
+        skipInitialScan: bool = False,
+        existsOk: bool = False,
+    ) -> "SearchIndexCommands":
+        """Create a new search index."""
+        params: CreateIndexParams = {
+            "name": name,
+            "schema": schema,
+            "dataType": dataType,
+            "prefix": prefix,
+        }
+        if language is not None:
+            params["language"] = language
+        if skipInitialScan:
+            params["skipInitialScan"] = skipInitialScan
+        if existsOk:
+            params["existsOk"] = existsOk
+        
+        command = build_create_index_command(params)
+        result = self.client.execute(command)
+        
+        # Handle async
+        if hasattr(result, "__await__"):
+            async def _async_create():
+                await result
+                return SearchIndexCommands(self.client, name, schema)
+            return _async_create()
+        
+        return SearchIndexCommands(self.client, name, schema)
+    
+    def index(self, name: str, schema = None) -> "SearchIndexCommands":
+        """Initialize a SearchIndexCommands instance for an existing index."""
+        return SearchIndexCommands(self.client, name, schema)
+
+
+class SearchIndexCommands:
+    """
+    Commands for interacting with a specific search index.
+    
+    This class provides methods to query, count, describe, and drop an index.
+    """
+    def __init__(self, client: Commands, name: str, schema = None):
+        self.client = client
+        self.name = name
+        self.schema = schema
+    
+    def wait_indexing(self) -> ResponseT:
+        """
+        Wait for the index to finish indexing all existing keys.
+        
+        Example:
+        ```python
+        index.wait_indexing()
+        ```
+        """
+        command = ["SEARCH.WAITINDEXING", self.name]
+        return self.client.execute(command)
+    
+    def describe(self) -> ResponseT:
+        """
+        Get detailed information about the index structure.
+        
+        Example:
+        ```python
+        description = index.describe()
+        ```
+        """
+        command = ["SEARCH.DESCRIBE", self.name]
+        return self.client.execute(command)
+    
+    def query(
+        self,
+        *,
+        filter,
+        limit = None,
+        offset = None,
+        orderBy = None,
+        select = None,
+        highlight = None,
+    ) -> ResponseT:
+        """
+        Query the index with filters and options.
+        
+        Example:
+        ```python
+        results = index.query(filter={"name": {"$eq": "Laptop"}})
+        ```
+        """
+        options: QueryOptions = {}
+        if filter is not None:
+            options["filter"] = filter
+        if limit is not None:
+            options["limit"] = limit
+        if offset is not None:
+            options["offset"] = offset
+        if orderBy is not None:
+            options["orderBy"] = orderBy
+        if select is not None:
+            options["select"] = select
+        if highlight is not None:
+            options["highlight"] = highlight
+        
+        command = build_query_command("SEARCH.QUERY", self.name, options)
+        return self.client.execute(command)
+    
+    def count(self, filter) -> ResponseT:
+        """
+        Count documents matching a filter.
+        
+        Example:
+        ```python
+        result = index.count({"active": {"$eq": True}})
+        ```
+        """
+        command = build_query_command("SEARCH.COUNT", self.name, {"filter": filter})
+        return self.client.execute(command)
+    
+    def drop(self) -> ResponseT:
+        """
+        Drop (delete) the index.
+        
+        Example:
+        ```python
+        result = index.drop()
+        ```
+        """
+        command = ["SEARCH.DROP", self.name]
+        return self.client.execute(command)
+
+
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):
@@ -5574,6 +5723,8 @@ class BitFieldROCommands:
 
 AsyncCommands = Commands
 AsyncJsonCommands = JsonCommands
+AsyncSearchCommands = SearchCommands
+AsyncSearchIndexCommands = SearchIndexCommands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
 PipelineCommands = Commands

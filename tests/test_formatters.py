@@ -7,6 +7,9 @@ from upstash_redis.format import (
     string_to_json,
     to_json_list,
     to_optional_bool_list,
+    format_search_query_response,
+    format_search_describe_response,
+    format_search_count_response,
 )
 from upstash_redis.utils import GeoSearchResult
 
@@ -170,3 +173,125 @@ def test_list_to_optional_bool_list() -> None:
         None,
         True,
     ]
+
+
+def test_format_search_query_response() -> None:
+    # Test basic query response
+    raw_response = [
+        ["doc:1", 0.95, [["name", "Laptop"], ["price", "999"]]],
+        ["doc:2", 0.85, [["name", "Phone"], ["price", "699"]]],
+    ]
+    result = format_search_query_response(raw_response, None)
+    
+    assert len(result) == 2
+    assert result[0]["key"] == "doc:1"
+    assert result[0]["score"] == 0.95
+    assert result[0]["data"]["name"] == "Laptop"
+    assert result[0]["data"]["price"] == "999"
+    assert result[1]["key"] == "doc:2"
+    assert result[1]["score"] == 0.85
+    assert result[1]["data"]["name"] == "Phone"
+    assert result[1]["data"]["price"] == "699"
+
+
+def test_format_search_query_response_with_nested_paths() -> None:
+    # Test query response with nested paths
+    raw_response = [
+        ["doc:1", 0.95, [["user.name", "John"], ["user.age", "30"]]],
+    ]
+    result = format_search_query_response(raw_response, None)
+    
+    assert len(result) == 1
+    assert result[0]["key"] == "doc:1"
+    assert result[0]["score"] == 0.95
+    assert result[0]["data"]["user"]["name"] == "John"
+    assert result[0]["data"]["user"]["age"] == "30"
+
+
+def test_format_search_query_response_with_dollar_key() -> None:
+    # Test query response with $ key (full document)
+    raw_response = [
+        ["doc:1", 1.0, [["$", {"name": "Laptop", "price": 999}]]],
+    ]
+    result = format_search_query_response(raw_response, None)
+    
+    assert len(result) == 1
+    assert result[0]["key"] == "doc:1"
+    assert result[0]["score"] == 1.0
+    assert result[0]["data"]["name"] == "Laptop"
+    assert result[0]["data"]["price"] == 999
+
+
+def test_format_search_query_response_without_fields() -> None:
+    # Test query response without field data
+    raw_response = [
+        ["doc:1", 0.95],
+        ["doc:2", 0.85],
+    ]
+    result = format_search_query_response(raw_response, None)
+    
+    assert len(result) == 2
+    assert result[0]["key"] == "doc:1"
+    assert result[0]["score"] == 0.95
+    assert "data" not in result[0]
+    assert result[1]["key"] == "doc:2"
+    assert result[1]["score"] == 0.85
+    assert "data" not in result[1]
+
+
+def test_format_search_describe_response() -> None:
+    # Test describe response
+    raw_response = [
+        "name", "myindex",
+        "type", "JSON",
+        "prefixes", ["product:", "item:"],
+        "language", "english",
+        "schema", [
+            ["name", "TEXT", "NOSTEM"],
+            ["price", "F64", "FAST"],
+            ["active", "BOOL"],
+        ],
+    ]
+    result = format_search_describe_response(raw_response, None)
+    
+    assert result["name"] == "myindex"
+    assert result["dataType"] == "json"
+    assert result["prefixes"] == ["product:", "item:"]
+    assert result["language"] == "english"
+    assert "name" in result["schema"]
+    assert result["schema"]["name"]["type"] == "TEXT"
+    assert result["schema"]["name"]["noStem"] is True
+    assert "price" in result["schema"]
+    assert result["schema"]["price"]["type"] == "F64"
+    assert result["schema"]["price"]["fast"] is True
+    assert "active" in result["schema"]
+    assert result["schema"]["active"]["type"] == "BOOL"
+
+
+def test_format_search_describe_response_with_all_options() -> None:
+    # Test describe response with all field options
+    raw_response = [
+        "name", "fullindex",
+        "type", "HASH",
+        "schema", [
+            ["title", "TEXT", "NOSTEM", "NOTOKENIZE"],
+            ["score", "I64", "FAST"],
+        ],
+    ]
+    result = format_search_describe_response(raw_response, None)
+    
+    assert result["name"] == "fullindex"
+    assert result["dataType"] == "hash"
+    assert result["schema"]["title"]["type"] == "TEXT"
+    assert result["schema"]["title"]["noStem"] is True
+    assert result["schema"]["title"]["noTokenize"] is True
+    assert result["schema"]["score"]["type"] == "I64"
+    assert result["schema"]["score"]["fast"] is True
+
+
+def test_format_search_count_response() -> None:
+    # Test count response with int
+    assert format_search_count_response(42, None) == {"count": 42}
+    
+    # Test count response with string
+    assert format_search_count_response("100", None) == {"count": 100}

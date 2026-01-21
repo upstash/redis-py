@@ -7,12 +7,12 @@ from typing import Dict, Any, List, TypedDict, Generator
 import pytest
 
 from upstash_redis import Redis
-from upstash_redis.search_index import SearchIndex
+from upstash_redis.commands import SearchIndexCommands
 
 
 class StringIndexFixture(TypedDict):
     """Type definition for string_index fixture."""
-    index: SearchIndex
+    index: SearchIndexCommands
     redis: Redis
     keys: List[str]
     name: str
@@ -20,7 +20,7 @@ class StringIndexFixture(TypedDict):
 
 class CountIndexFixture(TypedDict):
     """Type definition for count_index fixture."""
-    index: SearchIndex
+    index: SearchIndexCommands
     redis: Redis
     keys: List[str]
     name: str
