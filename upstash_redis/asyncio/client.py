@@ -10,6 +10,7 @@ from upstash_redis.commands import (
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, AsyncHttpClient
 from upstash_redis.typing import RESTResultT
+from upstash_redis.search_namespace import SearchNamespace
 
 
 class Redis(AsyncCommands):
@@ -60,6 +61,7 @@ class Redis(AsyncCommands):
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
 
         self._json = AsyncJsonCommands(self)
+        self._search = SearchNamespace(self)
         self._http = AsyncHttpClient(
             encoding=rest_encoding,
             retries=rest_retries,
@@ -70,6 +72,10 @@ class Redis(AsyncCommands):
     @property
     def json(self) -> AsyncJsonCommands:
         return self._json
+
+    @property
+    def search(self) -> SearchNamespace:
+        return self._search
 
     @classmethod
     def from_env(
