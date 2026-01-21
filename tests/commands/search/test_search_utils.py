@@ -8,7 +8,6 @@ from upstash_redis.search_utils import (
     build_query_command,
     deserialize_query_response,
     deserialize_describe_response,
-    parse_count_response,
 )
 
 
@@ -376,15 +375,3 @@ class TestDeserializeDescribeResponse:
         assert "schema" in result
         assert "name" in result["schema"]
         assert result["schema"]["name"]["type"] == "TEXT"
-
-
-class TestParseCountResponse:
-    """Tests for parse_count_response function."""
-
-    def test_parse_int_response(self):
-        """Test parsing integer count response."""
-        assert parse_count_response(42) == 42
-
-    def test_parse_string_response(self):
-        """Test parsing string count response."""
-        assert parse_count_response("42") == 42

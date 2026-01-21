@@ -4,6 +4,10 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from upstash_redis.typing import RESTResultT
 from upstash_redis.utils import GeoSearchResult
 from upstash_redis.commands import SearchIndexCommands
+from upstash_redis.search_utils import (
+    deserialize_describe_response,
+    deserialize_query_response,
+)
 
 
 def to_dict(res: List, _, __) -> Dict:
@@ -229,100 +233,12 @@ def format_xpending_response(res, command, _):
 
 def format_search_query_response(res: List[Any], _, __) -> List[Dict[str, Any]]:
     """Format SEARCH.QUERY response into structured results."""
-    results: List[Dict[str, Any]] = []
-
-    for item_raw in res:
-        if not isinstance(item_raw, (list, tuple)) or len(item_raw) < 2:
-            continue
-
-        key = item_raw[0]
-        score = item_raw[1]
-
-        result: Dict[str, Any] = {"key": key, "score": score}
-
-        if len(item_raw) > 2:
-            raw_fields = item_raw[2]
-
-            if isinstance(raw_fields, (list, tuple)) and len(raw_fields) > 0:
-                data: Dict[str, Any] = {}
-
-                # Process field pairs
-                for field_raw in raw_fields:
-                    if not isinstance(field_raw, (list, tuple)) or len(field_raw) < 2:
-                        continue
-
-                    field_key = field_raw[0]
-                    field_value = field_raw[1]
-
-                    # Handle nested paths
-                    path_parts = field_key.split(".")
-                    if len(path_parts) == 1:
-                        data[field_key] = field_value
-                    else:
-                        # Build nested structure
-                        current_obj = data
-                        for i, part in enumerate(path_parts[:-1]):
-                            if part not in current_obj:
-                                current_obj[part] = {}
-                            current_obj = current_obj[part]
-                        current_obj[path_parts[-1]] = field_value
-
-                # If $ key exists (full document), use its contents
-                if "$" in data:
-                    data = data["$"]
-
-                result["data"] = data
-
-        results.append(result)
-
-    return results
+    return deserialize_query_response(res)
 
 
 def format_search_describe_response(res: List[Any], _, __) -> Dict[str, Any]:
     """Format SEARCH.DESCRIBE response into index description."""
-    description: Dict[str, Any] = {}
-
-    i = 0
-    while i < len(res):
-        descriptor = res[i]
-        value = res[i + 1] if i + 1 < len(res) else None
-
-        if descriptor == "name":
-            description["name"] = value
-        elif descriptor == "type":
-            if value:
-                description["dataType"] = value.lower()
-        elif descriptor == "prefixes":
-            description["prefixes"] = value if isinstance(value, list) else []
-        elif descriptor == "language":
-            description["language"] = value
-        elif descriptor == "schema":
-            schema: Dict[str, Dict[str, Any]] = {}
-            if isinstance(value, list):
-                for field_desc in value:
-                    if not isinstance(field_desc, list) or len(field_desc) < 2:
-                        continue
-
-                    field_name = field_desc[0]
-                    field_info: Dict[str, Any] = {"type": field_desc[1]}
-
-                    # Parse field options
-                    for j in range(2, len(field_desc)):
-                        option = field_desc[j]
-                        if option == "NOSTEM":
-                            field_info["noStem"] = True
-                        elif option == "NOTOKENIZE":
-                            field_info["noTokenize"] = True
-                        elif option == "FAST":
-                            field_info["fast"] = True
-
-                    schema[field_name] = field_info
-
-            description["schema"] = schema
-
-        i += 2
-
-    return description
+    return deserialize_describe_response(res)
 
 
 def format_search_count_response(res: Any, _, __) -> Dict[str, int]:

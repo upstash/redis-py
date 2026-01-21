@@ -155,75 +155,6 @@ def build_create_index_command(params: CreateIndexParams) -> List[str]:
     return command
 
 
-def _build_filter_query(filter_dict: Dict[str, Any]) -> List[str]:
-    """
-    Build filter query from filter dictionary.
-
-    Args:
-        filter_dict: Filter specification
-
-    Returns:
-        List of filter query parts
-    """
-    filters: List[str] = []
-
-    for field_name, field_filter in filter_dict.items():
-        if not isinstance(field_filter, dict):
-            continue
-
-        # Text filters
-        if "eq" in field_filter:
-            value = field_filter["eq"]
-            if isinstance(value, bool):
-                filters.append(f"@{field_name}:[{str(value).lower()}]")
-            else:
-                filters.append(f"@{field_name}:({value})")
-
-        elif "fuzzy" in field_filter:
-            fuzzy = field_filter["fuzzy"]
-            if isinstance(fuzzy, str):
-                filters.append(f"@{field_name}:%{fuzzy}%")
-            elif isinstance(fuzzy, dict):
-                value = fuzzy.get("value", "")
-                distance = fuzzy.get("distance", 1)
-                filters.append(f"@{field_name}:%" + "%" * distance + value + "%" * distance)
-
-        elif "phrase" in field_filter:
-            phrase = field_filter["phrase"]
-            if isinstance(phrase, str):
-                filters.append(f'@{field_name}:"{phrase}"')
-            elif isinstance(phrase, dict):
-                value = phrase.get("value", "")
-                prefix = phrase.get("prefix", False)
-                if prefix:
-                    filters.append(f'@{field_name}:"{value}"*')
-                else:
-                    filters.append(f'@{field_name}:"{value}"')
-
-        elif "regex" in field_filter:
-            regex = field_filter["regex"]
-            filters.append(f"@{field_name}:/{regex}/")
-
-        # Numeric filters
-        elif "gt" in field_filter or "gte" in field_filter or "lt" in field_filter or "lte" in field_filter:
-            min_val = "-inf"
-            max_val = "+inf"
-
-            if "gt" in field_filter:
-                min_val = f"({field_filter['gt']}"
-            elif "gte" in field_filter:
-                min_val = str(field_filter["gte"])
-
-            if "lt" in field_filter:
-                max_val = f"({field_filter['lt']}"
-            elif "lte" in field_filter:
-                max_val = str(field_filter["lte"])
-
-            filters.append(f"@{field_name}:[{min_val} {max_val}]")
-
-    return filters
-
-
 def build_query_command(
     command_name: str, index_name: str, options: QueryOptions = None
 ) -> List[str]:
@@ -420,17 +351,3 @@ def deserialize_describe_response(raw_response: List[Any]) -> IndexDescription:
 
     return description
 
-
-def parse_count_response(raw_response: Any) -> int:
-    """
-    Parse count response.
-
-    Args:
-        raw_response: Raw response from SEARCH.COUNT
-
-    Returns:
-        Count as integer
-    """
-    if isinstance(raw_response, int):
-        return raw_response
-    return int(raw_response)

@@ -283,7 +283,7 @@ class TestAsyncCount:
 class TestAsyncDescribe:
     """Tests for async describe operations."""
 
-    async def test_describe_index(self, async_redis_client, cleanup_indexes):
+    async def test_describe_index(self, async_redis_client: Redis, cleanup_indexes):
         """Test async describing an index."""
         name = f"test-async-describe-{random_id()}"
         cleanup_indexes.append(name)
