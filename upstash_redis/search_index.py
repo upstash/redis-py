@@ -200,7 +200,7 @@ class SearchIndex:
         return self._client.execute(command)
 
 
-def create_index(client: Any, params: CreateIndexParams) -> SearchIndex:
+def _create_index(client: Any, params: CreateIndexParams) -> SearchIndex:
     """
     Create a new search index.
 
@@ -246,7 +246,7 @@ def create_index(client: Any, params: CreateIndexParams) -> SearchIndex:
     return SearchIndex(name=name, client=client, schema=schema)
 
 
-def init_index(
+def _init_index(
     client: Any,
     name: str,
     schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None,

@@ -52,50 +52,7 @@ class DetailedField(TypedDict, total=False):
 NestedIndexSchema = Dict[str, Union[FieldType, DetailedField, "NestedIndexSchema"]]
 FlatIndexSchema = Dict[str, Union[FieldType, DetailedField]]
 
-
-# Query filter operators
-class FuzzyOperator(TypedDict, total=False):
-    """Fuzzy search with typo tolerance."""
-
-    value: str
-    distance: int
-
-
-class PhraseOperator(TypedDict, total=False):
-    """Exact phrase matching."""
-
-    value: str
-    prefix: bool
-
-
-# Field filters - using MongoDB-style $ prefix for operators
-class TextFieldFilter(TypedDict, total=False):
-    """Text field query filters."""
-
-    # Note: TypedDict doesn't support keys starting with $
-    # These are represented as string keys at runtime
-    # Use as: {"$eq": "value"} in actual code
-
-
-class NumericFieldFilter(TypedDict, total=False):
-    """Numeric field query filters."""
-
-    # Note: TypedDict doesn't support keys starting with $
-    # These are represented as string keys at runtime
-    # Use as: {"$eq": 5, "$gt": 10} in actual code
-
-
-class BooleanFieldFilter(TypedDict, total=False):
-    """Boolean field query filters."""
-
-    # Note: TypedDict doesn't support keys starting with $
-    # These are represented as string keys at runtime
-    # Use as: {"$eq": True} in actual code
-
-
-# Root query filter - maps field names to their filters
-RootQueryFilter = Dict[str, Union[TextFieldFilter, NumericFieldFilter, BooleanFieldFilter]]
-
+RootQueryFilter = Dict[str, Any]
 
 # Query options
 class HighlightOptions(TypedDict, total=False):
@@ -108,7 +65,7 @@ class HighlightOptions(TypedDict, total=False):
 class QueryOptions(TypedDict, total=False):
     """Options for querying an index."""
 
-    filter: RootQueryFilter
+    filter: Any
     limit: int
     offset: int
     orderBy: Dict[str, Literal["ASC", "DESC"]]

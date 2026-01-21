@@ -26,7 +26,7 @@ def random_id() -> str:
 
 
 @pytest.fixture
-def redis_client():
+def redis_client() -> Redis:
     """Create a Redis client for testing."""
     return Redis.from_env()
 
@@ -52,7 +52,7 @@ class TestQueryJson:
             "active": "BOOL",
         }
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="json", prefix=prefix
         )
 
@@ -170,7 +170,7 @@ class TestHashIndex:
 
         schema = {"name": "TEXT", "score": {"type": "U64", "fast": True}}
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="hash", prefix=prefix
         )
 
@@ -231,7 +231,7 @@ class TestNestedStringIndex:
             "stats": {"views": {"type": "U64", "fast": True}, "likes": {"type": "U64", "fast": True}},
         }
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="string", prefix=prefix
         )
 
@@ -314,7 +314,7 @@ class TestNestedJsonIndex:
             "stats": {"views": {"type": "U64", "fast": True}, "likes": {"type": "U64", "fast": True}},
         }
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="json", prefix=prefix
         )
 

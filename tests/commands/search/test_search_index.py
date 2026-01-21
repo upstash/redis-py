@@ -35,7 +35,7 @@ def random_id() -> str:
 
 
 @pytest.fixture
-def redis_client():
+def redis_client() -> Redis:
     """Create a Redis client for testing."""
     return Redis.from_env()
 
@@ -60,21 +60,21 @@ def cleanup_indexes():
 class TestCreateIndex:
     """Tests for creating search indexes."""
 
-    def test_create_string_index_simple_schema(self, redis_client, cleanup_indexes):
+    def test_create_string_index_simple_schema(self, redis_client: Redis, cleanup_indexes):
         """Test creating a string index with simple schema."""
         name = f"test-string-{random_id()}"
         cleanup_indexes.append(name)
 
         schema = {"name": "TEXT", "age": {"type": "U64", "fast": True}}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="string", prefix=f"{name}:"
         )
 
         assert index is not None
         assert index.name == name
 
-    def test_create_string_index_nested_schema(self, redis_client, cleanup_indexes):
+    def test_create_string_index_nested_schema(self, redis_client: Redis, cleanup_indexes):
         """Test creating a string index with nested schema."""
         name = f"test-string-nested-{random_id()}"
         cleanup_indexes.append(name)
@@ -84,40 +84,40 @@ class TestCreateIndex:
             "metadata": {"author": "TEXT", "views": {"type": "U64", "fast": True}},
         }
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="string", prefix=f"{name}:"
         )
 
         assert index is not None
 
-    def test_create_hash_index(self, redis_client, cleanup_indexes):
+    def test_create_hash_index(self, redis_client: Redis, cleanup_indexes):
         """Test creating a hash index."""
         name = f"test-hash-{random_id()}"
         cleanup_indexes.append(name)
 
         schema = {"title": "TEXT", "count": {"type": "U64", "fast": True}}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="hash", prefix=f"{name}:"
         )
 
         assert index is not None
 
-    def test_create_json_index_simple_schema(self, redis_client, cleanup_indexes):
+    def test_create_json_index_simple_schema(self, redis_client: Redis, cleanup_indexes):
         """Test creating a JSON index with simple schema."""
         name = f"test-json-{random_id()}"
         cleanup_indexes.append(name)
 
         schema = {"name": "TEXT", "age": {"type": "U64", "fast": True}}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="json", prefix=f"{name}:"
         )
 
         assert index is not None
         assert index.name == name
 
-    def test_create_json_index_nested_schema(self, redis_client, cleanup_indexes):
+    def test_create_json_index_nested_schema(self, redis_client: Redis, cleanup_indexes):
         """Test creating a JSON index with nested schema."""
         name = f"test-json-nested-{random_id()}"
         cleanup_indexes.append(name)
@@ -127,20 +127,20 @@ class TestCreateIndex:
             "metadata": {"author": "TEXT", "views": {"type": "U64", "fast": True}},
         }
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="json", prefix=f"{name}:"
         )
 
         assert index is not None
 
-    def test_create_index_with_language(self, redis_client, cleanup_indexes):
+    def test_create_index_with_language(self, redis_client: Redis, cleanup_indexes):
         """Test creating an index with language option."""
         name = f"test-lang-{random_id()}"
         cleanup_indexes.append(name)
 
         schema = {"content": "TEXT"}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name,
             schema=schema,
             dataType="string",
@@ -150,14 +150,14 @@ class TestCreateIndex:
 
         assert index is not None
 
-    def test_create_index_with_multiple_prefixes(self, redis_client, cleanup_indexes):
+    def test_create_index_with_multiple_prefixes(self, redis_client: Redis, cleanup_indexes):
         """Test creating an index with multiple prefixes."""
         name = f"test-multi-prefix-{random_id()}"
         cleanup_indexes.append(name)
 
         schema = {"name": "TEXT"}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name,
             schema=schema,
             dataType="hash",
@@ -188,7 +188,7 @@ class TestQueryString:
             "active": "BOOL",
         }
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="string", prefix=prefix
         )
 
@@ -394,7 +394,7 @@ class TestCount:
 
         schema = {"type": "TEXT", "value": {"type": "U64", "fast": True}}
 
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name=name, schema=schema, dataType="string", prefix=prefix
         )
 
@@ -436,7 +436,7 @@ class TestCount:
 class TestDescribe:
     """Tests for describe functionality."""
 
-    def test_describe_index(self, redis_client, cleanup_indexes):
+    def test_describe_index(self, redis_client: Redis, cleanup_indexes):
         """Test describing an index structure."""
         name = f"test-describe-{random_id()}"
         cleanup_indexes.append(name)
@@ -447,7 +447,7 @@ class TestDescribe:
             "active": "BOOL",
         }
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="string", prefix=f"{name}:"
         )
 
@@ -460,13 +460,13 @@ class TestDescribe:
 class TestDrop:
     """Tests for drop functionality."""
 
-    def test_drop_existing_index(self, redis_client):
+    def test_drop_existing_index(self, redis_client: Redis):
         """Test dropping an existing index."""
         name = f"test-drop-{random_id()}"
 
         schema = {"name": "TEXT"}
 
-        index = redis_client.search.createIndex(
+        index = redis_client.search.create_index(
             name=name, schema=schema, dataType="string", prefix=f"{name}:"
         )
 
@@ -478,7 +478,7 @@ class TestDrop:
 class TestIndexMethod:
     """Tests for redis.search.index method."""
 
-    def test_index_without_schema(self, redis_client):
+    def test_index_without_schema(self, redis_client: Redis):
         """Test creating a SearchIndex instance without schema."""
         index = redis_client.search.index("test-index")
 
@@ -486,7 +486,7 @@ class TestIndexMethod:
         assert index.name == "test-index"
         assert index.schema is None
 
-    def test_index_with_schema(self, redis_client):
+    def test_index_with_schema(self, redis_client: Redis):
         """Test creating a SearchIndex instance with schema."""
         schema = {"name": "TEXT", "age": {"type": "U64", "fast": True}}
 

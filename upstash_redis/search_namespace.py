@@ -2,7 +2,7 @@
 
 from typing import Any, Optional, Union
 
-from upstash_redis.search_index import SearchIndex, create_index as _create_index, init_index as _init_index
+from upstash_redis.search_index import SearchIndex, _create_index, _init_index
 from upstash_redis.search_types import CreateIndexParams, NestedIndexSchema, FlatIndexSchema
 
 
@@ -10,7 +10,7 @@ class SearchNamespace:
     """
     Namespace for search index operations.
     
-    Access via redis.search.createIndex() or redis.search.index()
+    Access via redis.search.create_index() or redis.search.index()
     """
     
     def __init__(self, client: Any):
@@ -22,7 +22,7 @@ class SearchNamespace:
         """
         self._client = client
     
-    def createIndex(
+    def create_index(
         self,
         *,
         name: str,
@@ -56,7 +56,7 @@ class SearchNamespace:
             "active": "BOOL"
         }
         
-        index = redis.search.createIndex(
+        index = redis.search.create_index(
             name="users-idx",
             prefix="user:",
             dataType="json",

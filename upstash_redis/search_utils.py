@@ -5,16 +5,12 @@ from typing import Any, Dict, List, Union
 from upstash_redis.search_types import (
     CreateIndexParams,
     DescribeFieldInfo,
-    DetailedField,
     FieldType,
     FlatIndexSchema,
     IndexDescription,
     NestedIndexSchema,
     QueryOptions,
     QueryResult,
-    TextFieldFilter,
-    NumericFieldFilter,
-    BooleanFieldFilter,
 )
 
 
