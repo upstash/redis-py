@@ -1,13 +1,14 @@
 from json import loads
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from upstash_redis.typing import RESTResultT
-from upstash_redis.utils import GeoSearchResult
 from upstash_redis.commands import SearchIndexCommands
-from upstash_redis.search_utils import (
+from upstash_redis.search import (
     deserialize_describe_response,
     deserialize_query_response,
+    CountResult,
 )
+from upstash_redis.typing import RESTResultT
+from upstash_redis.utils import GeoSearchResult
 
 
 def to_dict(res: List, _, __) -> Dict:
@@ -231,30 +232,29 @@ def format_xpending_response(res, command, _):
     return res
 
 
-def format_search_query_response(res: List[Any], _, __) -> List[Dict[str, Any]]:
+def format_search_query_response(res: List[Any], _, __):
     """Format SEARCH.QUERY response into structured results."""
     return deserialize_query_response(res)
 
 
-def format_search_describe_response(res: List[Any], _, __) -> Dict[str, Any]:
+def format_search_describe_response(res: List[Any], _, __):
     """Format SEARCH.DESCRIBE response into index description."""
     return deserialize_describe_response(res)
 
 
-def format_search_count_response(res: Any, _, __) -> Dict[str, int]:
+def format_search_count_response(res: Any, _, __):
     """Format SEARCH.COUNT response."""
-    count = int(res) if not isinstance(res, int) else res
-    return {"count": count}
+    return CountResult(count=res)
 
 
 def format_search_create_response(res: Any, command: List[str], client: Any):
     """Format SEARCH.CREATE response by returning SearchIndexCommands instance."""
     # Extract index name from command (second parameter)
     index_name = command[1] if len(command) > 1 else None
-    
+
     if index_name is None:
         return res
-    
+
     return SearchIndexCommands(client, index_name)
 
 

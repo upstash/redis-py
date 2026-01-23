@@ -154,7 +154,7 @@ class Redis(AsyncCommands):
             http=self._http,
             multi_exec="pipeline",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
-            original_client=self
+            original_client=self,
         )
 
     def multi(self) -> "AsyncPipeline":
@@ -167,7 +167,7 @@ class Redis(AsyncCommands):
             http=self._http,
             multi_exec="multi-exec",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
-            original_client=self
+            original_client=self,
         )
 
 

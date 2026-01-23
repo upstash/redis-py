@@ -1,7 +1,8 @@
 """Tests for JSON and nested schema search functionality."""
 
+import dataclasses
 import json
-from typing import List, TypedDict, Generator
+from typing import List, Generator
 
 import pytest
 
@@ -9,8 +10,8 @@ from upstash_redis import Redis
 from upstash_redis.commands import SearchIndexCommands
 
 
-class IndexFixture(TypedDict):
-    """Type definition for index fixtures."""
+@dataclasses.dataclass
+class IndexFixture:
     index: SearchIndexCommands
     redis: Redis
     keys: List[str]
@@ -46,14 +47,14 @@ class TestQueryJson:
         schema = {
             "name": "TEXT",
             "description": "TEXT",
-            "category": {"type": "TEXT", "noTokenize": True},
+            "category": {"type": "TEXT", "no_tokenize": True},
             "price": {"type": "F64", "fast": True},
             "stock": {"type": "U64", "fast": True},
             "active": "BOOL",
         }
 
         index = redis.search.create_index(
-            name=name, schema=schema, dataType="json", prefix=prefix
+            name=name, schema=schema, data_type="json", prefixes=prefix
         )
 
         # Add test data
@@ -99,57 +100,57 @@ class TestQueryJson:
 
         index.wait_indexing()
 
-        yield {"index": index, "redis": redis, "keys": keys, "name": name}
+        yield IndexFixture(index=index, redis=redis, keys=keys, name=name)
 
         # Cleanup
         try:
             index.drop()
-        except:
+        except Exception:
             pass
         if keys:
             redis.delete(*keys)
 
     def test_query_json_text_eq(self, json_index: IndexFixture):
         """Test querying JSON index with $eq on text field."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(filter={"name": {"$eq": "Laptop"}})
 
         assert len(result) > 0
 
     def test_query_json_fuzzy(self, json_index: IndexFixture):
         """Test querying JSON index with fuzzy search."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(filter={"name": {"$fuzzy": "laptopp"}})
 
         assert len(result) > 0
 
     def test_query_json_phrase(self, json_index: IndexFixture):
         """Test querying JSON index with phrase matching."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(filter={"description": {"$phrase": "wireless mouse"}})
 
         assert len(result) > 0
 
     def test_query_json_regex(self, json_index: IndexFixture):
         """Test querying JSON index with regex pattern."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(filter={"name": {"$regex": "Laptop.*"}})
 
         assert len(result) > 0
 
     def test_query_json_numeric_gt(self, json_index: IndexFixture):
         """Test querying JSON index with $gt on numeric field."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(filter={"price": {"$gt": 500}})
 
         assert len(result) > 0
 
     def test_query_json_with_sorting(self, json_index: IndexFixture):
         """Test querying JSON index with sorting."""
-        index = json_index["index"]
+        index = json_index.index
         result = index.query(
             filter={"category": {"$eq": "electronics"}},
-            orderBy={"price": "DESC"},
+            order_by={"price": "DESC"},
             limit=3,
         )
 
@@ -171,7 +172,7 @@ class TestHashIndex:
         schema = {"name": "TEXT", "score": {"type": "U64", "fast": True}}
 
         index = redis.search.create_index(
-            name=name, schema=schema, dataType="hash", prefix=prefix
+            name=name, schema=schema, data_type="hash", prefixes=prefix
         )
 
         # Add test data using HSET
@@ -188,27 +189,27 @@ class TestHashIndex:
 
         index.wait_indexing()
 
-        yield {"index": index, "redis": redis, "keys": keys, "name": name}
+        yield IndexFixture(index=index, redis=redis, keys=keys, name=name)
 
         # Cleanup
         try:
             index.drop()
-        except:
+        except Exception:
             pass
         if keys:
             redis.delete(*keys)
 
     def test_query_hash_by_text(self, hash_index: IndexFixture):
         """Test querying hash index by text field."""
-        index = hash_index["index"]
+        index = hash_index.index
         result = index.query(filter={"name": {"$eq": "Alice"}})
 
         assert len(result) > 0
 
     def test_query_hash_with_sorting(self, hash_index: IndexFixture):
         """Test querying hash index with sorting."""
-        index = hash_index["index"]
-        result = index.query(filter={"score": {"$gte": 80}}, orderBy={"score": "DESC"})
+        index = hash_index.index
+        result = index.query(filter={"score": {"$gte": 80}}, order_by={"score": "DESC"})
 
         assert len(result) > 0
 
@@ -227,12 +228,14 @@ class TestNestedStringIndex:
 
         schema = {
             "title": "TEXT",
-            "author": {"name": "TEXT", "email": "TEXT"},
-            "stats": {"views": {"type": "U64", "fast": True}, "likes": {"type": "U64", "fast": True}},
+            "author.name": "TEXT",
+            "author.email": "TEXT",
+            "stats.views": {"type": "U64", "fast": True},
+            "stats.likes": {"type": "U64", "fast": True},
         }
 
         index = redis.search.create_index(
-            name=name, schema=schema, dataType="string", prefix=prefix
+            name=name, schema=schema, data_type="string", prefixes=prefix
         )
 
         test_data = [
@@ -260,37 +263,37 @@ class TestNestedStringIndex:
 
         index.wait_indexing()
 
-        yield {"index": index, "redis": redis, "keys": keys, "name": name}
+        yield IndexFixture(index=index, redis=redis, keys=keys, name=name)
 
         # Cleanup
         try:
             index.drop()
-        except:
+        except Exception:
             pass
         if keys:
             redis.delete(*keys)
 
     def test_query_nested_text_field(self, nested_string_index: IndexFixture):
         """Test querying nested text field."""
-        index = nested_string_index["index"]
+        index = nested_string_index.index
         result = index.query(filter={"author.name": {"$eq": "John"}})
 
         assert len(result) > 0
 
     def test_query_nested_numeric_field(self, nested_string_index: IndexFixture):
         """Test querying nested numeric field."""
-        index = nested_string_index["index"]
+        index = nested_string_index.index
         result = index.query(filter={"stats.views": {"$eq": 1000}})
 
         assert len(result) > 0
 
     def test_query_nested_with_sorting(self, nested_string_index: IndexFixture):
         """Test querying with sorting on nested field."""
-        index = nested_string_index["index"]
+        index = nested_string_index.index
         result = index.query(
             filter={"author.name": {"$eq": "John"}},
             select={"author.email": True},
-            orderBy={"stats.views": "DESC"},
+            order_by={"stats.views": "DESC"},
         )
 
         assert len(result) > 0
@@ -310,12 +313,14 @@ class TestNestedJsonIndex:
 
         schema = {
             "title": "TEXT",
-            "author": {"name": "TEXT", "email": "TEXT"},
-            "stats": {"views": {"type": "U64", "fast": True}, "likes": {"type": "U64", "fast": True}},
+            "author.name": "TEXT",
+            "author.email": "TEXT",
+            "stats.views": {"type": "U64", "fast": True},
+            "stats.likes": {"type": "U64", "fast": True},
         }
 
         index = redis.search.create_index(
-            name=name, schema=schema, dataType="json", prefix=prefix
+            name=name, schema=schema, data_type="json", prefixes=prefix
         )
 
         test_data = [
@@ -343,37 +348,37 @@ class TestNestedJsonIndex:
 
         index.wait_indexing()
 
-        yield {"index": index, "redis": redis, "keys": keys, "name": name}
+        yield IndexFixture(index=index, redis=redis, keys=keys, name=name)
 
         # Cleanup
         try:
             index.drop()
-        except:
+        except Exception:
             pass
         if keys:
             redis.delete(*keys)
 
     def test_query_nested_json_text_field(self, nested_json_index: IndexFixture):
         """Test querying nested text field in JSON index."""
-        index = nested_json_index["index"]
+        index = nested_json_index.index
         result = index.query(filter={"author.name": {"$eq": "John"}})
 
         assert len(result) > 0
 
     def test_query_nested_json_numeric_field(self, nested_json_index: IndexFixture):
         """Test querying nested numeric field in JSON index."""
-        index = nested_json_index["index"]
+        index = nested_json_index.index
         result = index.query(filter={"stats.views": {"$eq": 1000}})
 
         assert len(result) > 0
 
     def test_query_nested_json_with_sorting(self, nested_json_index: IndexFixture):
         """Test querying with sorting on nested field in JSON index."""
-        index = nested_json_index["index"]
+        index = nested_json_index.index
         result = index.query(
             filter={"author.name": {"$eq": "John"}},
             select={"author.email": True},
-            orderBy={"stats.views": "DESC"},
+            order_by={"stats.views": "DESC"},
         )
 
         assert len(result) > 0

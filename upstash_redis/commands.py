@@ -1,7 +1,26 @@
 import datetime
-from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
+import json
+from typing import (
+    Any,
+    Awaitable,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
-from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
+from upstash_redis.search import (
+    DataType,
+    Language,
+    Schema,
+    FieldType,
+    Order,
+    HighlightOptions,
+)
+from upstash_redis.typing import FloatMinMaxT, JSONValueT, ValueT
 from upstash_redis.utils import (
     handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
@@ -9,8 +28,6 @@ from upstash_redis.utils import (
     handle_zrangebylex_exceptions,
     number_are_not_none,
 )
-from upstash_redis.search_types import CreateIndexParams, QueryOptions
-from upstash_redis.search_utils import build_create_index_command, build_query_command
 
 ResponseT = Union[Awaitable, Any]
 
@@ -5489,41 +5506,71 @@ class JsonCommands:
 class SearchCommands:
     """
     Search commands namespace.
-    
+
     This class provides methods for search index operations.
-    It follows the same pattern as JsonCommands.
     """
+
     def __init__(self, client: Commands):
         self.client = client
-    
+
     def create_index(
         self,
         *,
         name: str,
-        schema,
-        dataType: str,
-        prefix,
-        language = None,
-        skipInitialScan: bool = False,
-        existsOk: bool = False,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
     ) -> ResponseT:
         """Create a new search index."""
-        params: CreateIndexParams = {
-            "name": name,
-            "schema": schema,
-            "dataType": dataType,
-            "prefix": prefix,
-        }
-        if language is not None:
-            params["language"] = language
-        if skipInitialScan:
-            params["skipInitialScan"] = skipInitialScan
-        if existsOk:
-            params["existsOk"] = existsOk
-        
-        command = build_create_index_command(params)
+
+        if isinstance(prefixes, str):
+            prefixes = [prefixes]
+
+        command: List = [
+            "SEARCH.CREATE",
+            name,
+            "ON",
+            data_type,
+            "PREFIX",
+            len(prefixes),
+            *prefixes,
+        ]
+
+        if language:
+            command.extend(("LANGUAGE", language))
+
+        if skip_initial_scan:
+            command.append("SKIPINITIALSCAN")
+
+        if exists_ok:
+            command.append("EXISTSOK")
+
+        command.append("SCHEMA")
+
+        for path, value in schema.items():
+            if isinstance(value, (str, FieldType)):
+                command.extend((path, value))
+            else:
+                field_type = value["type"]
+                command.extend((path, field_type))
+
+                if "alias" in value:
+                    command.extend(("AS", value["alias"]))
+
+                if "fast" in value and value["fast"]:
+                    command.append("FAST")
+
+                if "no_stem" in value and value["no_stem"]:
+                    command.append("NOSTEM")
+
+                if "no_tokenize" in value and value["no_tokenize"]:
+                    command.append("NOTOKENIZE")
+
         return self.client.execute(command)
-    
+
     def index(self, name: str) -> "SearchIndexCommands":
         """Initialize a SearchIndexCommands instance for an existing index."""
         return SearchIndexCommands(self.client, name)
@@ -5532,17 +5579,81 @@ class SearchCommands:
 class SearchIndexCommands:
     """
     Commands for interacting with a specific search index.
-    
+
     This class provides methods to query, count, describe, and drop an index.
     """
+
     def __init__(self, client: Commands, name: str):
         self.client = client
         self.name = name
-    
+
+    def query(
+        self,
+        *,
+        filter: Dict[str, Any],
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[HighlightOptions] = None,
+    ) -> ResponseT:
+        """
+        Query the index with filters and options.
+
+        Example:
+        ```python
+        results = index.query(filter={"name": {"$eq": "Laptop"}})
+        ```
+        """
+        command: List = ["SEARCH.QUERY", self.name, json.dumps(filter)]
+
+        if limit:
+            command.extend(("LIMIT", limit))
+
+        if offset:
+            command.extend(("OFFSET", offset))
+
+        if order_by:
+            for field, order in order_by.items():
+                command.extend(("ORDERBY", field, order))
+                break
+
+        if select is not None:
+            if not select:
+                command.append("NOCONTENT")
+            else:
+                selected_fields = []
+                for field, selected in select.items():
+                    if selected:
+                        selected_fields.append(field)
+
+                command.extend(("SELECT", len(selected_fields), *selected_fields))
+
+        if highlight:
+            command.extend(("HIGHLIGHT", "FIELDS", highlight["fields"]))
+            if highlight["tags"]:
+                open_tag, close_tag = highlight["tags"]
+                command.extend(("TAGS", open_tag, close_tag))
+
+        return self.client.execute(command)
+
+    def count(self, *, filter: Dict[str, Any]) -> ResponseT:
+        """
+        Count documents matching a filter.
+
+        Example:
+        ```python
+        result = index.count({"active": {"$eq": True}})
+        ```
+        """
+
+        command: List = ["SEARCH.COUNT", self.name, json.dumps(filter)]
+        return self.client.execute(command)
+
     def wait_indexing(self) -> ResponseT:
         """
         Wait for the index to finish indexing all existing keys.
-        
+
         Example:
         ```python
         index.wait_indexing()
@@ -5550,11 +5661,11 @@ class SearchIndexCommands:
         """
         command = ["SEARCH.WAITINDEXING", self.name]
         return self.client.execute(command)
-    
+
     def describe(self) -> ResponseT:
         """
         Get detailed information about the index structure.
-        
+
         Example:
         ```python
         description = index.describe()
@@ -5562,58 +5673,11 @@ class SearchIndexCommands:
         """
         command = ["SEARCH.DESCRIBE", self.name]
         return self.client.execute(command)
-    
-    def query(
-        self,
-        *,
-        filter,
-        limit = None,
-        offset = None,
-        orderBy = None,
-        select = None,
-        highlight = None,
-    ) -> ResponseT:
-        """
-        Query the index with filters and options.
-        
-        Example:
-        ```python
-        results = index.query(filter={"name": {"$eq": "Laptop"}})
-        ```
-        """
-        options: QueryOptions = {}
-        if filter is not None:
-            options["filter"] = filter
-        if limit is not None:
-            options["limit"] = limit
-        if offset is not None:
-            options["offset"] = offset
-        if orderBy is not None:
-            options["orderBy"] = orderBy
-        if select is not None:
-            options["select"] = select
-        if highlight is not None:
-            options["highlight"] = highlight
-        
-        command = build_query_command("SEARCH.QUERY", self.name, options)
-        return self.client.execute(command)
-    
-    def count(self, filter) -> ResponseT:
-        """
-        Count documents matching a filter.
-        
-        Example:
-        ```python
-        result = index.count({"active": {"$eq": True}})
-        ```
-        """
-        command = build_query_command("SEARCH.COUNT", self.name, {"filter": filter})
-        return self.client.execute(command)
-    
+
     def drop(self) -> ResponseT:
         """
         Drop (delete) the index.
-        
+
         Example:
         ```python
         result = index.drop()

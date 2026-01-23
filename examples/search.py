@@ -9,7 +9,9 @@ This example shows how to:
 """
 
 import json
+
 import dotenv
+
 from upstash_redis import Redis
 
 dotenv.load_dotenv()
@@ -28,15 +30,15 @@ print("=" * 60)
 # Create an index for products stored as JSON strings
 products_index = redis.search.create_index(
     name="products",
-    dataType="string",  # Data is stored as strings
-    prefix="product:",  # Index keys starting with "product:"
+    data_type="string",  # Data is stored as strings
+    prefixes="product:",  # Index keys starting with "product:"
     schema={
         "name": "TEXT",  # Full-text searchable
-        "category": {"type": "TEXT", "noTokenize": True},  # Exact match only
+        "category": {"type": "TEXT", "no_tokenize": True},  # Exact match only
         "price": {"type": "F64", "fast": True},  # Float, optimized for sorting
         "stock": {"type": "U64", "fast": True},  # Unsigned integer
         "active": "BOOL",  # Boolean field
-    }
+    },
 )
 
 # Add product data
@@ -81,32 +83,32 @@ products_index.wait_indexing()
 print("\n1. Search for 'Laptop' in name:")
 results = products_index.query(filter={"name": {"$eq": "Laptop"}})
 for result in results:
-    print(f"  Key: {result['key']}, Score: {result['score']}")
-    print(f"  Data: {result['data']}")
+    print(f"  Key: {result.key}, Score: {result.score}")
+    print(f"  Data: {result.data}")
 
 # Query 2: Find products over $500
 print("\n2. Find products with price > 500:")
 results = products_index.query(filter={"price": {"$gt": 500}})
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['name']}: ${data['price']}")
 
 # Query 3: Get inactive products
 print("\n3. Find inactive products:")
 results = products_index.query(filter={"active": {"$eq": False}})
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['name']} (stock: {data['stock']})")
 
 # Query 4: Search with sorting and field selection
 print("\n4. Electronics sorted by price (descending), show only name and price:")
 results = products_index.query(
     filter={"category": {"$eq": "electronics"}},
-    orderBy={"price": "DESC"},
+    order_by={"price": "DESC"},
     select={"name": True, "price": True},
 )
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['name']}: ${data['price']}")
 
 # Query 5: Pagination
@@ -118,7 +120,7 @@ page1 = products_index.query(
 )
 print(f"  Page 1: {len(page1)} results")
 for result in page1:
-    print(f"    - {result['data']['name']}")
+    print(f"    - {result.data['name']}")
 
 page2 = products_index.query(
     filter={"category": {"$eq": "electronics"}},
@@ -127,12 +129,12 @@ page2 = products_index.query(
 )
 print(f"  Page 2: {len(page2)} results")
 for result in page2:
-    print(f"    - {result['data']['name']}")
+    print(f"    - {result.data['name']}")
 
 # Query 6: Count documents
 print("\n6. Count electronics products:")
 count_result = products_index.count(filter={"category": {"$eq": "electronics"}})
-print(f"  Total electronics: {count_result['count']}")
+print(f"  Total electronics: {count_result.count}")
 
 # Query 7: Get only keys and scores (no content)
 print("\n7. Get keys only (select={}):")
@@ -142,16 +144,16 @@ results = products_index.query(
     limit=2,
 )
 for result in results:
-    print(f"  Key: {result['key']}, Score: {result['score']}")
-    print(f"  Has data field: {'data' in result}")
+    print(f"  Key: {result.key}, Score: {result.score}")
+    print(f"  Has data field: {result.data is not None}")
 
 # Describe the index
 print("\n8. Index description:")
 description = products_index.describe()
-print(f"  Name: {description['name']}")
-print(f"  Type: {description['dataType']}")
-print(f"  Prefixes: {description['prefixes']}")
-print(f"  Schema fields: {list(description['schema'].keys())}")
+print(f"  Name: {description.name}")
+print(f"  Type: {description.data_type}")
+print(f"  Prefixes: {description.prefixes}")
+print(f"  Schema fields: {list(description.schema.keys())}")
 
 # =============================================================================
 # Example 2: JSON Index with Nested Schema
@@ -164,20 +166,16 @@ print("=" * 60)
 # Create index with nested schema
 posts_index = redis.search.create_index(
     name="posts",
-    dataType="json",  # Data is stored as JSON
-    prefix="post:",
+    data_type="json",  # Data is stored as JSON
+    prefixes="post:",
     schema={
         "title": "TEXT",
-        "author": {
-            "name": "TEXT",
-            "email": "TEXT",
-        },
-        "stats": {
-            "views": {"type": "U64", "fast": True},
-            "likes": {"type": "U64", "fast": True},
-        },
+        "author.name": "TEXT",
+        "author.email": "TEXT",
+        "stats.views": {"type": "U64", "fast": True},
+        "stats.likes": {"type": "U64", "fast": True},
         "published": "BOOL",
-    }
+    },
 )
 
 # Add blog posts
@@ -211,7 +209,7 @@ posts_index.wait_indexing()
 print("\n1. Posts by author 'John':")
 results = posts_index.query(filter={"author.name": {"$eq": "John"}})
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  Title: {data['title']}")
     print(f"  Author: {data['author']['name']}")
     print(f"  Views: {data['stats']['views']}")
@@ -220,10 +218,10 @@ for result in results:
 print("\n2. Posts with more than 1000 views:")
 results = posts_index.query(
     filter={"stats.views": {"$gt": 1000}},
-    orderBy={"stats.views": "DESC"},
+    order_by={"stats.views": "DESC"},
 )
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['title']}: {data['stats']['views']} views")
 
 # Select nested fields
@@ -234,7 +232,7 @@ results = posts_index.query(
     limit=2,
 )
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  Email: {data['author']['email']}, Views: {data['stats']['views']}")
 
 # =============================================================================
@@ -248,13 +246,13 @@ print("=" * 60)
 # Create hash index
 scores_index = redis.search.create_index(
     name="scores",
-    dataType="hash",  # Data is stored as Redis hash
-    prefix="user:",
+    data_type="hash",  # Data is stored as Redis hash
+    prefixes="user:",
     schema={
         "username": "TEXT",
         "score": {"type": "U64", "fast": True},
         "level": {"type": "U64", "fast": True},
-    }
+    },
 )
 
 # Add user data using HSET
@@ -273,10 +271,10 @@ scores_index.wait_indexing()
 print("\n1. Top level 10 players:")
 results = scores_index.query(
     filter={"level": {"$eq": 10}},
-    orderBy={"score": "DESC"},
+    order_by={"score": "DESC"},
 )
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['username']}: {data['score']} points")
 
 # =============================================================================
@@ -292,22 +290,22 @@ print("\n1. Fuzzy search for 'laptopp' (with typo):")
 results = products_index.query(filter={"name": {"$fuzzy": "laptopp"}})
 print(f"  Found {len(results)} results despite typo")
 for result in results:
-    print(f"    - {result['data']['name']}")
+    print(f"    - {result.data['name']}")
 
 # Phrase search
 print("\n2. Phrase search for 'Wireless Mouse':")
 results = products_index.query(filter={"name": {"$phrase": "Wireless Mouse"}})
 for result in results:
-    print(f"  Found: {result['data']['name']}")
+    print(f"  Found: {result.data['name']}")
 
 # Range query
 print("\n3. Products priced between $10 and $100:")
 results = products_index.query(
     filter={"price": {"$gte": 10, "$lte": 100}},
-    orderBy={"price": "ASC"},
+    order_by={"price": "ASC"},
 )
 for result in results:
-    data = result["data"]
+    data = result.data
     print(f"  {data['name']}: ${data['price']}")
 
 # =============================================================================

@@ -1,9 +1,18 @@
 import datetime
 from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
+from upstash_redis.search import (
+    IndexDescription,
+    QueryResult,
+    Schema,
+    DataType,
+    Language,
+    Order,
+    HighlightOptions,
+    CountResult,
+)
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
 from upstash_redis.utils import GeoSearchResult
-from upstash_redis.search_types import NestedIndexSchema, FlatIndexSchema, IndexDescription, QueryResult
 
 class Commands:
     def bitcount(
@@ -2036,22 +2045,21 @@ class SearchCommands:
         self,
         *,
         name: str,
-        schema: Union[NestedIndexSchema, FlatIndexSchema],
-        dataType: str,
-        prefix: Union[str, List[str]],
-        language: Optional[str] = None,
-        skipInitialScan: bool = False,
-        existsOk: bool = False,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
     ) -> SearchIndexCommands: ...
     def index(
         self,
         name: str,
-        schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None
     ) -> SearchIndexCommands: ...
 
 class SearchIndexCommands:
-    def __init__(self, client: Commands, name: str, schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None): ...
-    def wait_indexing(self) -> Any: ...
+    def __init__(self, client: Commands, name: str): ...
+    def wait_indexing(self) -> None: ...
     def describe(self) -> IndexDescription: ...
     def query(
         self,
@@ -2059,12 +2067,12 @@ class SearchIndexCommands:
         filter: Dict[str, Any],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        orderBy: Optional[Dict[str, str]] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
         select: Optional[Dict[str, bool]] = None,
-        highlight: Optional[Dict[str, Any]] = None,
+        highlight: Optional[HighlightOptions] = None,
     ) -> List[QueryResult]: ...
-    def count(self, filter: Dict[str, Any]) -> Dict[Literal["count"], int]: ...
-    def drop(self) -> int: ...
+    def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
+    def drop(self) -> None: ...
 
 class AsyncSearchCommands:
     def __init__(self, client: AsyncCommands): ...
@@ -2072,22 +2080,18 @@ class AsyncSearchCommands:
         self,
         *,
         name: str,
-        schema: Union[NestedIndexSchema, FlatIndexSchema],
-        dataType: str,
-        prefix: Union[str, List[str]],
-        language: Optional[str] = None,
-        skipInitialScan: bool = False,
-        existsOk: bool = False,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
     ) -> AsyncSearchIndexCommands: ...
-    def index(
-        self,
-        name: str,
-        schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None
-    ) -> AsyncSearchIndexCommands: ...
+    def index(self, name: str) -> AsyncSearchIndexCommands: ...
 
 class AsyncSearchIndexCommands:
-    def __init__(self, client: AsyncCommands, name: str, schema: Optional[Union[NestedIndexSchema, FlatIndexSchema]] = None): ...
-    async def wait_indexing(self) -> Any: ...
+    def __init__(self, client: AsyncCommands, name: str): ...
+    async def wait_indexing(self) -> None: ...
     async def describe(self) -> IndexDescription: ...
     async def query(
         self,
@@ -2095,9 +2099,9 @@ class AsyncSearchIndexCommands:
         filter: Dict[str, Any],
         limit: Optional[int] = None,
         offset: Optional[int] = None,
-        orderBy: Optional[Dict[str, str]] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
         select: Optional[Dict[str, bool]] = None,
-        highlight: Optional[Dict[str, Any]] = None,
+        highlight: Optional[HighlightOptions] = None,
     ) -> List[QueryResult]: ...
-    async def count(self, filter: Dict[str, Any]) -> Dict[Literal["count"], int]: ...
-    async def drop(self) -> int: ...
+    async def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
+    async def drop(self) -> None: ...
