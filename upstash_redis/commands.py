@@ -233,6 +233,31 @@ class Commands:
 
         return self.execute(command)
 
+    def client_setinfo(
+        self, attribute: Literal["LIB-NAME", "LIB-VER"], value: str
+    ) -> ResponseT:
+        """
+        Sets client library name and version information.
+
+        :param attribute: Either "LIB-NAME" for library name or "LIB-VER" for library version (case-insensitive)
+        :param value: The value to set for the attribute
+
+        Example:
+        ```python
+        redis.client_setinfo("LIB-NAME", "redis-py")
+        redis.client_setinfo("LIB-VER", "1.0.0")
+        
+        # Case-insensitive attribute names
+        redis.client_setinfo("lib-name", "redis-py(upstash_v1.0.0)")
+        ```
+
+        See https://redis.io/commands/client-setinfo
+        """
+
+        command: List = ["CLIENT", "SETINFO", attribute.upper(), value]
+
+        return self.execute(command)
+
     def copy(self, source: str, destination: str, replace: bool = False) -> ResponseT:
         """
         Copies the value stored at the source key to the destination key.
