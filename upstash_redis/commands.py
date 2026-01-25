@@ -1568,6 +1568,88 @@ class Commands:
 
         return self.execute(command)
 
+    def hgetdel(self, key: str, *fields: str) -> ResponseT:
+        """
+        Returns the value of one or more fields and deletes them atomically from a hash.
+
+        When the last field is deleted, the key is also deleted.
+
+        Returns a list of values corresponding to the fields. Returns None for fields that do not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={"field1": "Hello", "field2": "World"})
+
+        values = redis.hgetdel("myhash", "field1", "field2")
+        assert values == ["Hello", "World"]
+        
+        # Fields are now deleted
+        assert redis.hget("myhash", "field1") is None
+        ```
+
+        See https://redis.io/commands/hgetdel
+        """
+        if not fields:
+            raise Exception("'hgetdel' requires at least one field")
+
+        command: List = ["HGETDEL", key, "FIELDS", len(fields), *fields]
+
+        return self.execute(command)
+
+    def hgetex(
+        self,
+        key: str,
+        *fields: str,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> ResponseT:
+        """
+        Returns the values of one or more fields and optionally sets their expiration.
+
+        Returns a list of values corresponding to the fields. Returns None for fields that do not exist.
+
+        :param ex: the number of seconds until the field(s) expire.
+        :param px: the number of milliseconds until the field(s) expire.
+        :param exat: the UNIX timestamp in seconds until the field(s) expire.
+        :param pxat: the UNIX timestamp in milliseconds until the field(s) expire.
+        :param persist: Remove the expiration from the field(s).
+
+        Example:
+        ```python
+        redis.hset("myhash", values={"field1": "Hello", "field2": "World"})
+
+        # Get values and set expiration to 60 seconds
+        values = redis.hgetex("myhash", "field1", "field2", ex=60)
+        assert values == ["Hello", "World"]
+        ```
+
+        See https://redis.io/commands/hgetex
+        """
+        if not fields:
+            raise Exception("'hgetex' requires at least one field")
+
+        command: List = ["HGETEX", key]
+
+        # Add expiration options before FIELDS
+        if ex is not None:
+            command.extend(["EX", ex])
+        elif px is not None:
+            command.extend(["PX", px])
+        elif exat is not None:
+            command.extend(["EXAT", exat])
+        elif pxat is not None:
+            command.extend(["PXAT", pxat])
+        elif persist:
+            command.append("PERSIST")
+
+        # Add FIELDS keyword and field list
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
+
     def hgetall(self, key: str) -> ResponseT:
         """
         Returns all fields and values of a hash.
@@ -1891,6 +1973,84 @@ class Commands:
         """
 
         command: List = ["HSETNX", key, field, value]
+
+        return self.execute(command)
+
+    def hsetex(
+        self,
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
+        fnx: bool = False,
+        fxx: bool = False,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: bool = False,
+    ) -> ResponseT:
+        """
+        Sets the value of one or multiple fields in a hash with optional expiration support.
+
+        Returns the number of fields that were added.
+
+        :param fnx: Only set if field does not exist.
+        :param fxx: Only set if field exists.
+        :param ex: the number of seconds until the field(s) expire.
+        :param px: the number of milliseconds until the field(s) expire.
+        :param exat: the UNIX timestamp in seconds until the field(s) expire.
+        :param pxat: the UNIX timestamp in milliseconds until the field(s) expire.
+        :param keepttl: Retain the time to live associated with the field.
+
+        Example:
+        ```python
+        # Set a single field with expiration
+        assert redis.hsetex("myhash", "field1", "Hello", ex=60) == 1
+
+        # Set multiple fields with expiration
+        assert redis.hsetex("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        }, px=60000) == 2
+        ```
+
+        See https://redis.io/commands/hsetex
+        """
+        command: List = ["HSETEX", key]
+
+        if field is None and values is None:
+            raise Exception("'hsetex' with no key value pairs")
+
+        # Add conditional options
+        if fnx:
+            command.append("FNX")
+        elif fxx:
+            command.append("FXX")
+
+        # Add expiration options
+        if ex is not None:
+            command.extend(["EX", ex])
+        elif px is not None:
+            command.extend(["PX", px])
+        elif exat is not None:
+            command.extend(["EXAT", exat])
+        elif pxat is not None:
+            command.extend(["PXAT", pxat])
+        elif keepttl:
+            command.append("KEEPTTL")
+
+        # Build fields list
+        fields_data: List = []
+        if field and value is not None:
+            fields_data.extend([field, value])
+
+        if values is not None:
+            for f, v in values.items():
+                fields_data.extend([f, v])
+
+        # Add FIELDS numfields and field-value pairs
+        command.extend(["FIELDS", len(fields_data) // 2, *fields_data])
 
         return self.execute(command)
 
