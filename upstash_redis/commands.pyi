@@ -581,6 +581,13 @@ class Commands:
         limit: Optional[int] = None,
     ) -> str: ...
     def xack(self, key: str, group: str, *ids: str) -> int: ...
+    def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> List[int]: ...
     def xautoclaim(
         self,
         key: str,
@@ -601,6 +608,12 @@ class Commands:
         justid: Optional[bool] = None,
     ) -> Union[List[List[Any]], List[str]]: ...
     def xdel(self, key: str, *ids: str) -> int: ...
+    def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> List[int]: ...
     def xgroup_create(
         self,
         key: str,
@@ -1253,6 +1266,13 @@ class AsyncCommands:
         limit: Optional[int] = None,
     ) -> str: ...
     async def xack(self, key: str, group: str, *ids: str) -> int: ...
+    async def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> List[int]: ...
     async def xautoclaim(
         self,
         key: str,
@@ -1273,6 +1293,12 @@ class AsyncCommands:
         justid: Optional[bool] = None,
     ) -> Union[List[List[Any]], List[str]]: ...
     async def xdel(self, key: str, *ids: str) -> int: ...
+    async def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> List[int]: ...
     async def xgroup_create(
         self,
         key: str,

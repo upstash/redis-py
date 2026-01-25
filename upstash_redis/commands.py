@@ -4875,6 +4875,43 @@ class Commands:
         command: List = ["XACK", key, group] + list(ids)
         return self.execute(command)
 
+    def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> ResponseT:
+        """
+        Acknowledges and deletes one or more messages in a consumer group.
+
+        Returns a list indicating the result for each ID.
+
+        :param option: Optional deletion behavior - KEEPREF, DELREF, or ACKED (case-insensitive)
+
+        Example:
+        ```python
+        result = redis.xackdel("mystream", "mygroup", "1609459200000-0", "1609459200001-0")
+        print(result)  # List of results for each ID
+        
+        # With option
+        result = redis.xackdel("mystream", "mygroup", "1609459200000-0", option="DELREF")
+        ```
+
+        See https://redis.io/commands/xackdel
+        """
+        if not ids:
+            raise Exception("'xackdel' requires at least one ID")
+
+        command: List = ["XACKDEL", key, group]
+
+        if option:
+            command.append(option.upper())
+
+        command.extend(["IDS", len(ids), *ids])
+
+        return self.execute(command)
+
     def xdel(self, key: str, *ids: str) -> ResponseT:
         """
         Removes one or more entries from a stream.
@@ -4888,6 +4925,42 @@ class Commands:
         See https://redis.io/commands/xdel
         """
         command: List = ["XDEL", key] + list(ids)
+        return self.execute(command)
+
+    def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> ResponseT:
+        """
+        Extended delete for streams - removes entries with additional options.
+
+        Returns a list indicating the result for each ID.
+
+        :param option: Optional deletion behavior - KEEPREF, DELREF, or ACKED (case-insensitive)
+
+        Example:
+        ```python
+        result = redis.xdelex("mystream", "1609459200000-0", "1609459200001-0")
+        print(result)  # List of results for each ID
+        
+        # With option
+        result = redis.xdelex("mystream", "1609459200000-0", option="KEEPREF")
+        ```
+
+        See https://redis.io/commands/xdelex
+        """
+        if not ids:
+            raise Exception("'xdelex' requires at least one ID")
+
+        command: List = ["XDELEX", key]
+
+        if option:
+            command.append(option.upper())
+
+        command.extend(["IDS", len(ids), *ids])
+
         return self.execute(command)
 
     def xgroup_create(
