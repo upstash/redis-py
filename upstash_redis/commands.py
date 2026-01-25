@@ -113,7 +113,7 @@ class Commands:
         assert redis.bitop("AND", "dest", "key1", "key2") == 1
         assert redis.getbit("dest", 0) == 0
         assert redis.getbit("dest", 1) == 0
-        
+
         # New operations
         redis.bitop("DIFF", "dest", "key1", "key2")
         redis.bitop("DIFF1", "dest", "key1", "key2", "key3")
@@ -265,7 +265,7 @@ class Commands:
         ```python
         redis.client_setinfo("LIB-NAME", "redis-py")
         redis.client_setinfo("LIB-VER", "1.0.0")
-        
+
         # Case-insensitive attribute names
         redis.client_setinfo("lib-name", "redis-py(upstash_v1.0.0)")
         ```
@@ -1626,7 +1626,7 @@ class Commands:
 
         values = redis.hgetdel("myhash", "field1", "field2")
         assert values == ["Hello", "World"]
-        
+
         # Fields are now deleted
         assert redis.hget("myhash", "field1") is None
         ```
@@ -4960,7 +4960,7 @@ class Commands:
         ```python
         result = redis.xackdel("mystream", "mygroup", "1609459200000-0", "1609459200001-0")
         print(result)  # List of results for each ID
-        
+
         # With option
         result = redis.xackdel("mystream", "mygroup", "1609459200000-0", option="DELREF")
         ```
@@ -5011,7 +5011,7 @@ class Commands:
         ```python
         result = redis.xdelex("mystream", "1609459200000-0", "1609459200001-0")
         print(result)  # List of results for each ID
-        
+
         # With option
         result = redis.xdelex("mystream", "1609459200000-0", option="KEEPREF")
         ```

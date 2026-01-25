@@ -23,7 +23,7 @@ def test_hsetex_single_field_with_ex(redis: Redis):
 
     assert result == 1
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -39,7 +39,7 @@ def test_hsetex_single_field_with_px(redis: Redis):
 
     assert result == 1
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -56,7 +56,7 @@ def test_hsetex_single_field_with_exat(redis: Redis):
 
     assert result == 1
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -73,7 +73,7 @@ def test_hsetex_single_field_with_pxat(redis: Redis):
 
     assert result == 1
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -83,17 +83,17 @@ def test_hsetex_multiple_fields_with_ex(redis: Redis):
     hash_name = "myhash"
 
     # Set multiple fields with expiration
-    result = redis.hsetex(hash_name, values={
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3"
-    }, ex=2)
+    result = redis.hsetex(
+        hash_name,
+        values={"field1": "value1", "field2": "value2", "field3": "value3"},
+        ex=2,
+    )
 
     assert result >= 1  # Returns success indicator
     assert redis.hget(hash_name, "field1") == "value1"
     assert redis.hget(hash_name, "field2") == "value2"
     assert redis.hget(hash_name, "field3") == "value3"
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, "field1") is None
@@ -147,7 +147,7 @@ def test_hsetex_with_keepttl(redis: Redis):
 
     assert result >= 0  # Returns success indicator
     assert redis.hget(hash_name, field1) == "value2"
-    
+
     # Verify TTL is still set (should be close to 100)
     ttl = redis.httl(hash_name, [field1])
     assert ttl[0] > 90  # Allow some time for execution
@@ -169,7 +169,7 @@ def test_hsetex_mixed_field_and_values(redis: Redis):
         field="field1",
         value="value1",
         values={"field2": "value2", "field3": "value3"},
-        ex=60
+        ex=60,
     )
 
     assert result >= 1  # Returns success indicator
@@ -190,4 +190,3 @@ def test_hsetex_updates_existing_field(redis: Redis):
 
     assert result >= 0  # Returns success indicator
     assert redis.hget(hash_name, field1) == "updated"
-

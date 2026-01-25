@@ -115,4 +115,3 @@ def test_client_setinfo_multiple_calls(redis: Redis):
     except Exception:
         # If not supported, that's expected
         pass
-

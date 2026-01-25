@@ -206,4 +206,3 @@ def test_xdelex_partial_success(redis: Redis):
     # Stream should be empty now
     length = redis.xlen(key)
     assert length == 0
-

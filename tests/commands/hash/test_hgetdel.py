@@ -29,11 +29,9 @@ def test_hgetdel_single_field(redis: Redis):
 def test_hgetdel_multiple_fields(redis: Redis):
     hash_name = "myhash"
 
-    redis.hset(hash_name, values={
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3"
-    })
+    redis.hset(
+        hash_name, values={"field1": "value1", "field2": "value2", "field3": "value3"}
+    )
 
     # Get and delete multiple fields
     result = redis.hgetdel(hash_name, "field1", "field2")
@@ -85,4 +83,3 @@ def test_hgetdel_requires_at_least_one_field(redis: Redis):
 
     with pytest.raises(Exception, match="requires at least one field"):
         redis.hgetdel(hash_name)
-

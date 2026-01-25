@@ -29,11 +29,9 @@ def test_hgetex_single_field(redis: Redis):
 def test_hgetex_multiple_fields(redis: Redis):
     hash_name = "myhash"
 
-    redis.hset(hash_name, values={
-        "field1": "value1",
-        "field2": "value2",
-        "field3": "value3"
-    })
+    redis.hset(
+        hash_name, values={"field1": "value1", "field2": "value2", "field3": "value3"}
+    )
 
     # Get multiple field values
     result = redis.hgetex(hash_name, "field1", "field2")
@@ -44,10 +42,7 @@ def test_hgetex_multiple_fields(redis: Redis):
 def test_hgetex_with_ex(redis: Redis):
     hash_name = "myhash"
 
-    redis.hset(hash_name, values={
-        "field1": "value1",
-        "field2": "value2"
-    })
+    redis.hset(hash_name, values={"field1": "value1", "field2": "value2"})
 
     # Get values and set expiration in seconds
     result = redis.hgetex(hash_name, "field1", "field2", ex=2)
@@ -56,7 +51,7 @@ def test_hgetex_with_ex(redis: Redis):
     # Verify fields still exist
     assert redis.hget(hash_name, "field1") == "value1"
     assert redis.hget(hash_name, "field2") == "value2"
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, "field1") is None
@@ -66,10 +61,7 @@ def test_hgetex_with_ex(redis: Redis):
 def test_hgetex_with_px(redis: Redis):
     hash_name = "myhash"
 
-    redis.hset(hash_name, values={
-        "field1": "value1",
-        "field2": "value2"
-    })
+    redis.hset(hash_name, values={"field1": "value1", "field2": "value2"})
 
     # Get values and set expiration in milliseconds
     result = redis.hgetex(hash_name, "field1", "field2", px=2000)
@@ -77,7 +69,7 @@ def test_hgetex_with_px(redis: Redis):
     assert result == ["value1", "value2"]
     # Verify fields still exist
     assert redis.hget(hash_name, "field1") == "value1"
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, "field1") is None
@@ -97,7 +89,7 @@ def test_hgetex_with_exat(redis: Redis):
     assert result == [value1]
     # Verify field still exists
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -117,7 +109,7 @@ def test_hgetex_with_pxat(redis: Redis):
     assert result == [value1]
     # Verify field still exists
     assert redis.hget(hash_name, field1) == value1
-    
+
     # Wait for expiration
     time.sleep(3)
     assert redis.hget(hash_name, field1) is None
@@ -166,4 +158,3 @@ def test_hgetex_requires_at_least_one_field(redis: Redis):
 
     with pytest.raises(Exception, match="requires at least one field"):
         redis.hgetex(hash_name)
-

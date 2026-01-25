@@ -140,13 +140,13 @@ def test_xadd_auto_sequence_number(redis: Redis):
     # Use a specific timestamp with auto-sequence
     timestamp_ms = 1609459200000
     stream_id_pattern = f"{timestamp_ms}-*"
-    
+
     result = redis.xadd("mystream", stream_id_pattern, {"field": "value"})
-    
+
     # Verify the result has the correct timestamp
     assert isinstance(result, str)
     assert result.startswith(f"{timestamp_ms}-")
-    
+
     # The sequence number should be auto-generated (0 for first entry)
     parts = result.split("-")
     assert len(parts) == 2
@@ -158,22 +158,22 @@ def test_xadd_auto_sequence_multiple_entries(redis: Redis):
     """Test multiple XADD calls with same timestamp but auto-sequence"""
     timestamp_ms = 1609459200000
     stream_id_pattern = f"{timestamp_ms}-*"
-    
+
     # Add multiple entries with same timestamp
     id1 = redis.xadd("mystream", stream_id_pattern, {"field": "value1"})
     id2 = redis.xadd("mystream", stream_id_pattern, {"field": "value2"})
     id3 = redis.xadd("mystream", stream_id_pattern, {"field": "value3"})
-    
+
     # All should have same timestamp but different sequence numbers
     assert id1.startswith(f"{timestamp_ms}-")
     assert id2.startswith(f"{timestamp_ms}-")
     assert id3.startswith(f"{timestamp_ms}-")
-    
+
     # Sequence numbers should be incrementing
     seq1 = int(id1.split("-")[1])
     seq2 = int(id2.split("-")[1])
     seq3 = int(id3.split("-")[1])
-    
+
     assert seq2 > seq1
     assert seq3 > seq2
 
@@ -181,16 +181,16 @@ def test_xadd_auto_sequence_multiple_entries(redis: Redis):
 def test_xadd_auto_sequence_with_options(redis: Redis):
     """Test XADD with auto-sequence and other options like maxlen"""
     timestamp_ms = 1609459200000
-    
+
     # Add with auto-sequence and maxlen
     result = redis.xadd(
         "mystream",
         f"{timestamp_ms}-*",
         {"field": "value"},
         maxlen=10,
-        approximate_trim=True
+        approximate_trim=True,
     )
-    
+
     assert isinstance(result, str)
     assert result.startswith(f"{timestamp_ms}-")
 
@@ -199,17 +199,17 @@ def test_xadd_mixed_id_formats(redis: Redis):
     """Test XADD with different ID formats in same stream"""
     # Fully automatic
     id1 = redis.xadd("mystream", "*", {"type": "auto"})
-    
+
     # All should be valid stream IDs
     assert "-" in id1
-    
+
     # Auto-sequence with specific future timestamp (must be greater than id1)
     # Use a large timestamp to ensure it's greater than any auto-generated ID
     future_timestamp = 9999999999999
     id2 = redis.xadd("mystream", f"{future_timestamp}-*", {"type": "auto-seq"})
     assert "-" in id2
     assert id2.startswith(f"{future_timestamp}-")
-    
+
     # Verify all entries exist
     entries = redis.xrange("mystream")
     assert len(entries) == 2
@@ -220,7 +220,7 @@ def test_xadd_auto_sequence_format_validation(redis: Redis):
     # Valid format: <number>-*
     result = redis.xadd("mystream", "1234567890-*", {"field": "value"})
     assert result.startswith("1234567890-")
-    
+
     # The asterisk tells Redis to auto-generate the sequence
     parts = result.split("-")
     assert len(parts) == 2
