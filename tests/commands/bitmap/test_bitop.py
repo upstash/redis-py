@@ -83,28 +83,32 @@ def test_bitop_not(redis: Redis):
 
 
 def test_bitop_diff(redis: Redis):
-    """Test BITOP DIFF operation - bit set if in all sources"""
+    """Test BITOP DIFF operation - sets bits that are in X but not in any Y"""
     result = redis.bitop("DIFF", "dest", "key1", "key2", "key3")
-    assert result == 1
+    assert result == 1  # Returns length of result in bytes
     
-    # Only bit 2 is set in all three keys
-    assert redis.getbit("dest", 0) == 0
-    assert redis.getbit("dest", 1) == 0
-    assert redis.getbit("dest", 2) == 1
-    assert redis.getbit("dest", 3) == 0
-    assert redis.getbit("dest", 4) == 0
-
-
-def test_bitop_diff1(redis: Redis):
-    """Test BITOP DIFF1 operation - bit set if in first but not in others"""
-    result = redis.bitop("DIFF1", "dest", "key1", "key2", "key3")
-    assert result == 1
-    
+    # DIFF: bits that are in X but not in any Y
+    # key1: bits 0,1,2 | key2: bits 1,2,3 | key3: bits 2,3,4
     # Only bit 0 is in key1 but not in key2 or key3
-    assert redis.getbit("dest", 0) == 1
+    assert redis.getbit("dest", 0) == 1  # In key1, not in others
     assert redis.getbit("dest", 1) == 0  # In key1 and key2
     assert redis.getbit("dest", 2) == 0  # In all keys
     assert redis.getbit("dest", 3) == 0  # Not in key1
+
+
+def test_bitop_diff1(redis: Redis):
+    """Test BITOP DIFF1 operation - sets bits that are in Y but not in X"""
+    result = redis.bitop("DIFF1", "dest", "key1", "key2", "key3")
+    assert result == 1  # Returns length of result in bytes
+    
+    # DIFF1: bits that are in Y (key2, key3) but not in X (key1)
+    # key1: bits 0,1,2 | key2: bits 1,2,3 | key3: bits 2,3,4
+    # Bits 3 and 4 are in Y keys but not in key1
+    assert redis.getbit("dest", 0) == 0  # In key1
+    assert redis.getbit("dest", 1) == 0  # In key1
+    assert redis.getbit("dest", 2) == 0  # In key1
+    assert redis.getbit("dest", 3) == 1  # In Y (key2, key3) but not key1
+    assert redis.getbit("dest", 4) == 1  # In Y (key3) but not key1
 
 
 def test_bitop_andor(redis: Redis):
@@ -114,9 +118,11 @@ def test_bitop_andor(redis: Redis):
     assert result == 1
     
     # Bit must be in key1 AND (key2 OR key3)
+    # key1: bits 0,1,2 | key2: bits 1,2,3 | key3: bits 2,3,4
     assert redis.getbit("dest", 0) == 0  # In key1 but not in key2 or key3
     assert redis.getbit("dest", 1) == 1  # In key1 and key2
     assert redis.getbit("dest", 2) == 1  # In key1 and both key2, key3
+    assert redis.getbit("dest", 3) == 0  # Not in key1
 
 
 def test_bitop_one(redis: Redis):
@@ -124,7 +130,8 @@ def test_bitop_one(redis: Redis):
     result = redis.bitop("ONE", "dest", "key1", "key2", "key3")
     assert result == 1
     
-    # Count bits across all keys
+    # Count bits across all keys - must be in exactly one
+    # key1: bits 0,1,2 | key2: bits 1,2,3 | key3: bits 2,3,4
     assert redis.getbit("dest", 0) == 1  # Only in key1
     assert redis.getbit("dest", 1) == 0  # In key1 and key2 (not exactly one)
     assert redis.getbit("dest", 2) == 0  # In all three (not exactly one)
@@ -197,4 +204,22 @@ def test_bitop_empty_result(redis: Redis):
     
     result = redis.bitop("AND", "dest", "empty1", "empty2")
     assert result >= 1  # Should return the length
+
+
+def test_bitop_diff_requires_multiple_keys(redis: Redis):
+    """Test BITOP DIFF requires at least two source keys"""
+    with pytest.raises(Exception, match="BITOP DIFF must be called with at least two source keys"):
+        redis.bitop("DIFF", "dest", "key1")
+
+
+def test_bitop_diff1_requires_multiple_keys(redis: Redis):
+    """Test BITOP DIFF1 requires at least two source keys"""
+    with pytest.raises(Exception, match="BITOP DIFF1 must be called with at least two source keys"):
+        redis.bitop("DIFF1", "dest", "key1")
+
+
+def test_bitop_andor_requires_multiple_keys(redis: Redis):
+    """Test BITOP ANDOR requires at least two source keys"""
+    with pytest.raises(Exception, match="BITOP ANDOR must be called with at least two source keys"):
+        redis.bitop("ANDOR", "dest", "key1")
 

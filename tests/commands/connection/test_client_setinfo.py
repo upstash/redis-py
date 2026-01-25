@@ -5,8 +5,6 @@ Note: CLIENT commands may not be fully supported in Upstash REST API.
 These tests verify command structure and basic functionality.
 """
 
-import pytest
-
 from upstash_redis import Redis
 
 
@@ -90,9 +88,8 @@ def test_client_setinfo_empty_value(redis: Redis):
         result = redis.client_setinfo("LIB-NAME", "")
         # Empty value should be accepted
         assert result in ["OK", "ok", True]
-    except Exception as e:
+    except Exception:
         # Empty value might not be allowed, which is fine
-        error_msg = str(e).lower()
         # Just ensure no syntax error in command structure
         pass
 
@@ -115,7 +112,7 @@ def test_client_setinfo_multiple_calls(redis: Redis):
         # Both should succeed
         assert result1 in ["OK", "ok", True]
         assert result2 in ["OK", "ok", True]
-    except Exception as e:
+    except Exception:
         # If not supported, that's expected
         pass
 

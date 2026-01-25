@@ -67,7 +67,7 @@ def test_xackdel_with_keepref_option(redis: Redis):
 
     # Add messages
     id1 = redis.xadd(stream_key, "*", {"field": "value1"})
-    id2 = redis.xadd(stream_key, "*", {"field": "value2"})
+    redis.xadd(stream_key, "*", {"field": "value2"})  # id2
 
     # Create consumer group and read messages
     redis.xgroup_create(stream_key, group, "0")
@@ -87,7 +87,7 @@ def test_xackdel_with_delref_option(redis: Redis):
 
     # Add messages
     id1 = redis.xadd(stream_key, "*", {"field": "value1"})
-    id2 = redis.xadd(stream_key, "*", {"field": "value2"})
+    redis.xadd(stream_key, "*", {"field": "value2"})  # id2
 
     # Create consumer group and read messages
     redis.xgroup_create(stream_key, group, "0")

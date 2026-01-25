@@ -54,7 +54,7 @@ def test_xdelex_with_keepref_option(redis: Redis):
 
     # Add entries
     id1 = redis.xadd(key, "*", {"field": "value1"})
-    id2 = redis.xadd(key, "*", {"field": "value2"})
+    redis.xadd(key, "*", {"field": "value2"})  # id2
 
     # Delete with KEEPREF option
     result = redis.xdelex(key, id1, option="KEEPREF")
@@ -68,7 +68,7 @@ def test_xdelex_with_delref_option(redis: Redis):
 
     # Add entries
     id1 = redis.xadd(key, "*", {"field": "value1"})
-    id2 = redis.xadd(key, "*", {"field": "value2"})
+    redis.xadd(key, "*", {"field": "value2"})  # id2
 
     # Delete with DELREF option
     result = redis.xdelex(key, id1, option="DELREF")

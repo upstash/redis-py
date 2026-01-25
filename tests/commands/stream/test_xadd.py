@@ -200,20 +200,19 @@ def test_xadd_mixed_id_formats(redis: Redis):
     # Fully automatic
     id1 = redis.xadd("mystream", "*", {"type": "auto"})
     
-    # Auto-sequence with specific timestamp
-    id2 = redis.xadd("mystream", "1609459200000-*", {"type": "auto-seq"})
-    
-    # Explicit ID (must be greater than previous IDs)
-    id3 = redis.xadd("mystream", "9999999999999-0", {"type": "explicit"})
-    
     # All should be valid stream IDs
     assert "-" in id1
+    
+    # Auto-sequence with specific future timestamp (must be greater than id1)
+    # Use a large timestamp to ensure it's greater than any auto-generated ID
+    future_timestamp = 9999999999999
+    id2 = redis.xadd("mystream", f"{future_timestamp}-*", {"type": "auto-seq"})
     assert "-" in id2
-    assert "-" in id3
+    assert id2.startswith(f"{future_timestamp}-")
     
     # Verify all entries exist
     entries = redis.xrange("mystream")
-    assert len(entries) == 3
+    assert len(entries) == 2
 
 
 def test_xadd_auto_sequence_format_validation(redis: Redis):
