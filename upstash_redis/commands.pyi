@@ -12,7 +12,24 @@ class Commands:
     def bitfield_ro(self, key: str) -> "BitFieldROCommands": ...
     def bitop(
         self,
-        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
         destkey: str,
         *keys: str,
     ) -> int: ...
@@ -28,7 +45,9 @@ class Commands:
     def ping(self, message: Optional[str] = None) -> str: ...
     def echo(self, message: str) -> str: ...
     def client_setinfo(
-        self, attribute: Literal["LIB-NAME", "LIB-VER"], value: str
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
     ) -> str: ...
     def copy(self, source: str, destination: str, replace: bool = False) -> bool: ...
     def delete(self, *keys: str) -> int: ...
@@ -592,7 +611,9 @@ class Commands:
         key: str,
         group: str,
         *ids: str,
-        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
     ) -> List[int]: ...
     def xautoclaim(
         self,
@@ -618,7 +639,9 @@ class Commands:
         self,
         key: str,
         *ids: str,
-        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
     ) -> List[int]: ...
     def xgroup_create(
         self,
@@ -695,7 +718,24 @@ class AsyncCommands:
     def bitfield_ro(self, key: str) -> "AsyncBitFieldROCommands": ...
     async def bitop(
         self,
-        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
         destkey: str,
         *keys: str,
     ) -> int: ...
@@ -711,7 +751,9 @@ class AsyncCommands:
     async def ping(self, message: Optional[str] = None) -> str: ...
     async def echo(self, message: str) -> str: ...
     async def client_setinfo(
-        self, attribute: Literal["LIB-NAME", "LIB-VER"], value: str
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
     ) -> str: ...
     async def copy(
         self, source: str, destination: str, replace: bool = False
@@ -1283,7 +1325,9 @@ class AsyncCommands:
         key: str,
         group: str,
         *ids: str,
-        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
     ) -> List[int]: ...
     async def xautoclaim(
         self,
@@ -1309,7 +1353,9 @@ class AsyncCommands:
         self,
         key: str,
         *ids: str,
-        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
     ) -> List[int]: ...
     async def xgroup_create(
         self,
@@ -1429,7 +1475,24 @@ class PipelineCommands:
     def bitfield_ro(self, key: str) -> PipelineCommands: ...
     def bitop(
         self,
-        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
         destkey: str,
         *keys: str,
     ) -> PipelineCommands: ...
@@ -1447,7 +1510,9 @@ class PipelineCommands:
     def ping(self, message: Optional[str] = None) -> PipelineCommands: ...
     def echo(self, message: str) -> PipelineCommands: ...
     def client_setinfo(
-        self, attribute: Literal["LIB-NAME", "LIB-VER"], value: str
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
     ) -> PipelineCommands: ...
     def copy(
         self, source: str, destination: str, replace: bool = False
