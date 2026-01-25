@@ -11,7 +11,10 @@ class Commands:
     def bitfield(self, key: str) -> "BitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "BitFieldROCommands": ...
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        destkey: str,
+        *keys: str,
     ) -> int: ...
     def bitpos(
         self,
@@ -691,7 +694,10 @@ class AsyncCommands:
     def bitfield(self, key: str) -> "AsyncBitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "AsyncBitFieldROCommands": ...
     async def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        destkey: str,
+        *keys: str,
     ) -> int: ...
     async def bitpos(
         self,
@@ -1422,7 +1428,10 @@ class PipelineCommands:
     def bitfield(self, key: str) -> PipelineCommands: ...
     def bitfield_ro(self, key: str) -> PipelineCommands: ...
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        destkey: str,
+        *keys: str,
     ) -> PipelineCommands: ...
     def bitpos(
         self,

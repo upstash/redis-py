@@ -85,11 +85,24 @@ class Commands:
         return BitFieldROCommands(key=key, client=self)
 
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        destkey: str,
+        *keys: str,
     ) -> ResponseT:
         """
         Performs a bitwise operation between multiple keys (containing string values) and stores the result in the
         destination key.
+
+        Supported operations:
+        - AND: A bit is set if it's set in all source keys
+        - OR: A bit is set if it's set in at least one source key
+        - XOR: A bit is set if it's set in an odd number of source keys
+        - NOT: Inverts the bits of a single source key
+        - DIFF: A bit is set only if it's set in all source bitmaps
+        - DIFF1: A bit is set if it's set in the first key but not in any of the other keys
+        - ANDOR: A bit is set if it's set in X and also in one or more of Y1, Y2, ...
+        - ONE: A bit is set if it's set in exactly one source key
 
         Example:
         ```python
@@ -100,6 +113,12 @@ class Commands:
         assert redis.bitop("AND", "dest", "key1", "key2") == 1
         assert redis.getbit("dest", 0) == 0
         assert redis.getbit("dest", 1) == 0
+        
+        # New operations
+        redis.bitop("DIFF", "dest", "key1", "key2")
+        redis.bitop("DIFF1", "dest", "key1", "key2", "key3")
+        redis.bitop("ANDOR", "dest", "keyX", "keyY1", "keyY2")
+        redis.bitop("ONE", "dest", "key1", "key2", "key3")
         ```
 
         See https://redis.io/commands/bitop
@@ -110,7 +129,7 @@ class Commands:
 
         if operation == "NOT" and len(keys) > 1:
             raise Exception(
-                'The "NOT " operation takes only one source key as argument.'
+                'The "NOT" operation takes only one source key as argument.'
             )
 
         command: List = ["BITOP", operation, destkey, *keys]
