@@ -8,9 +8,10 @@ from pytest import mark
 from upstash_redis.asyncio import Redis
 
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def flush_db(async_redis: Redis):
     await async_redis.flushdb()
+    yield
 
 
 @mark.asyncio
@@ -34,8 +35,8 @@ async def test_xackdel_single_message(async_redis: Redis) -> None:
 @mark.asyncio
 async def test_xackdel_multiple_messages(async_redis: Redis) -> None:
     """Test XACKDEL with multiple messages"""
-    stream_key = "test_stream"
-    group = "test_group"
+    stream_key = "test_stream_multiple"
+    group = "test_group_multiple"
     consumer = "test_consumer"
 
     id1 = await async_redis.xadd(stream_key, "*", {"field": "value1"})
@@ -53,8 +54,8 @@ async def test_xackdel_multiple_messages(async_redis: Redis) -> None:
 @mark.asyncio
 async def test_xackdel_with_keepref_option(async_redis: Redis) -> None:
     """Test XACKDEL with KEEPREF option"""
-    stream_key = "test_stream"
-    group = "test_group"
+    stream_key = "test_stream_keepref"
+    group = "test_group_keepref"
     consumer = "test_consumer"
 
     id1 = await async_redis.xadd(stream_key, "*", {"field": "value1"})
@@ -71,8 +72,8 @@ async def test_xackdel_with_keepref_option(async_redis: Redis) -> None:
 @mark.asyncio
 async def test_xackdel_with_acked_option(async_redis: Redis) -> None:
     """Test XACKDEL with ACKED option"""
-    stream_key = "test_stream"
-    group = "test_group"
+    stream_key = "test_stream_acked"
+    group = "test_group_acked"
     consumer = "test_consumer"
 
     id1 = await async_redis.xadd(stream_key, "*", {"field": "value1"})

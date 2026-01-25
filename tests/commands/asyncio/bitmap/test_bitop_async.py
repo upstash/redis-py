@@ -5,15 +5,15 @@ from tests.execute_on_http import execute_on_http
 from upstash_redis.asyncio import Redis
 
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def setup_test_data(async_redis: Redis):
     """Setup test data for bitop operations"""
-    await async_redis.flushdb()
-    # Setup source strings for original tests
+    # Setup source strings for original tests (without flushing entire DB)
     await async_redis.set("string_as_bitop_source_1", "1234")
     await async_redis.set("string_as_bitop_source_2", "ABCD")
     yield
-    await async_redis.flushdb()
+    # Cleanup only our test keys
+    await async_redis.delete("string_as_bitop_source_1", "string_as_bitop_source_2")
 
 
 @mark.asyncio

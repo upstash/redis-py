@@ -8,9 +8,10 @@ from pytest import mark
 from upstash_redis.asyncio import Redis
 
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def flush_db(async_redis: Redis):
     await async_redis.flushdb()
+    yield
 
 
 @mark.asyncio
@@ -58,10 +59,11 @@ async def test_hgetdel_non_existent_field(async_redis: Redis) -> None:
 @mark.asyncio
 async def test_hgetdel_deletes_hash_when_empty(async_redis: Redis) -> None:
     """Test that HGETDEL deletes the hash when the last field is removed"""
-    await async_redis.hset("myhash", "field1", "value1")
+    hash_key = "myhash_deletes_when_empty"
+    await async_redis.hset(hash_key, "field1", "value1")
 
-    result = await async_redis.hgetdel("myhash", "field1")
+    result = await async_redis.hgetdel(hash_key, "field1")
 
     # Returns list of values (Redis raw format)
     assert result == ["value1"]
-    assert await async_redis.exists("myhash") == 0
+    assert await async_redis.exists(hash_key) == 0

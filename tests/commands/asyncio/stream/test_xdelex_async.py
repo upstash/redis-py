@@ -8,9 +8,10 @@ from pytest import mark
 from upstash_redis.asyncio import Redis
 
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def flush_db(async_redis: Redis):
     await async_redis.flushdb()
+    yield
 
 
 @mark.asyncio
