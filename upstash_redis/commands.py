@@ -4861,10 +4861,33 @@ class Commands:
         """
         Adds an entry to a stream.
 
+        Stream ID formats:
+        - "*" - Fully automatic ID generation (Redis generates both timestamp and sequence)
+        - "<ms>-<seq>" - Explicit ID (e.g., "1526919030474-55")
+        - "<ms>-*" - Auto-generate sequence number for the given millisecond timestamp (Redis 8+)
+
+        :param id: Stream ID - use "*" for full auto-generation, "<ms>-*" for auto-sequence (Redis 8+), or explicit ID
+        :param maxlen: Maximum stream length (older entries are trimmed)
+        :param approximate_trim: Use approximate trimming (~) for better performance
+        :param nomkstream: Don't create stream if it doesn't exist
+        :param minid: Minimum ID to keep (entries with smaller IDs are trimmed)
+        :param limit: Maximum number of entries to evict during trimming
+
         Example:
         ```python
+        # Fully automatic ID
         stream_id = redis.xadd("mystream", "*", {"field1": "value1", "field2": "value2"})
         print(stream_id)  # e.g., "1609459200000-0"
+
+        # Auto-generate sequence number for specific timestamp (Redis 8+)
+        stream_id = redis.xadd("mystream", "1609459200000-*", {"field": "value"})
+        print(stream_id)  # e.g., "1609459200000-0" (sequence auto-generated)
+
+        # Explicit ID
+        stream_id = redis.xadd("mystream", "1609459200000-55", {"field": "value"})
+
+        # With trimming options
+        stream_id = redis.xadd("mystream", "*", {"field": "value"}, maxlen=1000)
         ```
 
         See https://redis.io/commands/xadd
