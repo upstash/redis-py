@@ -31,6 +31,7 @@ async def test_not_not_operation(async_redis: Redis) -> None:
     # Verify the result exists
     result = await execute_on_http("GET", "bitop_destination_1")
     assert result is not None
+    assert isinstance(result, str)
     assert len(result) == 4
 
 
