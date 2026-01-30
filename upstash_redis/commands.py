@@ -99,10 +99,10 @@ class Commands:
         - OR: A bit is set if it's set in at least one source key
         - XOR: A bit is set if it's set in an odd number of source keys
         - NOT: Inverts the bits of a single source key
-        - DIFF: A bit is set only if it's set in all source bitmaps
-        - DIFF1: A bit is set if it's set in the first key but not in any of the other keys
-        - ANDOR: A bit is set if it's set in X and also in one or more of Y1, Y2, ...
-        - ONE: A bit is set if it's set in exactly one source key
+        - DIFF: A bit in destkey is set if it is set in X, but not in any of Y1, Y2, ...
+        - DIFF1: A bit in destkey is set if it is set in one or more of Y1, Y2, ..., but not in X.
+        - ANDOR: A bit in destkey is set if it is set in X and also in one or more of Y1, Y2, ....
+        - ONE: A bit in destkey is set if it is set in exactly one of X1, X2, ....
 
         Example:
         ```python
@@ -2037,7 +2037,7 @@ class Commands:
         """
         Sets the value of one or multiple fields in a hash with optional expiration support.
 
-        Returns the number of fields that were added.
+        Returns 1 on success and 0 otherwise.
 
         :param fnx: Only set if field does not exist.
         :param fxx: Only set if field exists.
@@ -2086,7 +2086,7 @@ class Commands:
 
         # Build fields list
         fields_data: List = []
-        if field and value is not None:
+        if field is not None and value is not None:
             fields_data.extend([field, value])
 
         if values is not None:

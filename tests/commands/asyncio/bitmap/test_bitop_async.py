@@ -17,7 +17,7 @@ async def setup_test_data(async_redis: Redis):
 
 
 @mark.asyncio
-async def test_not_not_operation(async_redis: Redis) -> None:
+async def test_not_not_operation(async_redis: Redis, setup_test_data) -> None:
     assert (
         await async_redis.bitop(
             "AND",
@@ -44,7 +44,7 @@ async def test_without_source_keys(async_redis: Redis) -> None:
 
 
 @mark.asyncio
-async def test_not_with_more_than_one_source_key(async_redis: Redis) -> None:
+async def test_not_with_more_than_one_source_key(async_redis: Redis, setup_test_data) -> None:
     with raises(Exception) as exception:
         await async_redis.bitop(
             "NOT",
@@ -60,7 +60,7 @@ async def test_not_with_more_than_one_source_key(async_redis: Redis) -> None:
 
 
 @mark.asyncio
-async def test_not(async_redis: Redis) -> None:
+async def test_not(async_redis: Redis, setup_test_data) -> None:
     assert (
         await async_redis.bitop(
             "NOT", "bitop_destination_4", "string_as_bitop_source_1"
