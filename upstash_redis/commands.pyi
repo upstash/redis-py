@@ -10,6 +10,7 @@ from upstash_redis.search import (
     Order,
     HighlightOptions,
     CountResult,
+    ScoreFunc,
 )
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
 from upstash_redis.utils import GeoSearchResult
@@ -2070,6 +2071,7 @@ class SearchIndexCommands:
         order_by: Optional[Dict[str, Union[Order, str]]] = None,
         select: Optional[Dict[str, bool]] = None,
         highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
     ) -> List[QueryResult]: ...
     def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
     def drop(self) -> None: ...
@@ -2102,6 +2104,7 @@ class AsyncSearchIndexCommands:
         order_by: Optional[Dict[str, Union[Order, str]]] = None,
         select: Optional[Dict[str, bool]] = None,
         highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
     ) -> List[QueryResult]: ...
     async def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
     async def drop(self) -> None: ...

@@ -61,6 +61,65 @@ class Order(str, enum.Enum):
     DESC = "DESC"
 
 
+class ScoreModifier(str, enum.Enum):
+    """Score modifiers for field values."""
+
+    NONE = "NONE"
+    LOG = "LOG"
+    LOG1P = "LOG1P"
+    LOG2P = "LOG2P"
+    LN = "LN"
+    LN1P = "LN1P"
+    LN2P = "LN2P"
+    SQUARE = "SQUARE"
+    SQRT = "SQRT"
+    RECIPROCAL = "RECIPROCAL"
+
+class ScoreMode(str, enum.Enum):
+    """Score combination modes."""
+
+    SUM = "SUM"
+    MULTIPLY = "MULTIPLY"
+    REPLACE = "REPLACE"
+
+
+class CombineMode(str, enum.Enum):
+    """Combine modes for multiple field values."""
+
+    SUM = "SUM"
+    MULTIPLY = "MULTIPLY"
+
+
+class ScoreByField(TypedDict, total=False):
+    """Score function configuration for a single field."""
+
+    field: str
+    modifier: ScoreModifier
+    factor: Union[int, float]
+    missing: Union[int, float]
+    scoreMode: ScoreMode
+
+
+class MultipleField(TypedDict, total=False):
+    """Score function configuration for a field in multiple fields."""
+
+    field: str
+    modifier: ScoreModifier
+    factor: Union[int, float]
+    missing: Union[int, float]
+
+
+class ScoreByMultipleFields(TypedDict, total=False):
+    """Score function configuration for multiple fields."""
+
+    fields: List[Union[str, MultipleField]]
+    combineMode: CombineMode
+    scoreMode: ScoreMode
+
+
+ScoreFunc = Union[str, ScoreByField, ScoreByMultipleFields]
+
+
 # Query options
 class HighlightOptions(TypedDict, total=False):
     """Highlighting options for query results."""

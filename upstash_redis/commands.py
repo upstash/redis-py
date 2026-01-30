@@ -19,9 +19,11 @@ from upstash_redis.search import (
     FieldType,
     Order,
     HighlightOptions,
+    ScoreFunc,
 )
 from upstash_redis.typing import FloatMinMaxT, JSONValueT, ValueT
 from upstash_redis.utils import (
+    build_score_func,
     handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
@@ -5596,6 +5598,7 @@ class SearchIndexCommands:
         order_by: Optional[Dict[str, Union[Order, str]]] = None,
         select: Optional[Dict[str, bool]] = None,
         highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
     ) -> ResponseT:
         """
         Query the index with filters and options.
@@ -5634,6 +5637,10 @@ class SearchIndexCommands:
             if highlight["tags"]:
                 open_tag, close_tag = highlight["tags"]
                 command.extend(("TAGS", open_tag, close_tag))
+
+        if score_func:
+            command.append("SCOREFUNC")
+            build_score_func(command, score_func)
 
         return self.client.execute(command)
 

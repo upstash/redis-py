@@ -1,6 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, Literal, Optional
+from typing import Any, List, Literal, Optional, Dict
 
+from upstash_redis.search import ScoreFunc
 from upstash_redis.typing import FloatMinMaxT
 
 
@@ -127,3 +128,40 @@ def handle_zrangebylex_exceptions(
 
     if number_are_not_none(offset, count, number=1):
         raise Exception('Both "offset" and "count" must be specified.')
+
+
+def build_score_func(command: List, score_func: ScoreFunc) -> None:
+    """Build the SCOREFUNC portion of the command."""
+    if isinstance(score_func, str):
+        # Simple field name
+        command.extend(("FIELDVALUE", score_func))
+    elif "fields" in score_func:
+        # Multiple fields
+        if "combineMode" in score_func:
+            command.extend(("COMBINEMODE", score_func["combineMode"].upper()))
+        if "scoreMode" in score_func:
+            command.extend(("SCOREMODE", score_func["scoreMode"].upper()))
+
+        for field_spec in score_func["fields"]:
+            if isinstance(field_spec, str):
+                command.extend(("FIELDVALUE", field_spec))
+            else:
+                build_field_value(command, field_spec)
+    else:
+        # Single field with options
+        if "scoreMode" in score_func:
+            command.extend(("SCOREMODE", score_func["scoreMode"].upper()))
+        build_field_value(command, score_func)
+
+def build_field_value(
+    command: List, field_spec: Dict[str, Any]
+) -> None:
+    """Build a FIELDVALUE portion with modifiers."""
+    command.extend(("FIELDVALUE", field_spec["field"]))
+
+    if "modifier" in field_spec:
+        command.extend(("MODIFIER", field_spec["modifier"].upper()))
+    if "factor" in field_spec:
+        command.extend(("FACTOR", field_spec["factor"]))
+    if "missing" in field_spec:
+        command.extend(("MISSING", field_spec["missing"]))
