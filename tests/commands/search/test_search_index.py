@@ -287,6 +287,17 @@ class TestQueryString:
             assert r.key.startswith(string_index.name)
             assert r.score > 0.0
 
+    def test_query_text_smart(self, string_index: StringIndexFixture):
+        """Test querying with smart search for intelligent matching."""
+        index = string_index.index
+        result = index.query(filter={"name": {"$smart": "lapto"}})
+
+        # Smart search should find Laptop variants with partial term
+        assert len(result) >= 2
+        for r in result:
+            assert r.key.startswith(string_index.name)
+            assert r.score > 0.0
+
     def test_query_text_phrase(self, string_index: StringIndexFixture):
         """Test querying with phrase matching."""
         index = string_index.index

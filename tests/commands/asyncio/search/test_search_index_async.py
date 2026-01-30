@@ -144,6 +144,14 @@ class TestAsyncQuery:
         # Fuzzy search should find Laptop variants despite typo
         assert len(result) >= 2
 
+    async def test_query_text_smart(self, query_index: QueryIndexFixture):
+        """Test async querying with smart search."""
+        index = query_index.index
+        result = await index.query(filter={"name": {"$smart": "lapto"}})
+
+        # Smart search should find Laptop variants with partial term
+        assert len(result) >= 2
+
     async def test_query_text_phrase(self, query_index: QueryIndexFixture):
         """Test async querying with phrase matching."""
         index = query_index.index

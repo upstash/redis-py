@@ -124,6 +124,13 @@ class TestQueryJson:
 
         assert len(result) > 0
 
+    def test_query_json_smart(self, json_index: IndexFixture):
+        """Test querying JSON index with smart search."""
+        index = json_index.index
+        result = index.query(filter={"name": {"$smart": "lapto"}})
+
+        assert len(result) > 0
+
     def test_query_json_phrase(self, json_index: IndexFixture):
         """Test querying JSON index with phrase matching."""
         index = json_index.index

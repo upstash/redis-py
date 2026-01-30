@@ -292,14 +292,21 @@ print(f"  Found {len(results)} results despite typo")
 for result in results:
     print(f"    - {result.data['name']}")
 
+# Smart search (intelligent matching)
+print("\n2. Smart search for 'lapto' (partial term):")
+results = products_index.query(filter={"name": {"$smart": "lapto"}})
+print(f"  Found {len(results)} results with smart matching")
+for result in results:
+    print(f"    - {result.data['name']}")
+
 # Phrase search
-print("\n2. Phrase search for 'Wireless Mouse':")
+print("\n3. Phrase search for 'Wireless Mouse':")
 results = products_index.query(filter={"name": {"$phrase": "Wireless Mouse"}})
 for result in results:
     print(f"  Found: {result.data['name']}")
 
 # Range query
-print("\n3. Products priced between $10 and $100:")
+print("\n4. Products priced between $10 and $100:")
 results = products_index.query(
     filter={"price": {"$gte": 10, "$lte": 100}},
     order_by={"price": "ASC"},
