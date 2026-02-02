@@ -44,7 +44,9 @@ async def test_without_source_keys(async_redis: Redis) -> None:
 
 
 @mark.asyncio
-async def test_not_with_more_than_one_source_key(async_redis: Redis, setup_test_data) -> None:
+async def test_not_with_more_than_one_source_key(
+    async_redis: Redis, setup_test_data
+) -> None:
     with raises(Exception) as exception:
         await async_redis.bitop(
             "NOT",
