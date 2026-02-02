@@ -149,3 +149,66 @@ async def test_xadd_with_limit(async_redis: Redis):
     # The stream should be trimmed but might not reach exactly 50 due to limit
     length = await async_redis.xlen("mystream")
     assert length > 50  # Should be more than 50 due to limit constraint
+
+
+@pytest.mark.asyncio
+async def test_xadd_auto_sequence_number(async_redis: Redis):
+    """Test XADD with auto-sequence number format <ms>-* (Redis 8+)"""
+    # Use a specific timestamp with auto-sequence
+    timestamp_ms = 1609459200000
+    stream_id_pattern = f"{timestamp_ms}-*"
+
+    result = await async_redis.xadd("mystream", stream_id_pattern, {"field": "value"})
+
+    # Verify the result has the correct timestamp
+    assert isinstance(result, str)
+    assert result.startswith(f"{timestamp_ms}-")
+
+    # The sequence number should be auto-generated
+    parts = result.split("-")
+    assert len(parts) == 2
+    assert parts[0] == str(timestamp_ms)
+    assert parts[1].isdigit()
+
+
+@pytest.mark.asyncio
+async def test_xadd_auto_sequence_multiple_entries(async_redis: Redis):
+    """Test multiple XADD calls with same timestamp but auto-sequence"""
+    timestamp_ms = 1609459200000
+    stream_id_pattern = f"{timestamp_ms}-*"
+
+    # Add multiple entries with same timestamp
+    id1 = await async_redis.xadd("mystream", stream_id_pattern, {"field": "value1"})
+    id2 = await async_redis.xadd("mystream", stream_id_pattern, {"field": "value2"})
+    id3 = await async_redis.xadd("mystream", stream_id_pattern, {"field": "value3"})
+
+    # All should have same timestamp but different sequence numbers
+    assert id1.startswith(f"{timestamp_ms}-")
+    assert id2.startswith(f"{timestamp_ms}-")
+    assert id3.startswith(f"{timestamp_ms}-")
+
+    # Sequence numbers should be incrementing
+    seq1 = int(id1.split("-")[1])
+    seq2 = int(id2.split("-")[1])
+    seq3 = int(id3.split("-")[1])
+
+    assert seq2 > seq1
+    assert seq3 > seq2
+
+
+@pytest.mark.asyncio
+async def test_xadd_auto_sequence_with_options(async_redis: Redis):
+    """Test XADD with auto-sequence and other options like maxlen"""
+    timestamp_ms = 1609459200000
+
+    # Add with auto-sequence and maxlen
+    result = await async_redis.xadd(
+        "mystream",
+        f"{timestamp_ms}-*",
+        {"field": "value"},
+        maxlen=10,
+        approximate_trim=True,
+    )
+
+    assert isinstance(result, str)
+    assert result.startswith(f"{timestamp_ms}-")

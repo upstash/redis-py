@@ -85,11 +85,24 @@ class Commands:
         return BitFieldROCommands(key=key, client=self)
 
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal["AND", "OR", "XOR", "NOT", "DIFF", "DIFF1", "ANDOR", "ONE"],
+        destkey: str,
+        *keys: str,
     ) -> ResponseT:
         """
         Performs a bitwise operation between multiple keys (containing string values) and stores the result in the
         destination key.
+
+        Supported operations:
+        - AND: A bit is set if it's set in all source keys
+        - OR: A bit is set if it's set in at least one source key
+        - XOR: A bit is set if it's set in an odd number of source keys
+        - NOT: Inverts the bits of a single source key
+        - DIFF: A bit in destkey is set if it is set in X, but not in any of Y1, Y2, ...
+        - DIFF1: A bit in destkey is set if it is set in one or more of Y1, Y2, ..., but not in X.
+        - ANDOR: A bit in destkey is set if it is set in X and also in one or more of Y1, Y2, ....
+        - ONE: A bit in destkey is set if it is set in exactly one of X1, X2, ....
 
         Example:
         ```python
@@ -100,6 +113,12 @@ class Commands:
         assert redis.bitop("AND", "dest", "key1", "key2") == 1
         assert redis.getbit("dest", 0) == 0
         assert redis.getbit("dest", 1) == 0
+
+        # New operations
+        redis.bitop("DIFF", "dest", "key1", "key2")
+        redis.bitop("DIFF1", "dest", "key1", "key2", "key3")
+        redis.bitop("ANDOR", "dest", "keyX", "keyY1", "keyY2")
+        redis.bitop("ONE", "dest", "key1", "key2", "key3")
         ```
 
         See https://redis.io/commands/bitop
@@ -110,7 +129,7 @@ class Commands:
 
         if operation == "NOT" and len(keys) > 1:
             raise Exception(
-                'The "NOT " operation takes only one source key as argument.'
+                'The "NOT" operation takes only one source key as argument.'
             )
 
         command: List = ["BITOP", operation, destkey, *keys]
@@ -230,6 +249,31 @@ class Commands:
         """
 
         command: List = ["ECHO", message]
+
+        return self.execute(command)
+
+    def client_setinfo(
+        self, attribute: Literal["LIB-NAME", "LIB-VER"], value: str
+    ) -> ResponseT:
+        """
+        Sets client library name and version information.
+
+        :param attribute: Either "LIB-NAME" for library name or "LIB-VER" for library version (case-insensitive)
+        :param value: The value to set for the attribute
+
+        Example:
+        ```python
+        redis.client_setinfo("LIB-NAME", "redis-py")
+        redis.client_setinfo("LIB-VER", "1.0.0")
+
+        # Case-insensitive attribute names
+        redis.client_setinfo("lib-name", "redis-py(upstash_v1.0.0)")
+        ```
+
+        See https://redis.io/commands/client-setinfo
+        """
+
+        command: List = ["CLIENT", "SETINFO", attribute.upper(), value]
 
         return self.execute(command)
 
@@ -1568,6 +1612,88 @@ class Commands:
 
         return self.execute(command)
 
+    def hgetdel(self, key: str, *fields: str) -> ResponseT:
+        """
+        Returns the value of one or more fields and deletes them atomically from a hash.
+
+        When the last field is deleted, the key is also deleted.
+
+        Returns a list of values corresponding to the fields. Returns None for fields that do not exist.
+
+        Example:
+        ```python
+        redis.hset("myhash", values={"field1": "Hello", "field2": "World"})
+
+        values = redis.hgetdel("myhash", "field1", "field2")
+        assert values == ["Hello", "World"]
+
+        # Fields are now deleted
+        assert redis.hget("myhash", "field1") is None
+        ```
+
+        See https://redis.io/commands/hgetdel
+        """
+        if not fields:
+            raise Exception("'hgetdel' requires at least one field")
+
+        command: List = ["HGETDEL", key, "FIELDS", len(fields), *fields]
+
+        return self.execute(command)
+
+    def hgetex(
+        self,
+        key: str,
+        *fields: str,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> ResponseT:
+        """
+        Returns the values of one or more fields and optionally sets their expiration.
+
+        Returns a list of values corresponding to the fields. Returns None for fields that do not exist.
+
+        :param ex: the number of seconds until the field(s) expire.
+        :param px: the number of milliseconds until the field(s) expire.
+        :param exat: the UNIX timestamp in seconds until the field(s) expire.
+        :param pxat: the UNIX timestamp in milliseconds until the field(s) expire.
+        :param persist: Remove the expiration from the field(s).
+
+        Example:
+        ```python
+        redis.hset("myhash", values={"field1": "Hello", "field2": "World"})
+
+        # Get values and set expiration to 60 seconds
+        values = redis.hgetex("myhash", "field1", "field2", ex=60)
+        assert values == ["Hello", "World"]
+        ```
+
+        See https://redis.io/commands/hgetex
+        """
+        if not fields:
+            raise Exception("'hgetex' requires at least one field")
+
+        command: List = ["HGETEX", key]
+
+        # Add expiration options before FIELDS
+        if ex is not None:
+            command.extend(["EX", ex])
+        elif px is not None:
+            command.extend(["PX", px])
+        elif exat is not None:
+            command.extend(["EXAT", exat])
+        elif pxat is not None:
+            command.extend(["PXAT", pxat])
+        elif persist:
+            command.append("PERSIST")
+
+        # Add FIELDS keyword and field list
+        command.extend(["FIELDS", len(fields), *fields])
+
+        return self.execute(command)
+
     def hgetall(self, key: str) -> ResponseT:
         """
         Returns all fields and values of a hash.
@@ -1891,6 +2017,84 @@ class Commands:
         """
 
         command: List = ["HSETNX", key, field, value]
+
+        return self.execute(command)
+
+    def hsetex(
+        self,
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
+        fnx: bool = False,
+        fxx: bool = False,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: bool = False,
+    ) -> ResponseT:
+        """
+        Sets the value of one or multiple fields in a hash with optional expiration support.
+
+        Returns 1 on success and 0 otherwise.
+
+        :param fnx: Only set if field does not exist.
+        :param fxx: Only set if field exists.
+        :param ex: the number of seconds until the field(s) expire.
+        :param px: the number of milliseconds until the field(s) expire.
+        :param exat: the UNIX timestamp in seconds until the field(s) expire.
+        :param pxat: the UNIX timestamp in milliseconds until the field(s) expire.
+        :param keepttl: Retain the time to live associated with the field.
+
+        Example:
+        ```python
+        # Set a single field with expiration
+        assert redis.hsetex("myhash", "field1", "Hello", ex=60) == 1
+
+        # Set multiple fields with expiration
+        assert redis.hsetex("myhash", values={
+            "field1": "Hello",
+            "field2": "World"
+        }, px=60000) == 2
+        ```
+
+        See https://redis.io/commands/hsetex
+        """
+        command: List = ["HSETEX", key]
+
+        if field is None and values is None:
+            raise Exception("'hsetex' with no key value pairs")
+
+        # Add conditional options
+        if fnx:
+            command.append("FNX")
+        elif fxx:
+            command.append("FXX")
+
+        # Add expiration options
+        if ex is not None:
+            command.extend(["EX", ex])
+        elif px is not None:
+            command.extend(["PX", px])
+        elif exat is not None:
+            command.extend(["EXAT", exat])
+        elif pxat is not None:
+            command.extend(["PXAT", pxat])
+        elif keepttl:
+            command.append("KEEPTTL")
+
+        # Build fields list
+        fields_data: List = []
+        if field is not None and value is not None:
+            fields_data.extend([field, value])
+
+        if values is not None:
+            for f, v in values.items():
+                fields_data.extend([f, v])
+
+        # Add FIELDS numfields and field-value pairs
+        command.extend(["FIELDS", len(fields_data) // 2, *fields_data])
 
         return self.execute(command)
 
@@ -4657,10 +4861,33 @@ class Commands:
         """
         Adds an entry to a stream.
 
+        Stream ID formats:
+        - "*" - Fully automatic ID generation (Redis generates both timestamp and sequence)
+        - "<ms>-<seq>" - Explicit ID (e.g., "1526919030474-55")
+        - "<ms>-*" - Auto-generate sequence number for the given millisecond timestamp (Redis 8+)
+
+        :param id: Stream ID - use "*" for full auto-generation, "<ms>-*" for auto-sequence (Redis 8+), or explicit ID
+        :param maxlen: Maximum stream length (older entries are trimmed)
+        :param approximate_trim: Use approximate trimming (~) for better performance
+        :param nomkstream: Don't create stream if it doesn't exist
+        :param minid: Minimum ID to keep (entries with smaller IDs are trimmed)
+        :param limit: Maximum number of entries to evict during trimming
+
         Example:
         ```python
+        # Fully automatic ID
         stream_id = redis.xadd("mystream", "*", {"field1": "value1", "field2": "value2"})
         print(stream_id)  # e.g., "1609459200000-0"
+
+        # Auto-generate sequence number for specific timestamp (Redis 8+)
+        stream_id = redis.xadd("mystream", "1609459200000-*", {"field": "value"})
+        print(stream_id)  # e.g., "1609459200000-0" (sequence auto-generated)
+
+        # Explicit ID
+        stream_id = redis.xadd("mystream", "1609459200000-55", {"field": "value"})
+
+        # With trimming options
+        stream_id = redis.xadd("mystream", "*", {"field": "value"}, maxlen=1000)
         ```
 
         See https://redis.io/commands/xadd
@@ -4715,6 +4942,43 @@ class Commands:
         command: List = ["XACK", key, group] + list(ids)
         return self.execute(command)
 
+    def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> ResponseT:
+        """
+        Acknowledges and deletes one or more messages in a consumer group.
+
+        Returns a list indicating the result for each ID.
+
+        :param option: Optional deletion behavior - KEEPREF, DELREF, or ACKED (case-insensitive)
+
+        Example:
+        ```python
+        result = redis.xackdel("mystream", "mygroup", "1609459200000-0", "1609459200001-0")
+        print(result)  # List of results for each ID
+
+        # With option
+        result = redis.xackdel("mystream", "mygroup", "1609459200000-0", option="DELREF")
+        ```
+
+        See https://redis.io/commands/xackdel
+        """
+        if not ids:
+            raise Exception("'xackdel' requires at least one ID")
+
+        command: List = ["XACKDEL", key, group]
+
+        if option:
+            command.append(option.upper())
+
+        command.extend(["IDS", len(ids), *ids])
+
+        return self.execute(command)
+
     def xdel(self, key: str, *ids: str) -> ResponseT:
         """
         Removes one or more entries from a stream.
@@ -4728,6 +4992,42 @@ class Commands:
         See https://redis.io/commands/xdel
         """
         command: List = ["XDEL", key] + list(ids)
+        return self.execute(command)
+
+    def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[Literal["KEEPREF", "DELREF", "ACKED"]] = None,
+    ) -> ResponseT:
+        """
+        Extended delete for streams - removes entries with additional options.
+
+        Returns a list indicating the result for each ID.
+
+        :param option: Optional deletion behavior - KEEPREF, DELREF, or ACKED (case-insensitive)
+
+        Example:
+        ```python
+        result = redis.xdelex("mystream", "1609459200000-0", "1609459200001-0")
+        print(result)  # List of results for each ID
+
+        # With option
+        result = redis.xdelex("mystream", "1609459200000-0", option="KEEPREF")
+        ```
+
+        See https://redis.io/commands/xdelex
+        """
+        if not ids:
+            raise Exception("'xdelex' requires at least one ID")
+
+        command: List = ["XDELEX", key]
+
+        if option:
+            command.append(option.upper())
+
+        command.extend(["IDS", len(ids), *ids])
+
         return self.execute(command)
 
     def xgroup_create(

@@ -11,7 +11,27 @@ class Commands:
     def bitfield(self, key: str) -> "BitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "BitFieldROCommands": ...
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
+        destkey: str,
+        *keys: str,
     ) -> int: ...
     def bitpos(
         self,
@@ -24,6 +44,11 @@ class Commands:
     def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int: ...
     def ping(self, message: Optional[str] = None) -> str: ...
     def echo(self, message: str) -> str: ...
+    def client_setinfo(
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
+    ) -> str: ...
     def copy(self, source: str, destination: str, replace: bool = False) -> bool: ...
     def delete(self, *keys: str) -> int: ...
     def exists(self, *keys: str) -> int: ...
@@ -238,6 +263,17 @@ class Commands:
     def hpexpiretime(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
     def hpersist(self, key: str, fields: Union[str, List[str]]) -> int: ...
     def hget(self, key: str, field: str) -> Optional[str]: ...
+    def hgetdel(self, key: str, *fields: str) -> List[Optional[str]]: ...
+    def hgetex(
+        self,
+        key: str,
+        *fields: str,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> List[Optional[str]]: ...
     def hgetall(self, key: str) -> Dict[str, str]: ...
     def hincrby(self, key: str, field: str, increment: int) -> int: ...
     def hincrbyfloat(self, key: str, field: str, increment: float) -> float: ...
@@ -263,6 +299,20 @@ class Commands:
         values: Optional[Mapping[str, ValueT]] = None,
     ) -> int: ...
     def hsetnx(self, key: str, field: str, value: ValueT) -> bool: ...
+    def hsetex(
+        self,
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
+        fnx: bool = False,
+        fxx: bool = False,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: bool = False,
+    ) -> int: ...
     def hstrlen(self, key: str, field: str) -> int: ...
     def hvals(self, key: str) -> List[str]: ...
     def pfadd(self, key: str, *elements: ValueT) -> bool: ...
@@ -556,6 +606,15 @@ class Commands:
         limit: Optional[int] = None,
     ) -> str: ...
     def xack(self, key: str, group: str, *ids: str) -> int: ...
+    def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
+    ) -> List[int]: ...
     def xautoclaim(
         self,
         key: str,
@@ -576,6 +635,14 @@ class Commands:
         justid: Optional[bool] = None,
     ) -> Union[List[List[Any]], List[str]]: ...
     def xdel(self, key: str, *ids: str) -> int: ...
+    def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
+    ) -> List[int]: ...
     def xgroup_create(
         self,
         key: str,
@@ -650,7 +717,27 @@ class AsyncCommands:
     def bitfield(self, key: str) -> "AsyncBitFieldCommands": ...
     def bitfield_ro(self, key: str) -> "AsyncBitFieldROCommands": ...
     async def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
+        destkey: str,
+        *keys: str,
     ) -> int: ...
     async def bitpos(
         self,
@@ -663,6 +750,11 @@ class AsyncCommands:
     async def setbit(self, key: str, offset: int, value: Literal[0, 1]) -> int: ...
     async def ping(self, message: Optional[str] = None) -> str: ...
     async def echo(self, message: str) -> str: ...
+    async def client_setinfo(
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
+    ) -> str: ...
     async def copy(
         self, source: str, destination: str, replace: bool = False
     ) -> bool: ...
@@ -883,6 +975,17 @@ class AsyncCommands:
     ) -> List[int]: ...
     async def hpersist(self, key: str, fields: Union[str, List[str]]) -> List[int]: ...
     async def hget(self, key: str, field: str) -> Optional[str]: ...
+    async def hgetdel(self, key: str, *fields: str) -> List[Optional[str]]: ...
+    async def hgetex(
+        self,
+        key: str,
+        *fields: str,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> List[Optional[str]]: ...
     async def hgetall(self, key: str) -> Dict[str, str]: ...
     async def hincrby(self, key: str, field: str, increment: int) -> int: ...
     async def hincrbyfloat(self, key: str, field: str, increment: float) -> float: ...
@@ -908,6 +1011,20 @@ class AsyncCommands:
         values: Optional[Mapping[str, ValueT]] = None,
     ) -> int: ...
     async def hsetnx(self, key: str, field: str, value: ValueT) -> bool: ...
+    async def hsetex(
+        self,
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
+        fnx: bool = False,
+        fxx: bool = False,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: bool = False,
+    ) -> int: ...
     async def hstrlen(self, key: str, field: str) -> int: ...
     async def hvals(self, key: str) -> List[str]: ...
     async def pfadd(self, key: str, *elements: ValueT) -> bool: ...
@@ -1203,6 +1320,15 @@ class AsyncCommands:
         limit: Optional[int] = None,
     ) -> str: ...
     async def xack(self, key: str, group: str, *ids: str) -> int: ...
+    async def xackdel(
+        self,
+        key: str,
+        group: str,
+        *ids: str,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
+    ) -> List[int]: ...
     async def xautoclaim(
         self,
         key: str,
@@ -1223,6 +1349,14 @@ class AsyncCommands:
         justid: Optional[bool] = None,
     ) -> Union[List[List[Any]], List[str]]: ...
     async def xdel(self, key: str, *ids: str) -> int: ...
+    async def xdelex(
+        self,
+        key: str,
+        *ids: str,
+        option: Optional[
+            Literal["KEEPREF", "DELREF", "ACKED", "keepref", "delref", "acked"]
+        ] = None,
+    ) -> List[int]: ...
     async def xgroup_create(
         self,
         key: str,
@@ -1340,7 +1474,27 @@ class PipelineCommands:
     def bitfield(self, key: str) -> PipelineCommands: ...
     def bitfield_ro(self, key: str) -> PipelineCommands: ...
     def bitop(
-        self, operation: Literal["AND", "OR", "XOR", "NOT"], destkey: str, *keys: str
+        self,
+        operation: Literal[
+            "AND",
+            "OR",
+            "XOR",
+            "NOT",
+            "DIFF",
+            "DIFF1",
+            "ANDOR",
+            "ONE",
+            "and",
+            "or",
+            "xor",
+            "not",
+            "diff",
+            "diff1",
+            "andor",
+            "one",
+        ],
+        destkey: str,
+        *keys: str,
     ) -> PipelineCommands: ...
     def bitpos(
         self,
@@ -1355,6 +1509,11 @@ class PipelineCommands:
     ) -> PipelineCommands: ...
     def ping(self, message: Optional[str] = None) -> PipelineCommands: ...
     def echo(self, message: str) -> PipelineCommands: ...
+    def client_setinfo(
+        self,
+        attribute: Literal["LIB-NAME", "LIB-VER", "lib-name", "lib-ver"],
+        value: str,
+    ) -> PipelineCommands: ...
     def copy(
         self, source: str, destination: str, replace: bool = False
     ) -> PipelineCommands: ...
@@ -1573,6 +1732,17 @@ class PipelineCommands:
     ) -> PipelineCommands: ...
     def hpersist(self, key: str, fields: Union[str, List[str]]) -> PipelineCommands: ...
     def hget(self, key: str, field: str) -> PipelineCommands: ...
+    def hgetdel(self, key: str, *fields: str) -> PipelineCommands: ...
+    def hgetex(
+        self,
+        key: str,
+        *fields: str,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        persist: Optional[bool] = None,
+    ) -> PipelineCommands: ...
     def hgetall(self, key: str) -> PipelineCommands: ...
     def hincrby(self, key: str, field: str, increment: int) -> PipelineCommands: ...
     def hincrbyfloat(
@@ -1600,6 +1770,20 @@ class PipelineCommands:
         values: Optional[Mapping[str, ValueT]] = None,
     ) -> PipelineCommands: ...
     def hsetnx(self, key: str, field: str, value: ValueT) -> PipelineCommands: ...
+    def hsetex(
+        self,
+        key: str,
+        field: Optional[str] = None,
+        value: Optional[ValueT] = None,
+        values: Optional[Mapping[str, ValueT]] = None,
+        fnx: bool = False,
+        fxx: bool = False,
+        ex: Optional[int] = None,
+        px: Optional[int] = None,
+        exat: Optional[int] = None,
+        pxat: Optional[int] = None,
+        keepttl: bool = False,
+    ) -> PipelineCommands: ...
     def hstrlen(self, key: str, field: str) -> PipelineCommands: ...
     def hvals(self, key: str) -> PipelineCommands: ...
     def pfadd(self, key: str, *elements: ValueT) -> PipelineCommands: ...
