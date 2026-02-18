@@ -7,6 +7,7 @@ import pytest
 
 from upstash_redis import Redis
 from upstash_redis.commands import SearchIndexCommands
+from upstash_redis.search import CombineMode, ScoreMode, ScoreModifier
 
 
 class ScoreFuncFixture(TypedDict):
@@ -103,7 +104,7 @@ class TestScoreFunctionQueries:
         index = scorefunc_index["index"]
         result = index.query(
             filter={"name": {"$eq": "Laptop"}},
-            score_func={"field": "popularity", "scoreMode": "REPLACE"},
+            score_func={"field": "popularity", "scoreMode": ScoreMode.REPLACE},
         )
 
         assert len(result) == 4
@@ -113,16 +114,18 @@ class TestScoreFunctionQueries:
         assert scores_by_name["Laptop Pro"] == pytest.approx(1000.0)
         assert scores_by_name["Laptop Basic"] == pytest.approx(500.0)
 
-    def test_query_with_scorefunc_using_modifier(self, scorefunc_index: ScoreFuncFixture):
+    def test_query_with_scorefunc_using_modifier(
+        self, scorefunc_index: ScoreFuncFixture
+    ):
         """Test querying with scoreFunc using modifier."""
         index = scorefunc_index["index"]
         result = index.query(
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "field": "popularity",
-                "modifier": "LOG1P",
+                "modifier": ScoreModifier.LOG1P,
                 "factor": 2,
-                "scoreMode": "REPLACE",
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 
@@ -141,7 +144,7 @@ class TestScoreFunctionQueries:
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "field": "popularity",
-                "scoreMode": "REPLACE",
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 
@@ -151,18 +154,20 @@ class TestScoreFunctionQueries:
         assert scores_by_name["Laptop Pro"] == pytest.approx(1000.0)
         assert scores_by_name["Laptop Basic"] == pytest.approx(500.0)
 
-    def test_query_with_multiple_field_values_combined(self, scorefunc_index: ScoreFuncFixture):
+    def test_query_with_multiple_field_values_combined(
+        self, scorefunc_index: ScoreFuncFixture
+    ):
         """Test querying with multiple field values combined."""
         index = scorefunc_index["index"]
         result = index.query(
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "fields": [
-                    {"field": "popularity", "modifier": "LOG1P"},
-                    {"field": "recency", "modifier": "LOG1P"},
+                    {"field": "popularity", "modifier": ScoreModifier.LOG1P},
+                    {"field": "recency", "modifier": ScoreModifier.LOG1P},
                 ],
-                "combineMode": "SUM",
-                "scoreMode": "REPLACE",
+                "combineMode": CombineMode.SUM,
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 
@@ -178,16 +183,18 @@ class TestScoreFunctionQueries:
             math.log10(1 + 500) + math.log10(1 + 200)
         )
 
-    def test_query_with_scorefunc_modifier_and_missing(self, scorefunc_index: ScoreFuncFixture):
+    def test_query_with_scorefunc_modifier_and_missing(
+        self, scorefunc_index: ScoreFuncFixture
+    ):
         """Test querying with scoreFunc using modifier and missing value."""
         index = scorefunc_index["index"]
         result = index.query(
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "field": "popularity",
-                "modifier": "LOG1P",
+                "modifier": ScoreModifier.LOG1P,
                 "missing": 1,
-                "scoreMode": "REPLACE",
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 
@@ -195,15 +202,17 @@ class TestScoreFunctionQueries:
         scores_by_name = {r.data["name"]: r.score for r in result if r.data}
         assert scores_by_name["Laptop Missing"] == pytest.approx(math.log10(1 + 1))
 
-    def test_query_with_multiple_fields_and_scoremode(self, scorefunc_index: ScoreFuncFixture):
+    def test_query_with_multiple_fields_and_scoremode(
+        self, scorefunc_index: ScoreFuncFixture
+    ):
         """Test querying with multiple field values and scoreMode."""
         index = scorefunc_index["index"]
         result = index.query(
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "fields": ["popularity", "recency"],
-                "combineMode": "MULTIPLY",
-                "scoreMode": "REPLACE",
+                "combineMode": CombineMode.MULTIPLY,
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 

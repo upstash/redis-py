@@ -3,6 +3,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from upstash_redis.commands import SearchIndexCommands
 from upstash_redis.search import (
+    deserialize_aggregate_response,
     deserialize_describe_response,
     deserialize_query_response,
     CountResult,
@@ -232,13 +233,17 @@ def format_xpending_response(res, command, _):
     return res
 
 
-def format_search_query_response(res: List[Any], _, __):
+def format_search_query_response(res: Any, _, __):
     """Format SEARCH.QUERY response into structured results."""
+    if not isinstance(res, list):
+        return []
     return deserialize_query_response(res)
 
 
-def format_search_describe_response(res: List[Any], _, __):
+def format_search_describe_response(res: Any, _, __):
     """Format SEARCH.DESCRIBE response into index description."""
+    if not isinstance(res, list) or len(res) == 0:
+        return None
     return deserialize_describe_response(res)
 
 
@@ -256,6 +261,35 @@ def format_search_create_response(res: Any, command: List[str], client: Any):
         return res
 
     return SearchIndexCommands(client, index_name)
+
+
+def format_search_aggregate_response(res: Any, _, __):
+    """Format SEARCH.AGGREGATE response into parsed aggregation results."""
+    return deserialize_aggregate_response(res)
+
+
+def format_search_alias_add_response(res: Any, _, __):
+    """Format SEARCH.ALIASADD response. Returns 1 (created) or 2 (updated)."""
+    return int(res)
+
+
+def format_search_alias_del_response(res: Any, _, __):
+    """Format SEARCH.ALIASDEL response. Returns 1 (deleted) or 0 (not found)."""
+    return int(res)
+
+
+def format_search_list_aliases_response(res: Any, _, __):
+    """Format SEARCH.LISTALIASES response into {alias: index_name} dict."""
+    if res == 0 or (isinstance(res, list) and len(res) == 0):
+        return {}
+    if not isinstance(res, list):
+        return {}
+
+    aliases: Dict[str, str] = {}
+    for pair in res:
+        if isinstance(pair, list) and len(pair) == 2:
+            aliases[pair[0]] = pair[1]
+    return aliases
 
 
 FORMATTERS: Dict[str, Callable] = {
@@ -337,6 +371,10 @@ FORMATTERS: Dict[str, Callable] = {
     "SEARCH.QUERY": format_search_query_response,
     "SEARCH.DESCRIBE": format_search_describe_response,
     "SEARCH.COUNT": format_search_count_response,
+    "SEARCH.AGGREGATE": format_search_aggregate_response,
+    "SEARCH.ALIASADD": format_search_alias_add_response,
+    "SEARCH.ALIASDEL": format_search_alias_del_response,
+    "SEARCH.LISTALIASES": format_search_list_aliases_response,
 }
 
 

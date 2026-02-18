@@ -1,9 +1,12 @@
 """Tests for async score function queries."""
 
+from typing import AsyncGenerator
+
 import pytest
 import pytest_asyncio
 
 from upstash_redis.asyncio import Redis as AsyncRedis
+from upstash_redis.search import CombineMode, ScoreMode, ScoreModifier
 
 
 def random_id() -> str:
@@ -47,7 +50,7 @@ class TestAsyncScoreFunctionQueries:
     """Tests for async querying with score functions."""
 
     @pytest_asyncio.fixture(scope="class")
-    async def scorefunc_index(self) -> dict:
+    async def scorefunc_index(self) -> AsyncGenerator[dict, None]:
         """Create a test index with data for score function querying."""
         redis = AsyncRedis.from_env()
         name = f"test-scorefunc-async-{random_id()}"
@@ -115,7 +118,7 @@ class TestAsyncScoreFunctionQueries:
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "field": "popularity",
-                "modifier": "LOG1P",
+                "modifier": ScoreModifier.LOG1P,
                 "factor": 2,
             },
         )
@@ -134,7 +137,7 @@ class TestAsyncScoreFunctionQueries:
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "field": "popularity",
-                "scoreMode": "REPLACE",
+                "scoreMode": ScoreMode.REPLACE,
             },
         )
 
@@ -153,10 +156,10 @@ class TestAsyncScoreFunctionQueries:
             filter={"name": {"$eq": "Laptop"}},
             score_func={
                 "fields": [
-                    {"field": "popularity", "modifier": "LOG1P"},
-                    {"field": "recency", "modifier": "LOG1P"},
+                    {"field": "popularity", "modifier": ScoreModifier.LOG1P},
+                    {"field": "recency", "modifier": ScoreModifier.LOG1P},
                 ],
-                "combineMode": "SUM",
+                "combineMode": CombineMode.SUM,
             },
         )
 

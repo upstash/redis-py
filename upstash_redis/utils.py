@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from typing import Any, List, Literal, Optional, Dict
+from typing import Any, Dict, List, Literal, Optional, cast
 
-from upstash_redis.search import ScoreFunc
+from upstash_redis.search import ScoreByMultipleFields, ScoreFunc
 from upstash_redis.typing import FloatMinMaxT
 
 
@@ -137,25 +137,26 @@ def build_score_func(command: List, score_func: ScoreFunc) -> None:
         command.extend(("FIELDVALUE", score_func))
     elif "fields" in score_func:
         # Multiple fields
-        if "combineMode" in score_func:
-            command.extend(("COMBINEMODE", score_func["combineMode"].upper()))
-        if "scoreMode" in score_func:
-            command.extend(("SCOREMODE", score_func["scoreMode"].upper()))
+        multi = cast(ScoreByMultipleFields, score_func)
+        if "combineMode" in multi:
+            command.extend(("COMBINEMODE", multi["combineMode"].upper()))
+        if "scoreMode" in multi:
+            command.extend(("SCOREMODE", multi["scoreMode"].upper()))
 
-        for field_spec in score_func["fields"]:
+        for field_spec in multi["fields"]:
             if isinstance(field_spec, str):
                 command.extend(("FIELDVALUE", field_spec))
             else:
-                build_field_value(command, field_spec)
+                build_field_value(command, dict(field_spec))
     else:
         # Single field with options
-        if "scoreMode" in score_func:
-            command.extend(("SCOREMODE", score_func["scoreMode"].upper()))
-        build_field_value(command, score_func)
+        single: Dict[str, Any] = dict(score_func)
+        if "scoreMode" in single:
+            command.extend(("SCOREMODE", single["scoreMode"].upper()))
+        build_field_value(command, single)
 
-def build_field_value(
-    command: List, field_spec: Dict[str, Any]
-) -> None:
+
+def build_field_value(command: List, field_spec: Dict[str, Any]) -> None:
     """Build a FIELDVALUE portion with modifiers."""
     command.extend(("FIELDVALUE", field_spec["field"]))
 

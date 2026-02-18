@@ -20,6 +20,8 @@ class FieldType(str, enum.Enum):
     F64 = "F64"
     BOOL = "BOOL"
     DATE = "DATE"
+    KEYWORD = "KEYWORD"
+    FACET = "FACET"
 
 
 class FieldOptions(TypedDict, total=False):
@@ -74,6 +76,7 @@ class ScoreModifier(str, enum.Enum):
     SQUARE = "SQUARE"
     SQRT = "SQRT"
     RECIPROCAL = "RECIPROCAL"
+
 
 class ScoreMode(str, enum.Enum):
     """Score combination modes."""
@@ -277,3 +280,106 @@ def deserialize_describe_response(raw_response: List[Any]) -> IndexDescription:
         language=language,
         schema=schema,
     )
+
+
+def _coerce_numeric_string(value: Any) -> Any:
+    """Convert numeric strings to numbers."""
+    if isinstance(value, str):
+        try:
+            if "." in value:
+                return float(value)
+            return int(value)
+        except ValueError:
+            return value
+    return value
+
+
+def _parse_stats_value(arr: List[Any]) -> Dict[str, Any]:
+    """Parse a stats-like flat key-value array into a dict."""
+    result: Dict[str, Any] = {}
+    for i in range(0, len(arr), 2):
+        key = arr[i]
+        value = arr[i + 1]
+
+        if isinstance(value, list) and len(value) > 0:
+            if isinstance(value[0], str):
+                # Nested stats (e.g. stdDeviationBounds)
+                result[key] = _parse_stats_value(value)
+            elif (
+                isinstance(value[0], list)
+                and len(value[0]) > 0
+                and isinstance(value[0][0], str)
+            ):
+                # Percentiles unkeyed: [[key, val, value, val], ...]
+                result[key] = [_parse_stats_value(item) for item in value]
+            else:
+                result[key] = value
+        else:
+            result[key] = _coerce_numeric_string(value)
+
+    return result
+
+
+def _parse_buckets_value(arr: List[Any]) -> Dict[str, Any]:
+    """Parse a bucket aggregation value starting with 'buckets'."""
+    if arr[0] == "buckets" and isinstance(arr[1], list):
+        buckets = []
+        for bucket in arr[1]:
+            bucket_obj: Dict[str, Any] = {}
+            for i in range(0, len(bucket), 2):
+                key = bucket[i]
+                value = bucket[i + 1]
+                if (
+                    isinstance(value, list)
+                    and len(value) > 0
+                    and isinstance(value[0], str)
+                ):
+                    bucket_obj[key] = _parse_stats_value(value)
+                else:
+                    bucket_obj[key] = value
+            buckets.append(bucket_obj)
+
+        result: Dict[str, Any] = {"buckets": buckets}
+        # Extra key-value pairs after the buckets array (sumOtherDocCount, etc.)
+        for i in range(2, len(arr), 2):
+            result[arr[i]] = _coerce_numeric_string(arr[i + 1])
+        return result
+
+    return {"raw": arr}
+
+
+def _parse_aggregation_array(arr: List[Any]) -> Dict[str, Any]:
+    """Parse a top-level aggregation response array."""
+    result: Dict[str, Any] = {}
+    for i in range(0, len(arr), 2):
+        key = arr[i]
+        value = arr[i + 1]
+
+        if isinstance(value, list):
+            if len(value) > 0 and isinstance(value[0], str):
+                if value[0] == "buckets":
+                    result[key] = _parse_buckets_value(value)
+                else:
+                    result[key] = _parse_stats_value(value)
+            else:
+                result[key] = _parse_aggregation_array(value)
+        else:
+            result[key] = value
+
+    return result
+
+
+def deserialize_aggregate_response(raw_response: Any) -> Dict[str, Any]:
+    """
+    Deserialize raw aggregate response into structured results.
+
+    Args:
+        raw_response: Raw response from SEARCH.AGGREGATE
+
+    Returns:
+        Parsed aggregation results
+    """
+    if not isinstance(raw_response, list) or len(raw_response) == 0:
+        return {}
+
+    return _parse_aggregation_array(raw_response)

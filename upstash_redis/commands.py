@@ -5577,6 +5577,45 @@ class SearchCommands:
         """Initialize a SearchIndexCommands instance for an existing index."""
         return SearchIndexCommands(self.client, name)
 
+    @property
+    def alias(self) -> "SearchAliasCommands":
+        """Access alias commands."""
+        return SearchAliasCommands(self.client)
+
+
+class SearchAliasCommands:
+    """Commands for managing search index aliases."""
+
+    def __init__(self, client: Commands):
+        self.client = client
+
+    def add(self, *, index_name: str, alias: str) -> ResponseT:
+        """
+        Add or update an alias for an index.
+
+        Returns 1 if alias was created, 2 if updated.
+        """
+        command: List = ["SEARCH.ALIASADD", alias, index_name]
+        return self.client.execute(command)
+
+    def delete(self, *, alias: str) -> ResponseT:
+        """
+        Delete an alias.
+
+        Returns 1 if alias was deleted, 0 if not found.
+        """
+        command: List = ["SEARCH.ALIASDEL", alias]
+        return self.client.execute(command)
+
+    def list(self) -> ResponseT:
+        """
+        List all aliases.
+
+        Returns a dict mapping alias names to index names.
+        """
+        command: List = ["SEARCH.LISTALIASES"]
+        return self.client.execute(command)
+
 
 class SearchIndexCommands:
     """
@@ -5679,6 +5718,40 @@ class SearchIndexCommands:
         ```
         """
         command = ["SEARCH.DESCRIBE", self.name]
+        return self.client.execute(command)
+
+    def aggregate(
+        self,
+        *,
+        filter: Optional[Dict[str, Any]] = None,
+        aggregations: Dict[str, Any],
+    ) -> ResponseT:
+        """
+        Run aggregation queries on the index.
+
+        Example:
+        ```python
+        result = index.aggregate(
+            filter={"category": {"$eq": "electronics"}},
+            aggregations={"avg_price": {"$avg": {"field": "price"}}}
+        )
+        ```
+        """
+        command: List = [
+            "SEARCH.AGGREGATE",
+            self.name,
+            json.dumps(filter or {}),
+            json.dumps(aggregations),
+        ]
+        return self.client.execute(command)
+
+    def add_alias(self, *, alias: str) -> ResponseT:
+        """
+        Add or update an alias for this index.
+
+        Returns 1 if alias was created, 2 if updated.
+        """
+        command: List = ["SEARCH.ALIASADD", alias, self.name]
         return self.client.execute(command)
 
     def drop(self) -> ResponseT:
@@ -5786,6 +5859,7 @@ AsyncCommands = Commands
 AsyncJsonCommands = JsonCommands
 AsyncSearchCommands = SearchCommands
 AsyncSearchIndexCommands = SearchIndexCommands
+AsyncSearchAliasCommands = SearchAliasCommands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
 PipelineCommands = Commands
