@@ -1,6 +1,17 @@
 import datetime
 from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Union
 
+from upstash_redis.search import (
+    IndexDescription,
+    QueryResult,
+    Schema,
+    DataType,
+    Language,
+    Order,
+    HighlightOptions,
+    CountResult,
+    ScoreFunc,
+)
 from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
 from upstash_redis.utils import GeoSearchResult
 
@@ -2212,3 +2223,102 @@ class AsyncJsonCommands:
     async def strlen(self, key: str, path: str = "$") -> List[Union[int, None]]: ...
     async def toggle(self, key: str, path: str = "$") -> List[Union[bool, None]]: ...
     async def type(self, key: str, path: str = "$") -> List[str]: ...
+
+class SearchAliasCommands:
+    def __init__(self, client: Commands): ...
+    def add(self, *, index_name: str, alias: str) -> int: ...
+    def delete(self, *, alias: str) -> int: ...
+    def list(self) -> Dict[str, str]: ...
+
+class SearchCommands:
+    def __init__(self, client: Commands): ...
+    def create_index(
+        self,
+        *,
+        name: str,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
+    ) -> SearchIndexCommands: ...
+    def index(
+        self,
+        name: str,
+    ) -> SearchIndexCommands: ...
+    @property
+    def alias(self) -> SearchAliasCommands: ...
+
+class SearchIndexCommands:
+    def __init__(self, client: Commands, name: str): ...
+    def wait_indexing(self) -> int: ...
+    def describe(self) -> Optional[IndexDescription]: ...
+    def query(
+        self,
+        *,
+        filter: Dict[str, Any],
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
+    ) -> List[QueryResult]: ...
+    def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
+    def aggregate(
+        self,
+        *,
+        filter: Optional[Dict[str, Any]] = None,
+        aggregations: Dict[str, Any],
+    ) -> Dict[str, Any]: ...
+    def add_alias(self, *, alias: str) -> int: ...
+    def drop(self) -> int: ...
+
+class AsyncSearchAliasCommands:
+    def __init__(self, client: AsyncCommands): ...
+    async def add(self, *, index_name: str, alias: str) -> int: ...
+    async def delete(self, *, alias: str) -> int: ...
+    async def list(self) -> Dict[str, str]: ...
+
+class AsyncSearchCommands:
+    def __init__(self, client: AsyncCommands): ...
+    async def create_index(
+        self,
+        *,
+        name: str,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
+    ) -> AsyncSearchIndexCommands: ...
+    def index(self, name: str) -> AsyncSearchIndexCommands: ...
+    @property
+    def alias(self) -> AsyncSearchAliasCommands: ...
+
+class AsyncSearchIndexCommands:
+    def __init__(self, client: AsyncCommands, name: str): ...
+    async def wait_indexing(self) -> int: ...
+    async def describe(self) -> Optional[IndexDescription]: ...
+    async def query(
+        self,
+        *,
+        filter: Dict[str, Any],
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
+    ) -> List[QueryResult]: ...
+    async def count(self, *, filter: Dict[str, Any]) -> CountResult: ...
+    async def aggregate(
+        self,
+        *,
+        filter: Optional[Dict[str, Any]] = None,
+        aggregations: Dict[str, Any],
+    ) -> Dict[str, Any]: ...
+    async def add_alias(self, *, alias: str) -> int: ...
+    async def drop(self) -> int: ...

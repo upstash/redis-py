@@ -1,11 +1,18 @@
 from json import loads
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
+from upstash_redis.commands import SearchIndexCommands
+from upstash_redis.search import (
+    deserialize_aggregate_response,
+    deserialize_describe_response,
+    deserialize_query_response,
+    CountResult,
+)
 from upstash_redis.typing import RESTResultT
 from upstash_redis.utils import GeoSearchResult
 
 
-def to_dict(res: List, _) -> Dict:
+def to_dict(res: List, _, __) -> Dict:
     """
     Convert a list that contains ungrouped pairs as consecutive elements (usually field-value or similar) into a dict.
     """
@@ -14,7 +21,7 @@ def to_dict(res: List, _) -> Dict:
 
 
 def format_geopos(
-    res: List[Optional[List[str]]], _
+    res: List[Optional[List[str]]], _, __
 ) -> List[Union[Tuple[float, float], None]]:
     return [
         (float(member[0]), float(member[1])) if isinstance(member, List) else None
@@ -83,11 +90,11 @@ def format_geo_search_response(
     return results
 
 
-def format_time(res: List[str], _) -> Tuple[int, int]:
+def format_time(res: List[str], _, __) -> Tuple[int, int]:
     return int(res[0]), int(res[1])
 
 
-def format_sorted_set_response(res: List[str], _) -> List[Tuple[str, float]]:
+def format_sorted_set_response(res: List[str], _, __) -> List[Tuple[str, float]]:
     """
     Format the raw output given by Sorted Set commands, usually the ones that return the member-score
     pairs of Sorted Sets.
@@ -96,7 +103,7 @@ def format_sorted_set_response(res: List[str], _) -> List[Tuple[str, float]]:
     return list(zip(it, map(float, it)))
 
 
-def to_optional_float_list(res: List[Optional[str]], _) -> List[Optional[float]]:
+def to_optional_float_list(res: List[Optional[str]], _, __) -> List[Optional[float]]:
     """
     Format a list of strings representing floats or None values.
     """
@@ -104,7 +111,7 @@ def to_optional_float_list(res: List[Optional[str]], _) -> List[Optional[float]]
     return [float(value) if value is not None else None for value in res]
 
 
-def format_set(res, command):
+def format_set(res, command, _):
     options = command[3:]
 
     if "GET" in options:
@@ -112,61 +119,61 @@ def format_set(res, command):
     return res == "OK"
 
 
-def string_to_json(res, _):
+def string_to_json(res, _, __):
     if res is None:
         return None
 
     return loads(res)
 
 
-def to_json_list(res, command):
-    return [string_to_json(value, command) for value in res]
+def to_json_list(res, command, client):
+    return [string_to_json(value, command, client) for value in res]
 
 
-def ok_to_bool(res, _):
+def ok_to_bool(res, _, __):
     return res == "OK"
 
 
-def to_bool(res, _):
+def to_bool(res, _, __):
     return bool(res)
 
 
-def to_bool_list(res, _):
+def to_bool_list(res, _, __):
     return list(map(bool, res))
 
 
-def to_optional_bool_list(res, _):
+def to_optional_bool_list(res, _, __):
     return [bool(value) if value is not None else None for value in res]
 
 
-def to_optional_float(res, _):
+def to_optional_float(res, _, __):
     if res is None:
         return None
 
     return float(res)
 
 
-def to_float(res, _):
+def to_float(res, _, __):
     return float(res)
 
 
-def format_scan(res, _):
+def format_scan(res, _, __):
     return int(res[0]), res[1]
 
 
-def format_hscan(res, _):
-    return int(res[0]), to_dict(res[1], None)
+def format_hscan(res, _, client):
+    return int(res[0]), to_dict(res[1], None, client)
 
 
-def format_zscan(res, _):
-    return int(res[0]), format_sorted_set_response(res[1], None)
+def format_zscan(res, _, client):
+    return int(res[0]), format_sorted_set_response(res[1], None, client)
 
 
-def format_zscore(res, _):
+def format_zscore(res, _, __):
     return float(res) if res is not None else res
 
 
-def format_search(res, command):
+def format_search(res, command, _):
     withdist = "WITHDIST" in command
     withhash = "WITHHASH" in command
     withcoord = "WITHCOORD" in command
@@ -176,15 +183,15 @@ def format_search(res, command):
     return res
 
 
-def format_hrandfield(res, command):
+def format_hrandfield(res, command, client):
     with_values = "WITHVALUES" in command
     if with_values:
-        return to_dict(res, command)
+        return to_dict(res, command, client)
 
     return res
 
 
-def format_zadd(res, command):
+def format_zadd(res, command, _):
     incr = "INCR" in command
     if incr:
         return float(res) if res is not None else res
@@ -192,15 +199,15 @@ def format_zadd(res, command):
     return res
 
 
-def format_sorted_set_response_with_score(res, command):
+def format_sorted_set_response_with_score(res, command, client):
     with_scores = "WITHSCORES" in command
     if with_scores:
-        return format_sorted_set_response(res, command)
+        return format_sorted_set_response(res, command, client)
 
     return res
 
 
-def format_xread_response(res, command):
+def format_xread_response(res, command, _):
     """Format XREAD/XREADGROUP response to convert stream entries."""
     if res is None:
         return []
@@ -211,7 +218,7 @@ def format_xread_response(res, command):
     return res
 
 
-def format_xrange_response(res, command):
+def format_xrange_response(res, command, _):
     """Format XRANGE/XREVRANGE response to convert entries."""
     if not res:
         return res
@@ -220,10 +227,69 @@ def format_xrange_response(res, command):
     return res
 
 
-def format_xpending_response(res, command):
+def format_xpending_response(res, command, _):
     """Format XPENDING response."""
     # Return as-is to maintain Redis-compatible format
     return res
+
+
+def format_search_query_response(res: Any, _, __):
+    """Format SEARCH.QUERY response into structured results."""
+    if not isinstance(res, list):
+        return []
+    return deserialize_query_response(res)
+
+
+def format_search_describe_response(res: Any, _, __):
+    """Format SEARCH.DESCRIBE response into index description."""
+    if not isinstance(res, list) or len(res) == 0:
+        return None
+    return deserialize_describe_response(res)
+
+
+def format_search_count_response(res: Any, _, __):
+    """Format SEARCH.COUNT response."""
+    return CountResult(count=res)
+
+
+def format_search_create_response(res: Any, command: List[str], client: Any):
+    """Format SEARCH.CREATE response by returning SearchIndexCommands instance."""
+    # Extract index name from command (second parameter)
+    index_name = command[1] if len(command) > 1 else None
+
+    if index_name is None:
+        return res
+
+    return SearchIndexCommands(client, index_name)
+
+
+def format_search_aggregate_response(res: Any, _, __):
+    """Format SEARCH.AGGREGATE response into parsed aggregation results."""
+    return deserialize_aggregate_response(res)
+
+
+def format_search_alias_add_response(res: Any, _, __):
+    """Format SEARCH.ALIASADD response. Returns 1 (created) or 2 (updated)."""
+    return int(res)
+
+
+def format_search_alias_del_response(res: Any, _, __):
+    """Format SEARCH.ALIASDEL response. Returns 1 (deleted) or 0 (not found)."""
+    return int(res)
+
+
+def format_search_list_aliases_response(res: Any, _, __):
+    """Format SEARCH.LISTALIASES response into {alias: index_name} dict."""
+    if res == 0 or (isinstance(res, list) and len(res) == 0):
+        return {}
+    if not isinstance(res, list):
+        return {}
+
+    aliases: Dict[str, str] = {}
+    for pair in res:
+        if isinstance(pair, list) and len(pair) == 2:
+            aliases[pair[0]] = pair[1]
+    return aliases
 
 
 FORMATTERS: Dict[str, Callable] = {
@@ -301,16 +367,25 @@ FORMATTERS: Dict[str, Callable] = {
     "XPENDING": format_xpending_response,
     "XGROUP DESTROY": to_bool,
     "XGROUP CREATECONSUMER": to_bool,
+    "SEARCH.CREATE": format_search_create_response,
+    "SEARCH.QUERY": format_search_query_response,
+    "SEARCH.DESCRIBE": format_search_describe_response,
+    "SEARCH.COUNT": format_search_count_response,
+    "SEARCH.AGGREGATE": format_search_aggregate_response,
+    "SEARCH.ALIASADD": format_search_alias_add_response,
+    "SEARCH.ALIASDEL": format_search_alias_del_response,
+    "SEARCH.LISTALIASES": format_search_list_aliases_response,
 }
 
 
-def cast_response(command: List[str], response: RESTResultT):
+def cast_response(command: List[str], response: RESTResultT, client: Any):
     """
     Given a command and its response, casts the response using the `FORMATTERS`
     map
 
     :param command: Used to determine the formatting to apply
     :param response: Response to format
+    :param client: Optional client instance for formatters that need to return client-dependent objects
     """
 
     # get main command
@@ -320,6 +395,6 @@ def cast_response(command: List[str], response: RESTResultT):
 
     # format response
     if main_command in FORMATTERS:
-        return FORMATTERS[main_command](response, command)
+        return FORMATTERS[main_command](response, command, client)
 
     return response

@@ -1,8 +1,29 @@
 import datetime
-from typing import Any, Awaitable, Dict, List, Literal, Mapping, Optional, Tuple, Union
+import json
+from typing import (
+    Any,
+    Awaitable,
+    Dict,
+    List,
+    Literal,
+    Mapping,
+    Optional,
+    Tuple,
+    Union,
+)
 
-from upstash_redis.typing import FloatMinMaxT, ValueT, JSONValueT
+from upstash_redis.search import (
+    DataType,
+    Language,
+    Schema,
+    FieldType,
+    Order,
+    HighlightOptions,
+    ScoreFunc,
+)
+from upstash_redis.typing import FloatMinMaxT, JSONValueT, ValueT
 from upstash_redis.utils import (
+    build_score_func,
     handle_georadius_write_exceptions,
     handle_geosearch_exceptions,
     handle_non_deprecated_zrange_exceptions,
@@ -5784,6 +5805,269 @@ class JsonCommands:
         return self.client.execute(command=command)
 
 
+class SearchCommands:
+    """
+    Search commands namespace.
+
+    This class provides methods for search index operations.
+    """
+
+    def __init__(self, client: Commands):
+        self.client = client
+
+    def create_index(
+        self,
+        *,
+        name: str,
+        schema: Schema,
+        data_type: Union[DataType, str],
+        prefixes: Union[str, List[str]],
+        language: Optional[Union[Language, str]] = None,
+        skip_initial_scan: bool = False,
+        exists_ok: bool = False,
+    ) -> ResponseT:
+        """Create a new search index."""
+
+        if isinstance(prefixes, str):
+            prefixes = [prefixes]
+
+        command: List = [
+            "SEARCH.CREATE",
+            name,
+            "ON",
+            data_type,
+            "PREFIX",
+            len(prefixes),
+            *prefixes,
+        ]
+
+        if language:
+            command.extend(("LANGUAGE", language))
+
+        if skip_initial_scan:
+            command.append("SKIPINITIALSCAN")
+
+        if exists_ok:
+            command.append("EXISTSOK")
+
+        command.append("SCHEMA")
+
+        for path, value in schema.items():
+            if isinstance(value, (str, FieldType)):
+                command.extend((path, value))
+            else:
+                field_type = value["type"]
+                command.extend((path, field_type))
+
+                if "alias" in value:
+                    command.extend(("AS", value["alias"]))
+
+                if "fast" in value and value["fast"]:
+                    command.append("FAST")
+
+                if "no_stem" in value and value["no_stem"]:
+                    command.append("NOSTEM")
+
+                if "no_tokenize" in value and value["no_tokenize"]:
+                    command.append("NOTOKENIZE")
+
+        return self.client.execute(command)
+
+    def index(self, name: str) -> ResponseT:
+        """Initialize a SearchIndexCommands instance for an existing index."""
+        return SearchIndexCommands(self.client, name)
+
+    @property
+    def alias(self) -> ResponseT:
+        """Access alias commands."""
+        return SearchAliasCommands(self.client)
+
+
+class SearchAliasCommands:
+    """Commands for managing search index aliases."""
+
+    def __init__(self, client: Commands):
+        self.client = client
+
+    def add(self, *, index_name: str, alias: str) -> ResponseT:
+        """
+        Add or update an alias for an index.
+
+        Returns 1 if alias was created, 2 if updated.
+        """
+        command: List = ["SEARCH.ALIASADD", alias, index_name]
+        return self.client.execute(command)
+
+    def delete(self, *, alias: str) -> ResponseT:
+        """
+        Delete an alias.
+
+        Returns 1 if alias was deleted, 0 if not found.
+        """
+        command: List = ["SEARCH.ALIASDEL", alias]
+        return self.client.execute(command)
+
+    def list(self) -> ResponseT:
+        """
+        List all aliases.
+
+        Returns a dict mapping alias names to index names.
+        """
+        command: List = ["SEARCH.LISTALIASES"]
+        return self.client.execute(command)
+
+
+class SearchIndexCommands:
+    """
+    Commands for interacting with a specific search index.
+
+    This class provides methods to query, count, describe, and drop an index.
+    """
+
+    def __init__(self, client: Commands, name: str):
+        self.client = client
+        self.name = name
+
+    def query(
+        self,
+        *,
+        filter: Optional[Dict[str, Any]] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+        order_by: Optional[Dict[str, Union[Order, str]]] = None,
+        select: Optional[Dict[str, bool]] = None,
+        highlight: Optional[HighlightOptions] = None,
+        score_func: Optional[ScoreFunc] = None,
+    ) -> ResponseT:
+        """
+        Query the index with filters and options.
+
+        Example:
+        ```python
+        results = index.query(filter={"name": {"$eq": "Laptop"}})
+        ```
+        """
+        command: List = ["SEARCH.QUERY", self.name, json.dumps(filter or {})]
+
+        if limit:
+            command.extend(("LIMIT", limit))
+
+        if offset:
+            command.extend(("OFFSET", offset))
+
+        if order_by:
+            for field, order in order_by.items():
+                command.extend(("ORDERBY", field, order))
+                break
+
+        if select is not None:
+            if not select:
+                command.append("NOCONTENT")
+            else:
+                selected_fields = []
+                for field, selected in select.items():
+                    if selected:
+                        selected_fields.append(field)
+
+                command.extend(("SELECT", len(selected_fields), *selected_fields))
+
+        if highlight:
+            fields = highlight["fields"]
+            command.extend(("HIGHLIGHT", "FIELDS", len(fields), *fields))
+            if "tags" in highlight and highlight["tags"]:
+                open_tag, close_tag = highlight["tags"]
+                command.extend(("TAGS", open_tag, close_tag))
+
+        if score_func:
+            command.append("SCOREFUNC")
+            build_score_func(command, score_func)
+
+        return self.client.execute(command)
+
+    def count(self, *, filter: Dict[str, Any]) -> ResponseT:
+        """
+        Count documents matching a filter.
+
+        Example:
+        ```python
+        result = index.count({"active": {"$eq": True}})
+        ```
+        """
+
+        command: List = ["SEARCH.COUNT", self.name, json.dumps(filter)]
+        return self.client.execute(command)
+
+    def wait_indexing(self) -> ResponseT:
+        """
+        Wait for the index to finish indexing all existing keys.
+
+        Example:
+        ```python
+        index.wait_indexing()
+        ```
+        """
+        command = ["SEARCH.WAITINDEXING", self.name]
+        return self.client.execute(command)
+
+    def describe(self) -> ResponseT:
+        """
+        Get detailed information about the index structure.
+
+        Example:
+        ```python
+        description = index.describe()
+        ```
+        """
+        command = ["SEARCH.DESCRIBE", self.name]
+        return self.client.execute(command)
+
+    def aggregate(
+        self,
+        *,
+        filter: Optional[Dict[str, Any]] = None,
+        aggregations: Dict[str, Any],
+    ) -> ResponseT:
+        """
+        Run aggregation queries on the index.
+
+        Example:
+        ```python
+        result = index.aggregate(
+            filter={"category": {"$eq": "electronics"}},
+            aggregations={"avg_price": {"$avg": {"field": "price"}}}
+        )
+        ```
+        """
+        command: List = [
+            "SEARCH.AGGREGATE",
+            self.name,
+            json.dumps(filter or {}),
+            json.dumps(aggregations),
+        ]
+        return self.client.execute(command)
+
+    def add_alias(self, *, alias: str) -> ResponseT:
+        """
+        Add or update an alias for this index.
+
+        Returns 1 if alias was created, 2 if updated.
+        """
+        command: List = ["SEARCH.ALIASADD", alias, self.name]
+        return self.client.execute(command)
+
+    def drop(self) -> ResponseT:
+        """
+        Drop (delete) the index.
+
+        Example:
+        ```python
+        result = index.drop()
+        ```
+        """
+        command = ["SEARCH.DROP", self.name]
+        return self.client.execute(command)
+
+
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):
@@ -5874,6 +6158,9 @@ class BitFieldROCommands:
 
 AsyncCommands = Commands
 AsyncJsonCommands = JsonCommands
+AsyncSearchCommands = SearchCommands
+AsyncSearchIndexCommands = SearchIndexCommands
+AsyncSearchAliasCommands = SearchAliasCommands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
 PipelineCommands = Commands

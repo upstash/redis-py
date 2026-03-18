@@ -6,6 +6,7 @@ from upstash_redis.commands import (
     PipelineCommands,
     AsyncJsonCommands,
     PipelineJsonCommands,
+    AsyncSearchCommands,
 )
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, AsyncHttpClient
@@ -60,6 +61,7 @@ class Redis(AsyncCommands):
         self._headers = make_headers(token, rest_encoding, allow_telemetry)
 
         self._json = AsyncJsonCommands(self)
+        self._search = AsyncSearchCommands(self)
         self._http = AsyncHttpClient(
             encoding=rest_encoding,
             retries=rest_retries,
@@ -70,6 +72,10 @@ class Redis(AsyncCommands):
     @property
     def json(self) -> AsyncJsonCommands:
         return self._json
+
+    @property
+    def search(self) -> AsyncSearchCommands:
+        return self._search
 
     @classmethod
     def from_env(
@@ -136,7 +142,7 @@ class Redis(AsyncCommands):
             headers=self._headers,
             command=command,
         )
-        return cast_response(command, res)
+        return cast_response(command, res, self)
 
     def pipeline(self) -> "AsyncPipeline":
         """
@@ -148,6 +154,7 @@ class Redis(AsyncCommands):
             http=self._http,
             multi_exec="pipeline",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            original_client=self,
         )
 
     def multi(self) -> "AsyncPipeline":
@@ -160,6 +167,7 @@ class Redis(AsyncCommands):
             http=self._http,
             multi_exec="multi-exec",
             set_sync_token_header_fn=self._maybe_set_sync_token_header,
+            original_client=self,
         )
 
 
@@ -171,6 +179,7 @@ class AsyncPipeline(PipelineCommands):
         http: AsyncHttpClient,
         multi_exec: Literal["multi-exec", "pipeline"],
         set_sync_token_header_fn: Callable[[Dict[str, str]], None],
+        original_client: Optional[Redis],
     ):
         self._url = f"{url}/{multi_exec}"
         self._headers = headers
@@ -180,6 +189,7 @@ class AsyncPipeline(PipelineCommands):
         self._command_stack: List[List[str]] = []
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
+        self._original_client = original_client
 
     @property
     def json(self) -> PipelineJsonCommands:
@@ -208,7 +218,7 @@ class AsyncPipeline(PipelineCommands):
             from_pipeline=True,
         )
         response = [
-            cast_response(command, response)
+            cast_response(command, response, self._original_client)
             for command, response in zip(self._command_stack, res)
         ]
         self.reset()
