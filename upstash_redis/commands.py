@@ -5573,12 +5573,12 @@ class SearchCommands:
 
         return self.client.execute(command)
 
-    def index(self, name: str) -> "SearchIndexCommands":
+    def index(self, name: str) -> ResponseT:
         """Initialize a SearchIndexCommands instance for an existing index."""
         return SearchIndexCommands(self.client, name)
 
     @property
-    def alias(self) -> "SearchAliasCommands":
+    def alias(self) -> ResponseT:
         """Access alias commands."""
         return SearchAliasCommands(self.client)
 
@@ -5631,7 +5631,7 @@ class SearchIndexCommands:
     def query(
         self,
         *,
-        filter: Dict[str, Any],
+        filter: Optional[Dict[str, Any]] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
         order_by: Optional[Dict[str, Union[Order, str]]] = None,
@@ -5647,7 +5647,7 @@ class SearchIndexCommands:
         results = index.query(filter={"name": {"$eq": "Laptop"}})
         ```
         """
-        command: List = ["SEARCH.QUERY", self.name, json.dumps(filter)]
+        command: List = ["SEARCH.QUERY", self.name, json.dumps(filter or {})]
 
         if limit:
             command.extend(("LIMIT", limit))
@@ -5672,8 +5672,9 @@ class SearchIndexCommands:
                 command.extend(("SELECT", len(selected_fields), *selected_fields))
 
         if highlight:
-            command.extend(("HIGHLIGHT", "FIELDS", highlight["fields"]))
-            if highlight["tags"]:
+            fields = highlight["fields"]
+            command.extend(("HIGHLIGHT", "FIELDS", len(fields), *fields))
+            if "tags" in highlight and highlight["tags"]:
                 open_tag, close_tag = highlight["tags"]
                 command.extend(("TAGS", open_tag, close_tag))
 
