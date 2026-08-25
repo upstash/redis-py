@@ -1,6 +1,6 @@
 from os import environ
 from platform import python_version
-from typing import Any, Dict, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 from unittest.mock import patch
 
 import pytest
@@ -242,3 +242,88 @@ def test_make_headers_on_aws() -> None:
             "Upstash-Telemetry-Runtime": f"python@v{python_version()}",
             "Upstash-Telemetry-Platform": "aws",
         }
+
+
+class _FakeResponse:
+    headers: Dict[str, str] = {}
+
+    def json(self) -> Dict[str, Any]:
+        return {"result": "OK"}
+
+
+def _failing_post(failures: int, seen: List[Dict[str, str]]):
+    """Return a fake `post` that fails `failures` times and records the headers of every call."""
+
+    def post(url: str, headers: Dict[str, str], json: Any) -> _FakeResponse:
+        seen.append(dict(headers))
+        if len(seen) <= failures:
+            raise ConnectionError("simulated network error")
+        return _FakeResponse()
+
+    return post
+
+
+def test_sync_execute_sends_retry_telemetry_header() -> None:
+    seen: List[Dict[str, str]] = []
+    with SyncHttpClient(encoding=None, retries=3, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(2, seen)):
+            assert (
+                client.execute(
+                    url="http://localhost",
+                    headers=make_headers("token", None, True),
+                    command=["GET", "a"],
+                )
+                == "OK"
+            )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
+
+
+def test_sync_execute_without_telemetry_does_not_send_retry_header() -> None:
+    seen: List[Dict[str, str]] = []
+    with SyncHttpClient(encoding=None, retries=2, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(1, seen)):
+            assert (
+                client.execute(
+                    url="http://localhost",
+                    headers=make_headers("token", None, False),
+                    command=["GET", "a"],
+                )
+                == "OK"
+            )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, None]
+
+
+@mark.asyncio
+async def test_async_execute_sends_retry_telemetry_header() -> None:
+    seen: List[Dict[str, str]] = []
+    async with AsyncHttpClient(encoding=None, retries=3, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(2, seen)):
+            assert (
+                await client.execute(
+                    url="http://localhost",
+                    headers=make_headers("token", None, True),
+                    command=["GET", "a"],
+                )
+                == "OK"
+            )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
+
+
+@mark.asyncio
+async def test_async_execute_without_telemetry_does_not_send_retry_header() -> None:
+    seen: List[Dict[str, str]] = []
+    async with AsyncHttpClient(encoding=None, retries=2, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(1, seen)):
+            assert (
+                await client.execute(
+                    url="http://localhost",
+                    headers=make_headers("token", None, False),
+                    command=["GET", "a"],
+                )
+                == "OK"
+            )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, None]
