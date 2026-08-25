@@ -245,7 +245,8 @@ def test_make_headers_on_aws() -> None:
 
 
 class _FakeResponse:
-    headers: Dict[str, str] = {}
+    def __init__(self) -> None:
+        self.headers: Dict[str, str] = {}
 
     def json(self) -> Dict[str, Any]:
         return {"result": "OK"}
@@ -265,8 +266,25 @@ def _failing_post(failures: int, seen: List[Dict[str, str]]):
 
 def test_sync_execute_sends_retry_telemetry_header() -> None:
     seen: List[Dict[str, str]] = []
+    headers = make_headers("token", None, True)
     with SyncHttpClient(encoding=None, retries=3, retry_interval=0) as client:
         with patch.object(client._client, "post", side_effect=_failing_post(2, seen)):
+            assert (
+                client.execute(
+                    url="http://localhost", headers=headers, command=["GET", "a"]
+                )
+                == "OK"
+            )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
+    # the shared client headers must not be mutated between attempts / requests
+    assert "Upstash-Telemetry-Retry" not in headers
+
+
+def test_sync_execute_sends_retry_telemetry_header_with_zero_retries() -> None:
+    seen: List[Dict[str, str]] = []
+    with SyncHttpClient(encoding=None, retries=0, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(0, seen)):
             assert (
                 client.execute(
                     url="http://localhost",
@@ -276,7 +294,21 @@ def test_sync_execute_sends_retry_telemetry_header() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0"]
+
+
+def test_sync_execute_sends_retry_telemetry_header_until_exhausted() -> None:
+    seen: List[Dict[str, str]] = []
+    with SyncHttpClient(encoding=None, retries=3, retry_interval=0) as client:
+        with patch.object(client._client, "post", side_effect=_failing_post(4, seen)):
+            with raises(ConnectionError):
+                client.execute(
+                    url="http://localhost",
+                    headers=make_headers("token", None, True),
+                    command=["GET", "a"],
+                )
+
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2", "3"]
 
 
 def test_sync_execute_without_telemetry_does_not_send_retry_header() -> None:
@@ -298,18 +330,19 @@ def test_sync_execute_without_telemetry_does_not_send_retry_header() -> None:
 @mark.asyncio
 async def test_async_execute_sends_retry_telemetry_header() -> None:
     seen: List[Dict[str, str]] = []
+    headers = make_headers("token", None, True)
     async with AsyncHttpClient(encoding=None, retries=3, retry_interval=0) as client:
         with patch.object(client._client, "post", side_effect=_failing_post(2, seen)):
             assert (
                 await client.execute(
-                    url="http://localhost",
-                    headers=make_headers("token", None, True),
-                    command=["GET", "a"],
+                    url="http://localhost", headers=headers, command=["GET", "a"]
                 )
                 == "OK"
             )
 
     assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
+    # the shared client headers must not be mutated between attempts / requests
+    assert "Upstash-Telemetry-Retry" not in headers
 
 
 @mark.asyncio

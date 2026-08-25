@@ -39,9 +39,6 @@ def make_headers(
     return headers
 
 
-RETRY_TELEMETRY_HEADER = "Upstash-Telemetry-Retry"
-
-
 def _headers_for_attempt(headers: Dict[str, str], attempt: int) -> Dict[str, str]:
     """
     Add the attempt number (0 for the first try) as a telemetry header so that
@@ -51,7 +48,7 @@ def _headers_for_attempt(headers: Dict[str, str], attempt: int) -> Dict[str, str
     if "Upstash-Telemetry-Sdk" not in headers:
         return headers
 
-    return {**headers, RETRY_TELEMETRY_HEADER: str(attempt)}
+    return {**headers, "Upstash-Telemetry-Retry": str(attempt)}
 
 
 class SyncHttpClient:

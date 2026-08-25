@@ -228,6 +228,7 @@ We collect the following:
 - SDK version
 - Platform (Vercel, AWS)
 - Python Runtime version
+- Retry attempt number of each request (to measure retry rates)
 
 You can opt out by passing `allow_telemetry=False` when initializing the Redis client:
 
