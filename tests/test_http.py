@@ -276,7 +276,7 @@ def test_sync_execute_sends_retry_telemetry_header() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
 
 
 def test_sync_execute_without_telemetry_does_not_send_retry_header() -> None:
@@ -309,7 +309,7 @@ async def test_async_execute_sends_retry_telemetry_header() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
 
 
 @mark.asyncio

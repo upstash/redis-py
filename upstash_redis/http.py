@@ -44,11 +44,11 @@ RETRY_TELEMETRY_HEADER = "Upstash-Telemetry-Retry"
 
 def _headers_for_attempt(headers: Dict[str, str], attempt: int) -> Dict[str, str]:
     """
-    Add the retry telemetry header on retried attempts so that the server
-    can track how often clients retry. Only added when telemetry headers
-    are present (i.e. telemetry is allowed) and this is not the first attempt.
+    Add the attempt number (0 for the first try) as a telemetry header so that
+    the server can track how often clients retry. Only added when telemetry
+    headers are present (i.e. telemetry is allowed).
     """
-    if attempt == 0 or "Upstash-Telemetry-Sdk" not in headers:
+    if "Upstash-Telemetry-Sdk" not in headers:
         return headers
 
     return {**headers, RETRY_TELEMETRY_HEADER: str(attempt)}
