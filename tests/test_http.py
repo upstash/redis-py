@@ -276,12 +276,12 @@ def test_sync_execute_sends_retry_telemetry_header() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
     # the shared client headers must not be mutated between attempts / requests
     assert "Upstash-Telemetry-Retry" not in headers
 
 
-def test_sync_execute_sends_retry_telemetry_header_with_zero_retries() -> None:
+def test_sync_execute_does_not_send_retry_telemetry_header_with_zero_retries() -> None:
     seen: List[Dict[str, str]] = []
     with SyncHttpClient(encoding=None, retries=0, retry_interval=0) as client:
         with patch.object(client._client, "post", side_effect=_failing_post(0, seen)):
@@ -294,7 +294,7 @@ def test_sync_execute_sends_retry_telemetry_header_with_zero_retries() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None]
 
 
 def test_sync_execute_sends_retry_telemetry_header_until_exhausted() -> None:
@@ -308,7 +308,7 @@ def test_sync_execute_sends_retry_telemetry_header_until_exhausted() -> None:
                     command=["GET", "a"],
                 )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2", "3"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2", "3"]
 
 
 def test_sync_execute_without_telemetry_does_not_send_retry_header() -> None:
@@ -340,7 +340,7 @@ async def test_async_execute_sends_retry_telemetry_header() -> None:
                 == "OK"
             )
 
-    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == ["0", "1", "2"]
+    assert [h.get("Upstash-Telemetry-Retry") for h in seen] == [None, "1", "2"]
     # the shared client headers must not be mutated between attempts / requests
     assert "Upstash-Telemetry-Retry" not in headers
 
