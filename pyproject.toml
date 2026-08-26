@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "upstash-redis"
-version = "1.7.0"
+version = "1.8.0"
 description = "Serverless Redis SDK from Upstash"
 license = "MIT"
 authors = ["Upstash <support@upstash.com>"]
