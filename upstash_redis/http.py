@@ -39,6 +39,18 @@ def make_headers(
     return headers
 
 
+def _headers_for_attempt(headers: Dict[str, str], attempt: int) -> Dict[str, str]:
+    """
+    Add the retry count as a telemetry header on retried attempts so that the
+    server can track how often clients retry. Only added when telemetry headers
+    are present (i.e. telemetry is allowed) and this is not the first attempt.
+    """
+    if attempt == 0 or "Upstash-Telemetry-Sdk" not in headers:
+        return headers
+
+    return {**headers, "Upstash-Telemetry-Retry": str(attempt)}
+
+
 class SyncHttpClient:
     def __init__(
         self,
@@ -65,9 +77,12 @@ class SyncHttpClient:
         response: Optional[Dict[str, Any]] = None
         last_error: Optional[Exception] = None
 
-        for attempts_left in range(max(0, self._retries), -1, -1):
+        retries = max(0, self._retries)
+        for attempt in range(retries + 1):
             try:
-                r = self._client.post(url, headers=headers, json=command)
+                r = self._client.post(
+                    url, headers=_headers_for_attempt(headers, attempt), json=command
+                )
                 sync_token = r.headers.get("Upstash-Sync-Token")
                 if self._sync_token_cb and sync_token:
                     self._sync_token_cb(sync_token)
@@ -78,7 +93,7 @@ class SyncHttpClient:
             except Exception as e:
                 last_error = e
 
-                if attempts_left > 0:
+                if attempt < retries:
                     time.sleep(self._retry_interval)
 
         if response is None:
@@ -135,9 +150,12 @@ class AsyncHttpClient:
         response: Optional[Union[Dict, List[Dict]]] = None
         last_error: Optional[Exception] = None
 
-        for attempts_left in range(max(0, self._retries), -1, -1):
+        retries = max(0, self._retries)
+        for attempt in range(retries + 1):
             try:
-                r = await self._client.post(url, headers=headers, json=command)
+                r = await self._client.post(
+                    url, headers=_headers_for_attempt(headers, attempt), json=command
+                )
                 sync_token = r.headers.get("Upstash-Sync-Token")
 
                 if self._sync_token_cb and sync_token:
@@ -148,7 +166,7 @@ class AsyncHttpClient:
             except Exception as e:
                 last_error = e
 
-                if attempts_left > 0:
+                if attempt < retries:
                     await asyncio.sleep(self._retry_interval)
 
         if response is None:
