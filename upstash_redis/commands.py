@@ -22,6 +22,12 @@ from upstash_redis.search import (
     ScoreFunc,
 )
 from upstash_redis.typing import FloatMinMaxT, JSONValueT, ValueT
+from upstash_redis.vector import (
+    VectorMetric,
+    VectorQueryProfile,
+    VectorT,
+    serialize_vector,
+)
 from upstash_redis.utils import (
     build_score_func,
     handle_georadius_write_exceptions,
@@ -6069,6 +6075,167 @@ class SearchIndexCommands:
 
 
 # It doesn't inherit from "Redis" mainly because of the methods signatures.
+class VectorCommands:
+    """
+    Vector index commands namespace.
+
+    Vector indexes store embeddings under IDs and answer approximate nearest-neighbour
+    queries. They live at an ordinary Redis key.
+
+    See https://upstash.com/docs/redis/commands/vector/overview
+    """
+
+    def __init__(self, client: Commands):
+        self.client = client
+
+    def create_index(
+        self,
+        *,
+        name: str,
+        dimension: int,
+        metric: Union[VectorMetric, str],
+        exists_ok: bool = False,
+    ) -> ResponseT:
+        """
+        Creates a vector index and returns a handle to it.
+
+        `dimension` (1 to 32768) and `metric` are fixed for the life of the index.
+        With `exists_ok`, creating an index that already exists with the same
+        configuration succeeds instead of raising.
+
+        Example:
+        ```python
+        index = redis.vector.create_index(name="docs", dimension=3, metric="COSINE")
+        index.add("doc-1", [0.1, 0.2, 0.3])
+        ```
+
+        See https://upstash.com/docs/redis/commands/vector/vector-create
+        """
+        command: List = [
+            "VECTOR.CREATE",
+            name,
+            "DIM",
+            dimension,
+            "METRIC",
+            metric.upper(),
+        ]
+
+        if exists_ok:
+            command.append("EXISTSOK")
+
+        return self.client.execute(command)
+
+    def index(self, name: str) -> "VectorIndexCommands":
+        """
+        Returns a handle to an existing vector index without sending any command.
+        """
+        return VectorIndexCommands(self.client, name)
+
+
+class VectorIndexCommands:
+    """
+    Commands for interacting with a specific vector index.
+    """
+
+    def __init__(self, client: Commands, name: str):
+        self.client = client
+        self.name = name
+
+    def add(self, id: str, vector: VectorT) -> ResponseT:
+        """
+        Adds a vector under `id`, or replaces the vector already stored there.
+
+        The vector can be a sequence of numbers, a bytes-like little-endian FP32 blob,
+        or a base64-encoded FP32 blob as `str`. Its length must match the index dimension.
+
+        Returns 1 if the ID was added, 0 if an existing vector was replaced.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-add
+        """
+        command: List = ["VECTOR.ADD", self.name, id, *serialize_vector(vector)]
+        return self.client.execute(command)
+
+    def get(self, id: str) -> ResponseT:
+        """
+        Returns the vector stored under `id`, or None if the ID is not in the index.
+
+        Values are stored as 32-bit floats, so they come back with float32 precision.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-get
+        """
+        command: List = ["VECTOR.GET", self.name, id]
+        return self.client.execute(command)
+
+    def query(
+        self,
+        *,
+        vector: VectorT,
+        top_k: int,
+        profile: Optional[Union[VectorQueryProfile, str]] = None,
+    ) -> ResponseT:
+        """
+        Returns up to `top_k` (1 to 1000) nearest neighbours of `vector`, best match first.
+
+        Scores are normalized to 0..1 for every metric; higher means closer.
+        `profile` trades recall against latency: FAST, BALANCED (default) or PRECISE.
+
+        Example:
+        ```python
+        for match in index.query(vector=[0.1, 0.2, 0.3], top_k=5):
+            print(match.id, match.score)
+        ```
+
+        See https://upstash.com/docs/redis/commands/vector/vector-query
+        """
+        command: List = ["VECTOR.QUERY", self.name, "TOPK", top_k]
+        command.extend(serialize_vector(vector))
+
+        if profile:
+            command.extend(("PROFILE", profile.upper()))
+
+        return self.client.execute(command)
+
+    def delete(self, id: str) -> ResponseT:
+        """
+        Removes the vector stored under `id`.
+
+        Returns 1 if the ID was removed, 0 if it was not in the index.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-del
+        """
+        command: List = ["VECTOR.DEL", self.name, id]
+        return self.client.execute(command)
+
+    def count(self) -> ResponseT:
+        """
+        Returns the number of vectors in the index. A missing index counts as 0.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-count
+        """
+        command: List = ["VECTOR.COUNT", self.name]
+        return self.client.execute(command)
+
+    def info(self) -> ResponseT:
+        """
+        Returns the dimension and metric of the index, or None if it does not exist.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-info
+        """
+        command: List = ["VECTOR.INFO", self.name]
+        return self.client.execute(command)
+
+    def drop(self) -> ResponseT:
+        """
+        Deletes the index and every vector in it.
+
+        Returns 1 if the index was dropped, 0 if it did not exist.
+
+        See https://upstash.com/docs/redis/commands/vector/vector-drop
+        """
+        command: List = ["VECTOR.DROP", self.name]
+        return self.client.execute(command)
+
+
 class BitFieldCommands:
     def __init__(self, client: Commands, key: str):
         self.client = client
@@ -6161,7 +6328,11 @@ AsyncJsonCommands = JsonCommands
 AsyncSearchCommands = SearchCommands
 AsyncSearchIndexCommands = SearchIndexCommands
 AsyncSearchAliasCommands = SearchAliasCommands
+AsyncVectorCommands = VectorCommands
+AsyncVectorIndexCommands = VectorIndexCommands
 AsyncBitFieldCommands = BitFieldCommands
 AsyncBitFieldROCommands = BitFieldROCommands
 PipelineCommands = Commands
 PipelineJsonCommands = JsonCommands
+PipelineVectorCommands = VectorCommands
+PipelineVectorIndexCommands = VectorIndexCommands

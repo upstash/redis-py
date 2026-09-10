@@ -7,6 +7,8 @@ from upstash_redis.commands import (
     JsonCommands,
     PipelineJsonCommands,
     SearchCommands,
+    VectorCommands,
+    PipelineVectorCommands,
 )
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, SyncHttpClient
@@ -64,6 +66,7 @@ class Redis(Commands):
 
         self._json = JsonCommands(self)
         self._search = SearchCommands(self)
+        self._vector = VectorCommands(self)
         self._http = SyncHttpClient(
             encoding=rest_encoding,
             retries=rest_retries,
@@ -78,6 +81,10 @@ class Redis(Commands):
     @property
     def search(self) -> SearchCommands:
         return self._search
+
+    @property
+    def vector(self) -> VectorCommands:
+        return self._vector
 
     @classmethod
     def from_env(
@@ -188,6 +195,7 @@ class Pipeline(PipelineCommands):
         self._http = http
 
         self._json = PipelineJsonCommands(self)
+        self._vector = PipelineVectorCommands(self)
         self._command_stack: List[List[str]] = []
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
@@ -196,6 +204,10 @@ class Pipeline(PipelineCommands):
     @property
     def json(self) -> PipelineJsonCommands:
         return self._json
+
+    @property
+    def vector(self) -> PipelineVectorCommands:
+        return self._vector
 
     def execute(self, command: List) -> "Pipeline":
         """
