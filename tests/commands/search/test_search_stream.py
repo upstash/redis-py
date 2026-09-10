@@ -140,6 +140,25 @@ def test_stream_index_skip_initial_scan(
     assert [r.key for r in index.query(filter={"service": "a"})] == ["2-0"]
 
 
+def test_stream_index_field_alias(redis: Redis, names: Callable[[str], str]) -> None:
+    stream = names("stream")
+    index = redis.search.create_index(
+        name=names("index"),
+        schema={"description": {"type": "TEXT", "alias": "message"}},
+        data_type="STREAM",
+        stream=stream,
+    )
+
+    redis.xadd(stream, "1-0", {"message": "disk almost full"})
+    index.wait_indexing()
+
+    assert [r.key for r in index.query(filter={"description": "disk"})] == ["1-0"]
+
+    description = index.describe()
+    assert description is not None
+    assert description.schema["description"].alias == "message"
+
+
 def test_stream_index_argument_validation(redis: Redis) -> None:
     with pytest.raises(Exception, match='"stream" must be given'):
         redis.search.create_index(name="never", schema=SCHEMA, data_type="STREAM")
@@ -164,3 +183,21 @@ def test_stream_index_argument_validation(redis: Redis) -> None:
             prefixes="x:",
             stream="events",
         )
+
+
+def test_hash_index_field_alias(redis: Redis, names: Callable[[str], str]) -> None:
+    name = names("index")
+    key = f"{name}:1"
+    index = redis.search.create_index(
+        name=name,
+        schema={"title": {"type": "TEXT", "alias": "name"}},
+        data_type="HASH",
+        prefixes=f"{name}:",
+    )
+    try:
+        redis.hset(key, values={"name": "hello world", "title": "other"})
+        index.wait_indexing()
+
+        assert [r.key for r in index.query(filter={"title": "hello"})] == [key]
+    finally:
+        redis.delete(key)

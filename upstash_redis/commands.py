@@ -5898,7 +5898,7 @@ class SearchCommands:
                 command.extend((path, field_type))
 
                 if "alias" in value:
-                    command.extend(("AS", value["alias"]))
+                    command.extend(("FROM", value["alias"]))
 
                 if "fast" in value and value["fast"]:
                     command.append("FAST")
