@@ -11,6 +11,7 @@ class DataType(str, enum.Enum):
     JSON = "JSON"
     HASH = "HASH"
     STRING = "STRING"
+    STREAM = "STREAM"
 
 
 class FieldType(str, enum.Enum):
