@@ -5506,6 +5506,355 @@ class Commands:
 
         return self.execute(command)
 
+    # Array commands
+    # See https://upstash.com/docs/redis/commands/array/overview
+
+    def arset(self, key: str, index: int, *values: ValueT) -> ResponseT:
+        """
+        Writes one or more values into an array starting at `index`: the first value goes
+        to `index`, the next to `index + 1`, and so on. Does not move the append cursor.
+
+        Returns the number of slots that were newly occupied.
+
+        Example:
+        ```python
+        assert redis.arset("readings", 0, "21.5", "21.7") == 2
+        ```
+
+        See https://upstash.com/docs/redis/commands/array/arset
+        """
+        if len(values) == 0:
+            raise Exception("At least one value must be given.")
+
+        command: List = ["ARSET", key, index, *values]
+        return self.execute(command)
+
+    def armset(
+        self,
+        key: str,
+        values: Union[Mapping[int, ValueT], List[Tuple[int, ValueT]]],
+    ) -> ResponseT:
+        """
+        Writes several index-value pairs in one atomic call, given as a mapping
+        (`{0: "a", 10: "b"}`) or a list of `(index, value)` tuples.
+
+        Returns the number of slots that were newly occupied.
+
+        See https://upstash.com/docs/redis/commands/array/armset
+        """
+        pairs = values.items() if isinstance(values, Mapping) else values
+
+        command: List = ["ARMSET", key]
+        for index, value in pairs:
+            command.extend((index, value))
+
+        if len(command) == 2:
+            raise Exception("At least one index-value pair must be given.")
+
+        return self.execute(command)
+
+    def arget(self, key: str, index: int) -> ResponseT:
+        """
+        Returns the value at `index`, or None if the slot is empty or the key does not exist.
+
+        See https://upstash.com/docs/redis/commands/array/arget
+        """
+        command: List = ["ARGET", key, index]
+        return self.execute(command)
+
+    def armget(self, key: str, *indexes: int) -> ResponseT:
+        """
+        Returns the values at several indexes, in the order given, with None for empty slots.
+
+        See https://upstash.com/docs/redis/commands/array/armget
+        """
+        if len(indexes) == 0:
+            raise Exception("At least one index must be given.")
+
+        command: List = ["ARMGET", key, *indexes]
+        return self.execute(command)
+
+    def argetrange(self, key: str, start: int, end: int) -> ResponseT:
+        """
+        Returns every slot in the inclusive range `[start, end]`, with None for empty slots.
+        When `start` is greater than `end` the values come back from the higher index down.
+
+        See https://upstash.com/docs/redis/commands/array/argetrange
+        """
+        command: List = ["ARGETRANGE", key, start, end]
+        return self.execute(command)
+
+    def arscan(
+        self, key: str, start: int, end: int, limit: Optional[int] = None
+    ) -> ResponseT:
+        """
+        Returns the occupied slots in `[start, end]` as `(index, value)` tuples in ascending
+        index order. Empty slots are skipped.
+
+        See https://upstash.com/docs/redis/commands/array/arscan
+        """
+        command: List = ["ARSCAN", key, start, end]
+
+        if limit is not None:
+            command.extend(("LIMIT", limit))
+
+        return self.execute(command)
+
+    def argrep(
+        self,
+        key: str,
+        start: Union[int, Literal["-"]],
+        end: Union[int, Literal["+"]],
+        *,
+        exact: Optional[Union[str, List[str]]] = None,
+        match: Optional[Union[str, List[str]]] = None,
+        glob: Optional[Union[str, List[str]]] = None,
+        regex: Optional[Union[str, List[str]]] = None,
+        combine: Optional[Literal["AND", "OR", "and", "or"]] = None,
+        nocase: bool = False,
+        withvalues: bool = False,
+        limit: Optional[int] = None,
+    ) -> ResponseT:
+        """
+        Returns the indexes in `[start, end]` whose value matches the given predicates, or
+        `(index, value)` tuples with `withvalues`. `start` and `end` accept "-" and "+"
+        for the lowest and highest possible index.
+
+        Predicates (each accepts one pattern or a list):
+        - `exact`: the whole value equals the pattern
+        - `match`: the value contains the pattern
+        - `glob`: the value matches a glob pattern (`*` and `?`)
+        - `regex`: the value matches a regular expression
+
+        By default a slot matches when any predicate matches; `combine="AND"` requires all.
+
+        Example:
+        ```python
+        redis.argrep("logs", "-", "+", match="error", nocase=True, withvalues=True)
+        ```
+
+        See https://upstash.com/docs/redis/commands/array/argrep
+        """
+        command: List = ["ARGREP", key, start, end]
+
+        for keyword, patterns in (
+            ("EXACT", exact),
+            ("MATCH", match),
+            ("GLOB", glob),
+            ("RE", regex),
+        ):
+            if patterns is None:
+                continue
+            if isinstance(patterns, str):
+                patterns = [patterns]
+            for pattern in patterns:
+                command.extend((keyword, pattern))
+
+        if len(command) == 4:
+            raise Exception(
+                'At least one of "exact", "match", "glob" or "regex" must be given.'
+            )
+
+        if combine:
+            command.append(combine.upper())
+
+        if nocase:
+            command.append("NOCASE")
+
+        if withvalues:
+            command.append("WITHVALUES")
+
+        if limit is not None:
+            command.extend(("LIMIT", limit))
+
+        return self.execute(command)
+
+    def ardel(self, key: str, *indexes: int) -> ResponseT:
+        """
+        Empties one or more slots without shifting later values.
+
+        Returns the number of slots that held a value.
+
+        See https://upstash.com/docs/redis/commands/array/ardel
+        """
+        if len(indexes) == 0:
+            raise Exception("At least one index must be given.")
+
+        command: List = ["ARDEL", key, *indexes]
+        return self.execute(command)
+
+    def ardelrange(self, key: str, *ranges: Tuple[int, int]) -> ResponseT:
+        """
+        Empties every occupied slot inside one or more inclusive `(start, end)` ranges.
+
+        Returns the total number of values removed.
+
+        Example:
+        ```python
+        redis.ardelrange("readings", (0, 99), (500, 599))
+        ```
+
+        See https://upstash.com/docs/redis/commands/array/ardelrange
+        """
+        if len(ranges) == 0:
+            raise Exception("At least one range must be given.")
+
+        command: List = ["ARDELRANGE", key]
+        for start, end in ranges:
+            command.extend((start, end))
+
+        return self.execute(command)
+
+    def arcount(self, key: str) -> ResponseT:
+        """
+        Returns the number of occupied slots. A missing key counts as 0.
+
+        See https://upstash.com/docs/redis/commands/array/arcount
+        """
+        command: List = ["ARCOUNT", key]
+        return self.execute(command)
+
+    def arlen(self, key: str) -> ResponseT:
+        """
+        Returns the length of the array: the highest occupied index plus one.
+        Because arrays are sparse this can be larger than `arcount`.
+
+        See https://upstash.com/docs/redis/commands/array/arlen
+        """
+        command: List = ["ARLEN", key]
+        return self.execute(command)
+
+    def arinsert(self, key: str, *values: ValueT) -> ResponseT:
+        """
+        Appends values after the array's append cursor.
+
+        Returns the index the last value was written to.
+
+        See https://upstash.com/docs/redis/commands/array/arinsert
+        """
+        if len(values) == 0:
+            raise Exception("At least one value must be given.")
+
+        command: List = ["ARINSERT", key, *values]
+        return self.execute(command)
+
+    def arring(self, key: str, size: int, *values: ValueT) -> ResponseT:
+        """
+        Appends values to a fixed-size ring of `size` slots, overwriting the oldest values
+        once full. Calling it with a different `size` reshapes the ring.
+
+        Returns the index the last value was written to.
+
+        See https://upstash.com/docs/redis/commands/array/arring
+        """
+        if len(values) == 0:
+            raise Exception("At least one value must be given.")
+
+        command: List = ["ARRING", key, size, *values]
+        return self.execute(command)
+
+    def arlastitems(self, key: str, count: int, rev: bool = False) -> ResponseT:
+        """
+        Returns up to `count` of the most recently appended values, oldest first
+        (newest first with `rev`).
+
+        See https://upstash.com/docs/redis/commands/array/arlastitems
+        """
+        command: List = ["ARLASTITEMS", key, count]
+
+        if rev:
+            command.append("REV")
+
+        return self.execute(command)
+
+    def arnext(self, key: str) -> ResponseT:
+        """
+        Returns the index the next `arinsert` would write to, or None when the cursor is
+        already at the highest supported index.
+
+        See https://upstash.com/docs/redis/commands/array/arnext
+        """
+        command: List = ["ARNEXT", key]
+        return self.execute(command)
+
+    def arseek(self, key: str, index: int) -> ResponseT:
+        """
+        Moves the append cursor so that the next `arinsert` writes to `index`.
+
+        Returns True if the cursor was moved, False if the key does not exist.
+
+        See https://upstash.com/docs/redis/commands/array/arseek
+        """
+        command: List = ["ARSEEK", key, index]
+        return self.execute(command)
+
+    def arop(
+        self,
+        key: str,
+        start: int,
+        end: int,
+        operation: Literal[
+            "SUM",
+            "MIN",
+            "MAX",
+            "AND",
+            "OR",
+            "XOR",
+            "USED",
+            "MATCH",
+            "sum",
+            "min",
+            "max",
+            "and",
+            "or",
+            "xor",
+            "used",
+            "match",
+        ],
+        value: Optional[ValueT] = None,
+    ) -> ResponseT:
+        """
+        Reduces the values in `[start, end]` to a single number on the server.
+
+        SUM, MIN, MAX, AND, OR and XOR skip non-numeric values and return None when there is
+        nothing to aggregate. USED counts occupied slots and MATCH counts the slots equal
+        to `value`.
+
+        Example:
+        ```python
+        redis.arop("readings", 0, 99, "SUM")
+        redis.arop("statuses", 0, 99, "MATCH", "error")
+        ```
+
+        See https://upstash.com/docs/redis/commands/array/arop
+        """
+        operation_upper = operation.upper()
+        command: List = ["AROP", key, start, end, operation_upper]
+
+        if operation_upper == "MATCH":
+            if value is None:
+                raise Exception('"value" must be given for the MATCH operation.')
+            command.append(value)
+        elif value is not None:
+            raise Exception('"value" can only be used with the MATCH operation.')
+
+        return self.execute(command)
+
+    def arinfo(self, key: str, full: bool = False) -> ResponseT:
+        """
+        Describes how the array is laid out in memory, as a dict with snake_case keys
+        (`len`, `count`, `slice_size`, `next_insert_index`, ...). `full` adds per-slice
+        statistics. Raises if the key does not exist.
+
+        See https://upstash.com/docs/redis/commands/array/arinfo
+        """
+        command: List = ["ARINFO", key]
+
+        if full:
+            command.append("FULL")
+
+        return self.execute(command)
+
 
 class JsonCommands:
     def __init__(self, client: Commands):
