@@ -186,6 +186,21 @@ index.drop()
 
 Vector commands also work in pipelines and transactions through `pipeline.vector`.
 
+### Arrays
+
+Sparse, index-addressed arrays ([docs](https://upstash.com/docs/redis/commands/array/overview)):
+
+```python
+redis.arset("readings", 0, "21.5", "21.7")     # positional write, returns newly occupied slots
+redis.arinsert("log", "boot", "ready")         # append, returns the index of the last value
+redis.armget("readings", 0, 1)                 # ['21.5', '21.7']
+redis.arscan("readings", 0, 1000)              # [(0, '21.5'), (1, '21.7')]
+redis.argrep("log", "-", "+", match="boot")    # [0]
+redis.arop("readings", 0, 1000, "SUM")         # 43.2
+redis.arring("last-10", 10, "event")           # fixed-size ring buffer
+redis.arlastitems("last-10", 10)               # most recent values, oldest first
+```
+
 ### Custom commands
 If you want to run a command that hasn't been implemented, you can use the `execute` function of your client instance
 and pass the command as a `list`.
