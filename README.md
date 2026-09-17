@@ -164,6 +164,28 @@ async def stream_example():
     messages = await redis.xreadgroup("processors", "worker1", {"mystream": ">"})
 ```
 
+### Vector indexes
+
+Store embeddings under IDs and run nearest-neighbour queries inside Redis ([docs](https://upstash.com/docs/redis/commands/vector/overview)):
+
+```python
+index = redis.vector.create_index(name="docs", dimension=3, metric="COSINE")
+# or, for an existing index: index = redis.vector.index("docs")
+
+index.add("doc-1", [0.1, 0.2, 0.3])  # a list of numbers, raw FP32 bytes or a base64 FP32 string
+
+for match in index.query(vector=[0.1, 0.2, 0.3], top_k=5):
+    print(match.id, match.score)  # scores are normalized to 0..1, higher is closer
+
+index.get("doc-1")    # [0.1..., 0.2..., 0.3...] or None
+index.count()         # 1
+index.info()          # VectorIndexInfo(dimension=3, metric=<VectorMetric.COSINE: 'COSINE'>)
+index.delete("doc-1")
+index.drop()
+```
+
+Vector commands also work in pipelines and transactions through `pipeline.vector`.
+
 ### Custom commands
 If you want to run a command that hasn't been implemented, you can use the `execute` function of your client instance
 and pass the command as a `list`.

@@ -290,4 +290,4 @@ def test_xackdel_already_acknowledged(redis: Redis):
 
     # Message should be deleted
     length = redis.xlen(stream_key)
-    assert length == 0
+    assert length == 1

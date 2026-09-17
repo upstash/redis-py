@@ -1,7 +1,7 @@
 from json import loads
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-from upstash_redis.commands import SearchIndexCommands
+from upstash_redis.commands import SearchIndexCommands, VectorIndexCommands
 from upstash_redis.search import (
     deserialize_aggregate_response,
     deserialize_describe_response,
@@ -10,6 +10,11 @@ from upstash_redis.search import (
 )
 from upstash_redis.typing import RESTResultT
 from upstash_redis.utils import GeoSearchResult
+from upstash_redis.vector import (
+    deserialize_vector,
+    deserialize_vector_info_response,
+    deserialize_vector_query_response,
+)
 
 
 def to_dict(res: List, _, __) -> Dict:
@@ -292,6 +297,26 @@ def format_search_list_aliases_response(res: Any, _, __):
     return aliases
 
 
+def format_vector_create_response(res: Any, command: List[str], client: Any):
+    """Format VECTOR.CREATE response by returning a VectorIndexCommands handle."""
+    return VectorIndexCommands(client, command[1])
+
+
+def format_vector_get_response(res: Any, _, __):
+    """Format VECTOR.GET response into a list of floats, or None."""
+    return deserialize_vector(res)
+
+
+def format_vector_query_response(res: Any, _, __):
+    """Format VECTOR.QUERY response into VectorQueryResult objects."""
+    return deserialize_vector_query_response(res)
+
+
+def format_vector_info_response(res: Any, _, __):
+    """Format VECTOR.INFO response into a VectorIndexInfo, or None."""
+    return deserialize_vector_info_response(res)
+
+
 FORMATTERS: Dict[str, Callable] = {
     "COPY": to_bool,
     "EXPIRE": to_bool,
@@ -368,6 +393,10 @@ FORMATTERS: Dict[str, Callable] = {
     "XGROUP DESTROY": to_bool,
     "XGROUP CREATECONSUMER": to_bool,
     "SEARCH.CREATE": format_search_create_response,
+    "VECTOR.CREATE": format_vector_create_response,
+    "VECTOR.GET": format_vector_get_response,
+    "VECTOR.QUERY": format_vector_query_response,
+    "VECTOR.INFO": format_vector_info_response,
     "SEARCH.QUERY": format_search_query_response,
     "SEARCH.DESCRIBE": format_search_describe_response,
     "SEARCH.COUNT": format_search_count_response,

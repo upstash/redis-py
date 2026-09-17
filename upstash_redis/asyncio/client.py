@@ -7,6 +7,8 @@ from upstash_redis.commands import (
     AsyncJsonCommands,
     PipelineJsonCommands,
     AsyncSearchCommands,
+    AsyncVectorCommands,
+    PipelineVectorCommands,
 )
 from upstash_redis.format import cast_response
 from upstash_redis.http import make_headers, AsyncHttpClient
@@ -62,6 +64,7 @@ class Redis(AsyncCommands):
 
         self._json = AsyncJsonCommands(self)
         self._search = AsyncSearchCommands(self)
+        self._vector = AsyncVectorCommands(self)
         self._http = AsyncHttpClient(
             encoding=rest_encoding,
             retries=rest_retries,
@@ -76,6 +79,10 @@ class Redis(AsyncCommands):
     @property
     def search(self) -> AsyncSearchCommands:
         return self._search
+
+    @property
+    def vector(self) -> AsyncVectorCommands:
+        return self._vector
 
     @classmethod
     def from_env(
@@ -186,6 +193,7 @@ class AsyncPipeline(PipelineCommands):
         self._http = http
 
         self._json = PipelineJsonCommands(self)
+        self._vector = PipelineVectorCommands(self)
         self._command_stack: List[List[str]] = []
 
         self._set_sync_token_header_fn = set_sync_token_header_fn
@@ -194,6 +202,10 @@ class AsyncPipeline(PipelineCommands):
     @property
     def json(self) -> PipelineJsonCommands:
         return self._json
+
+    @property
+    def vector(self) -> PipelineVectorCommands:
+        return self._vector
 
     def execute(self, command: List) -> "AsyncPipeline":  # type: ignore[override]
         """
