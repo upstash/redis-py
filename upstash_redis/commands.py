@@ -5827,25 +5827,57 @@ class SearchCommands:
         name: str,
         schema: Schema,
         data_type: Union[DataType, str],
-        prefixes: Union[str, List[str]],
+        prefixes: Optional[Union[str, List[str]]] = None,
+        stream: Optional[str] = None,
         language: Optional[Union[Language, str]] = None,
         skip_initial_scan: bool = False,
         exists_ok: bool = False,
     ) -> ResponseT:
-        """Create a new search index."""
+        """
+        Create a new search index.
 
-        if isinstance(prefixes, str):
-            prefixes = [prefixes]
+        JSON, hash and string indexes track the keys matching `prefixes`. A stream index
+        (`data_type="STREAM"`) is bound to the single stream key given as `stream`: every
+        entry becomes a document whose key is the entry ID.
 
-        command: List = [
-            "SEARCH.CREATE",
-            name,
-            "ON",
-            data_type,
-            "PREFIX",
-            len(prefixes),
-            *prefixes,
-        ]
+        Example:
+        ```python
+        index = redis.search.create_index(
+            name="event-search",
+            data_type="STREAM",
+            stream="events",
+            schema={"message": "TEXT", "severity": {"type": "U64", "fast": True}},
+        )
+        ```
+
+        See https://upstash.com/docs/redis/search/streams
+        """
+
+        if data_type.upper() == DataType.STREAM:
+            if stream is None:
+                raise Exception('"stream" must be given for stream indexes.')
+            if prefixes is not None:
+                raise Exception('"prefixes" cannot be used with stream indexes.')
+
+            command: List = ["SEARCH.CREATE", name, "ON", "STREAM", stream]
+        else:
+            if prefixes is None:
+                raise Exception('"prefixes" must be given.')
+            if stream is not None:
+                raise Exception('"stream" can only be used with stream indexes.')
+
+            if isinstance(prefixes, str):
+                prefixes = [prefixes]
+
+            command = [
+                "SEARCH.CREATE",
+                name,
+                "ON",
+                data_type,
+                "PREFIX",
+                len(prefixes),
+                *prefixes,
+            ]
 
         if language:
             command.extend(("LANGUAGE", language))
@@ -5866,7 +5898,7 @@ class SearchCommands:
                 command.extend((path, field_type))
 
                 if "alias" in value:
-                    command.extend(("AS", value["alias"]))
+                    command.extend(("FROM", value["alias"]))
 
                 if "fast" in value and value["fast"]:
                     command.append("FAST")

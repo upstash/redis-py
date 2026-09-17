@@ -11,6 +11,7 @@ class DataType(str, enum.Enum):
     JSON = "JSON"
     HASH = "HASH"
     STRING = "STRING"
+    STREAM = "STREAM"
 
 
 class FieldType(str, enum.Enum):
@@ -31,6 +32,7 @@ class FieldOptions(TypedDict, total=False):
     fast: bool
     no_tokenize: bool
     no_stem: bool
+    # Read the value from this document field (or nested path) instead of the schema key.
     alias: str
 
 
