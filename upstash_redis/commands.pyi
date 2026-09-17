@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, List, Literal, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Literal, Mapping, Optional, Tuple, Union
 
 from upstash_redis.search import (
     IndexDescription,
@@ -27,7 +27,7 @@ class Commands:
     def armset(
         self,
         key: str,
-        values: Union[Mapping[int, ValueT], List[Tuple[int, ValueT]]],
+        values: Union[Mapping[int, ValueT], Iterable[Tuple[int, ValueT]]],
     ) -> int: ...
     def arget(self, key: str, index: int) -> Optional[str]: ...
     def armget(self, key: str, *indexes: int) -> List[Optional[str]]: ...
@@ -45,7 +45,7 @@ class Commands:
         match: Optional[Union[str, List[str]]] = None,
         glob: Optional[Union[str, List[str]]] = None,
         regex: Optional[Union[str, List[str]]] = None,
-        combine: Optional[Literal["AND", "OR", "and", "or"]] = None,
+        combine: Optional[Literal["AND", "OR"]] = None,
         nocase: bool = False,
         withvalues: bool = False,
         limit: Optional[int] = None,
@@ -75,14 +75,6 @@ class Commands:
             "XOR",
             "USED",
             "MATCH",
-            "sum",
-            "min",
-            "max",
-            "and",
-            "or",
-            "xor",
-            "used",
-            "match",
         ],
         value: Optional[ValueT] = None,
     ) -> Union[int, float, None]: ...
@@ -796,7 +788,7 @@ class AsyncCommands:
     async def armset(
         self,
         key: str,
-        values: Union[Mapping[int, ValueT], List[Tuple[int, ValueT]]],
+        values: Union[Mapping[int, ValueT], Iterable[Tuple[int, ValueT]]],
     ) -> int: ...
     async def arget(self, key: str, index: int) -> Optional[str]: ...
     async def armget(self, key: str, *indexes: int) -> List[Optional[str]]: ...
@@ -816,7 +808,7 @@ class AsyncCommands:
         match: Optional[Union[str, List[str]]] = None,
         glob: Optional[Union[str, List[str]]] = None,
         regex: Optional[Union[str, List[str]]] = None,
-        combine: Optional[Literal["AND", "OR", "and", "or"]] = None,
+        combine: Optional[Literal["AND", "OR"]] = None,
         nocase: bool = False,
         withvalues: bool = False,
         limit: Optional[int] = None,
@@ -846,14 +838,6 @@ class AsyncCommands:
             "XOR",
             "USED",
             "MATCH",
-            "sum",
-            "min",
-            "max",
-            "and",
-            "or",
-            "xor",
-            "used",
-            "match",
         ],
         value: Optional[ValueT] = None,
     ) -> Union[int, float, None]: ...
@@ -1622,7 +1606,7 @@ class PipelineCommands:
     def armset(
         self,
         key: str,
-        values: Union[Mapping[int, ValueT], List[Tuple[int, ValueT]]],
+        values: Union[Mapping[int, ValueT], Iterable[Tuple[int, ValueT]]],
     ) -> PipelineCommands: ...
     def arget(self, key: str, index: int) -> PipelineCommands: ...
     def armget(self, key: str, *indexes: int) -> PipelineCommands: ...
@@ -1640,7 +1624,7 @@ class PipelineCommands:
         match: Optional[Union[str, List[str]]] = None,
         glob: Optional[Union[str, List[str]]] = None,
         regex: Optional[Union[str, List[str]]] = None,
-        combine: Optional[Literal["AND", "OR", "and", "or"]] = None,
+        combine: Optional[Literal["AND", "OR"]] = None,
         nocase: bool = False,
         withvalues: bool = False,
         limit: Optional[int] = None,
@@ -1670,14 +1654,6 @@ class PipelineCommands:
             "XOR",
             "USED",
             "MATCH",
-            "sum",
-            "min",
-            "max",
-            "and",
-            "or",
-            "xor",
-            "used",
-            "match",
         ],
         value: Optional[ValueT] = None,
     ) -> PipelineCommands: ...

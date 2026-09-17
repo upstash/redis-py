@@ -335,7 +335,7 @@ def format_array_pairs(res, _, __):
 
 def format_arop(res, _, __):
     """Format AROP into an int or float (SUM/MIN/MAX come back as strings), or None."""
-    if res is None or isinstance(res, int):
+    if res is None or isinstance(res, (int, float)):
         return res
     try:
         return int(res)

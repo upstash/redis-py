@@ -130,7 +130,7 @@ def test_arop(redis: Redis, new_key: Callable[[], str]) -> None:
     redis.arset(key, 0, 1, 2, "x", 4.5)
 
     assert redis.arop(key, 0, 3, "SUM") == 7.5
-    assert redis.arop(key, 0, 3, "min") == 1
+    assert redis.arop(key, 0, 3, "MIN") == 1
     assert redis.arop(key, 0, 1, "MAX") == 2
     assert redis.arop(key, 0, 1, "XOR") == 3
     assert redis.arop(key, 0, 3, "USED") == 4

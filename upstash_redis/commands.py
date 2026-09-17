@@ -4,6 +4,7 @@ from typing import (
     Any,
     Awaitable,
     Dict,
+    Iterable,
     List,
     Literal,
     Mapping,
@@ -5532,7 +5533,7 @@ class Commands:
     def armset(
         self,
         key: str,
-        values: Union[Mapping[int, ValueT], List[Tuple[int, ValueT]]],
+        values: Union[Mapping[int, ValueT], Iterable[Tuple[int, ValueT]]],
     ) -> ResponseT:
         """
         Writes several index-value pairs in one atomic call, given as a mapping
@@ -5610,7 +5611,7 @@ class Commands:
         match: Optional[Union[str, List[str]]] = None,
         glob: Optional[Union[str, List[str]]] = None,
         regex: Optional[Union[str, List[str]]] = None,
-        combine: Optional[Literal["AND", "OR", "and", "or"]] = None,
+        combine: Optional[Literal["AND", "OR"]] = None,
         nocase: bool = False,
         withvalues: bool = False,
         limit: Optional[int] = None,
@@ -5802,14 +5803,6 @@ class Commands:
             "XOR",
             "USED",
             "MATCH",
-            "sum",
-            "min",
-            "max",
-            "and",
-            "or",
-            "xor",
-            "used",
-            "match",
         ],
         value: Optional[ValueT] = None,
     ) -> ResponseT:
