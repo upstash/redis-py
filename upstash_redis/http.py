@@ -58,12 +58,13 @@ class SyncHttpClient:
         retries: int,
         retry_interval: float,
         sync_token_cb: Optional[Callable[[str], None]] = None,
+        timeout: Optional[float] = None,
     ):
         self._encoding = encoding
         self._retries = retries
         self._retry_interval = retry_interval
         self._sync_token_cb = sync_token_cb
-        self._client = httpx.Client(timeout=None)
+        self._client = httpx.Client(timeout=timeout)
 
     def execute(
         self,
@@ -131,12 +132,13 @@ class AsyncHttpClient:
         retries: int,
         retry_interval: float,
         sync_token_cb: Optional[Callable[[str], None]] = None,
+        timeout: Optional[float] = None,
     ):
         self._encoding = encoding
         self._retries = retries
         self._retry_interval = retry_interval
         self._sync_token_cb = sync_token_cb
-        self._client = httpx.AsyncClient(timeout=None)
+        self._client = httpx.AsyncClient(timeout=timeout)
 
     async def execute(
         self,
