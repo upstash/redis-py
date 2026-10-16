@@ -4636,7 +4636,7 @@ class Commands:
         :param nx: Only set the key if it does not already exist.
         :param xx: Only set the key if it already exists.
 
-        :param get: Return the old value stored at the key.
+        :param get: Return the old value stored at the key; can be combined with nx or xx.
 
         :param ex: Set the number of seconds until the key expires.
         :param px: Set the number of milliseconds until the key expires.
@@ -4671,9 +4671,6 @@ class Commands:
             ex, px, exat, pxat, keepttl, number=1
         ):
             raise Exception("Exactly one of the expiration settings must be specified.")
-
-        if nx and get:
-            raise Exception('"nx" and "get" are mutually exclusive.')
 
         command: List = ["SET", key, value]
 
