@@ -27,6 +27,7 @@ The SDK is currently compatible with Python 3.8 and above.
     - [Custom commands](#custom-commands)
 - [Encoding](#encoding)
 - [Retry mechanism](#retry-mechanism)
+- [Timeouts](#timeouts)
 - [Contributing](#contributing)
   - [Preparing the environment](#preparing-the-environment)
   - [Running tests](#running-tests)
@@ -288,6 +289,23 @@ For very large data, this can add a few milliseconds in latency. So, if you're s
 # Retry mechanism
 upstash-redis has a fallback mechanism in case of network or API issues. By default, if a request fails it'll retry once, 3 seconds 
 after the error. If you want to customize that, set `rest_retries` and `rest_retry_interval` (in seconds).
+
+# Timeouts
+
+Set `rest_timeout` to a number of seconds to limit how long an HTTP operation
+can wait. This option is supported by both the sync and async clients, including
+`Redis.from_env()`, pipelines, and transactions.
+
+```python
+redis = Redis.from_env(rest_timeout=5.0)
+```
+
+The timeout applies separately to connection establishment, reading, writing,
+and waiting for a connection from the pool. It is not a deadline for the entire
+Redis command: timed-out requests use the configured retry policy, so retries
+and retry delays can increase the total wait.
+
+The default is `None`, which preserves the existing behavior of no HTTP timeout.
 
 # Contributing
 
