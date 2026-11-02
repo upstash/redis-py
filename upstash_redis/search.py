@@ -23,6 +23,8 @@ class FieldType(str, enum.Enum):
     DATE = "DATE"
     KEYWORD = "KEYWORD"
     FACET = "FACET"
+    # A TEXT field that is also embedded for semantic search with the $ann retriever.
+    HYBRID = "HYBRID"
 
 
 class FieldOptions(TypedDict, total=False):
