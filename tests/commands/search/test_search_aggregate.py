@@ -386,6 +386,20 @@ class TestAggregation:
             isinstance(b["key"]["c"], str) for b in result["composite"]["buckets"]
         )
         assert all(isinstance(bucket["key"], str) for bucket in sub_aggregations)
+        nested = index.aggregate(
+            aggregations={
+                "by_category": {
+                    "$terms": {"field": "category"},
+                    "$aggs": {"by_price": {"$terms": {"field": "price"}}},
+                }
+            }
+        )
+        nested_keys = [
+            b["key"]
+            for s in nested["by_category"]["buckets"]
+            for b in s["by_price"]["buckets"]
+        ]
+        assert nested_keys and all(isinstance(k, (int, float)) for k in nested_keys)
         range_bucket = sub_aggregations[0]["ranges"]["buckets"][0]
         assert range_bucket["key"] == "*-10.5"
         assert range_bucket["to"] == 10.5

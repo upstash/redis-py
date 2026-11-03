@@ -422,7 +422,7 @@ def deserialize_aggregate_response(
 
     result = _parse_aggregation_array(raw_response)
     if aggregations:
-        _normalize_buckets(result, aggregations)
+        _normalize_buckets(result, aggregations, nested=False)
     return result
 
 
@@ -430,12 +430,13 @@ def deserialize_aggregate_response(
 _NUMERIC_KEY_OPERATORS = ("$histogram", "$dateHistogram")
 
 
-def _normalize_buckets(result: Any, aggregations: Dict[str, Any]) -> None:
+def _normalize_buckets(result: Any, aggregations: Dict[str, Any], nested: bool) -> None:
     """
     Fix buckets that only the request explains:
     - The server sends empty ``keyed`` buckets as a list.
-    - Numbers arrive as strings. Keys are converted only when they are known to be
-      numbers, so KEYWORD keys such as "007" stay as they are.
+    - Numbers arrive as strings. Histogram keys are always numbers. The field type of a
+      $terms key is unknown, so nested $terms keys that look like numbers become numbers,
+      as before, and top-level and $composite ones stay as they are.
     """
     if not isinstance(result, dict):
         return
@@ -469,7 +470,9 @@ def _normalize_buckets(result: Any, aggregations: Dict[str, Any]) -> None:
                 for source_name in numeric_sources:
                     if source_name in key:
                         key[source_name] = _coerce_numeric_string(key[source_name])
-            elif operator in _NUMERIC_KEY_OPERATORS:
+            elif operator in _NUMERIC_KEY_OPERATORS or (
+                nested and operator == "$terms"
+            ):
                 bucket["key"] = _coerce_numeric_string(key)
             if isinstance(sub_aggregations, dict):
-                _normalize_buckets(bucket, sub_aggregations)
+                _normalize_buckets(bucket, sub_aggregations, nested=True)
