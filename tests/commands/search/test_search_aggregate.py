@@ -350,6 +350,36 @@ class TestAggregation:
         assert isinstance(buckets, dict)
         assert sum(bucket["docCount"] for bucket in buckets.values()) == 9
 
+    def test_bucket_numbers_are_parsed(self, agg_index):
+        index = agg_index["index"]
+        result = index.aggregate(
+            aggregations={
+                "by_price": {"$terms": {"field": "price"}},
+                "by_category": {
+                    "$terms": {"field": "category"},
+                    "$aggs": {
+                        "by_price": {"$terms": {"field": "price"}},
+                        "ranges": {
+                            "$range": {"field": "price", "ranges": [{"to": 10.5}]}
+                        },
+                    },
+                },
+                "composite": {
+                    "$composite": {"sources": [{"p": {"$terms": {"field": "price"}}}]}
+                },
+            }
+        )
+
+        sub_aggregations = result["by_category"]["buckets"]
+        keys = [bucket["key"] for bucket in result["by_price"]["buckets"]]
+        keys += [b["key"] for s in sub_aggregations for b in s["by_price"]["buckets"]]
+        keys += [b["key"]["p"] for b in result["composite"]["buckets"]]
+        assert keys and all(isinstance(key, (int, float)) for key in keys)
+        range_bucket = sub_aggregations[0]["ranges"]["buckets"][0]
+        assert range_bucket["key"] == "*-10.5"
+        assert range_bucket["to"] == 10.5
+        assert isinstance(range_bucket["docCount"], int)
+
     def test_empty_keyed_buckets(self, agg_index):
         index = agg_index["index"]
         result = index.aggregate(

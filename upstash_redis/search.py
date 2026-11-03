@@ -324,27 +324,35 @@ def _parse_stats_value(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
-def _parse_pairs(arr: List[Any]) -> Dict[str, Any]:
-    """Turn [name, value, name, value, ...] into a dict, keeping the values as they are."""
-    return {arr[i]: arr[i + 1] for i in range(0, len(arr), 2)}
+def _parse_pairs(arr: List[Any], coerce: bool = False) -> Dict[str, Any]:
+    """Turn [name, value, name, value, ...] into a dict."""
+    return {
+        arr[i]: _coerce_numeric_string(arr[i + 1]) if coerce else arr[i + 1]
+        for i in range(0, len(arr), 2)
+    }
 
 
 def _parse_bucket(bucket: List[Any]) -> Dict[str, Any]:
+    # The key of a $range bucket is a label such as "10-*", even when it looks like a number
+    is_range = "from" in bucket[::2] or "to" in bucket[::2]
     bucket_obj: Dict[str, Any] = {}
     for i in range(0, len(bucket), 2):
         key = bucket[i]
         value = bucket[i + 1]
         if key == "key" and isinstance(value, list):
             # The key of a $composite bucket maps source names to values
-            bucket_obj[key] = _parse_pairs(value)
+            bucket_obj[key] = _parse_pairs(value, coerce=True)
         elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
             # A sub-aggregation
             if value[0] == "buckets":
                 bucket_obj[key] = _parse_buckets_value(value)
             else:
                 bucket_obj[key] = _parse_stats_value(value)
-        else:
+        elif key == "key" and is_range:
             bucket_obj[key] = value
+        else:
+            # Numbers can arrive as strings
+            bucket_obj[key] = _coerce_numeric_string(value)
     return bucket_obj
 
 
