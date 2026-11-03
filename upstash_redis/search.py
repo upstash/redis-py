@@ -349,7 +349,8 @@ def _parse_bucket(bucket: List[Any], aggregation: Any, nested: bool) -> Dict[str
     for i in range(0, len(bucket), 2):
         key = bucket[i]
         value = bucket[i + 1]
-        if key == "key" and isinstance(value, list):
+        is_composite = not isinstance(aggregation, dict) or "$composite" in aggregation
+        if key == "key" and isinstance(value, list) and is_composite:
             # The key of a $composite bucket maps source names to values
             bucket_obj[key] = _parse_pairs(value, coerce=True)
         elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
