@@ -324,34 +324,34 @@ def _parse_stats_value(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
-def _parse_pairs(arr: List[Any], coerce: bool = False) -> Dict[str, Any]:
-    """Turn [name, value, name, value, ...] into a dict."""
-    return {
-        arr[i]: _coerce_numeric_string(arr[i + 1]) if coerce else arr[i + 1]
-        for i in range(0, len(arr), 2)
-    }
+def _parse_pairs(arr: List[Any]) -> Dict[str, Any]:
+    """Turn [name, value, name, value, ...] into a dict, keeping the values as they are."""
+    return {arr[i]: arr[i + 1] for i in range(0, len(arr), 2)}
+
+
+# Bucket values that are text even when they look like numbers
+_TEXT_BUCKET_VALUES = ("key", "keyAsString", "fromAsString", "toAsString")
 
 
 def _parse_bucket(bucket: List[Any]) -> Dict[str, Any]:
-    # The key of a $range bucket is a label such as "10-*", even when it looks like a number
-    is_range = "from" in bucket[::2] or "to" in bucket[::2]
     bucket_obj: Dict[str, Any] = {}
     for i in range(0, len(bucket), 2):
         key = bucket[i]
         value = bucket[i + 1]
         if key == "key" and isinstance(value, list):
             # The key of a $composite bucket maps source names to values
-            bucket_obj[key] = _parse_pairs(value, coerce=True)
+            bucket_obj[key] = _parse_pairs(value)
         elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
             # A sub-aggregation
             if value[0] == "buckets":
                 bucket_obj[key] = _parse_buckets_value(value)
             else:
                 bucket_obj[key] = _parse_stats_value(value)
-        elif key == "key" and is_range:
+        elif key in _TEXT_BUCKET_VALUES:
+            # Keys are converted by _normalize_buckets, which knows the aggregation
             bucket_obj[key] = value
         else:
-            # Numbers can arrive as strings
+            # Counts and bounds such as docCount and to
             bucket_obj[key] = _coerce_numeric_string(value)
     return bucket_obj
 
@@ -422,12 +422,21 @@ def deserialize_aggregate_response(
 
     result = _parse_aggregation_array(raw_response)
     if aggregations:
-        _restore_empty_keyed_buckets(result, aggregations)
+        _normalize_buckets(result, aggregations)
     return result
 
 
-def _restore_empty_keyed_buckets(result: Any, aggregations: Dict[str, Any]) -> None:
-    """The server sends empty ``keyed`` buckets as a list, so turn them into a dict."""
+# Aggregations whose bucket keys are always numbers
+_NUMERIC_KEY_OPERATORS = ("$histogram", "$dateHistogram")
+
+
+def _normalize_buckets(result: Any, aggregations: Dict[str, Any]) -> None:
+    """
+    Fix buckets that only the request explains:
+    - The server sends empty ``keyed`` buckets as a list.
+    - Numbers arrive as strings. Keys are converted only when they are known to be
+      numbers, so KEYWORD keys such as "007" stay as they are.
+    """
     if not isinstance(result, dict):
         return
     for name, aggregation in aggregations.items():
@@ -435,13 +444,32 @@ def _restore_empty_keyed_buckets(result: Any, aggregations: Dict[str, Any]) -> N
         if not isinstance(value, dict) or not isinstance(aggregation, dict):
             continue
         operator = next((key for key in aggregation if key != "$aggs"), None)
-        options = aggregation.get(operator) if operator else None
-        keyed = isinstance(options, dict) and options.get("keyed") is True
+        params = aggregation.get(operator) if operator else None
         buckets = value.get("buckets")
-        if keyed and buckets == []:
-            value["buckets"] = {}
+        if isinstance(params, dict) and params.get("keyed") is True and buckets == []:
+            buckets = value["buckets"] = {}
+        if not isinstance(buckets, (dict, list)):
+            continue
+
+        numeric_sources: List[str] = []
+        if operator == "$composite" and isinstance(params, dict):
+            for source in params.get("sources") or []:
+                for source_name, source_aggregation in (source or {}).items():
+                    if any(
+                        op in _NUMERIC_KEY_OPERATORS for op in source_aggregation or {}
+                    ):
+                        numeric_sources.append(source_name)
+
         sub_aggregations = aggregation.get("$aggs")
-        if isinstance(sub_aggregations, dict):
-            bucket_list = buckets.values() if isinstance(buckets, dict) else buckets
-            for bucket in bucket_list or []:
-                _restore_empty_keyed_buckets(bucket, sub_aggregations)
+        for bucket in buckets.values() if isinstance(buckets, dict) else buckets:
+            if not isinstance(bucket, dict):
+                continue
+            key = bucket.get("key")
+            if isinstance(key, dict):
+                for source_name in numeric_sources:
+                    if source_name in key:
+                        key[source_name] = _coerce_numeric_string(key[source_name])
+            elif operator in _NUMERIC_KEY_OPERATORS:
+                bucket["key"] = _coerce_numeric_string(key)
+            if isinstance(sub_aggregations, dict):
+                _normalize_buckets(bucket, sub_aggregations)
