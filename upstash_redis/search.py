@@ -396,12 +396,15 @@ def _parse_aggregation_array(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
-def deserialize_aggregate_response(raw_response: Any) -> Dict[str, Any]:
+def deserialize_aggregate_response(
+    raw_response: Any, aggregations: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Deserialize raw aggregate response into structured results.
 
     Args:
         raw_response: Raw response from SEARCH.AGGREGATE
+        aggregations: The aggregations of the request
 
     Returns:
         Parsed aggregation results
@@ -409,4 +412,28 @@ def deserialize_aggregate_response(raw_response: Any) -> Dict[str, Any]:
     if not isinstance(raw_response, list) or len(raw_response) == 0:
         return {}
 
-    return _parse_aggregation_array(raw_response)
+    result = _parse_aggregation_array(raw_response)
+    if aggregations:
+        _restore_empty_keyed_buckets(result, aggregations)
+    return result
+
+
+def _restore_empty_keyed_buckets(result: Any, aggregations: Dict[str, Any]) -> None:
+    """The server sends empty ``keyed`` buckets as a list, so turn them into a dict."""
+    if not isinstance(result, dict):
+        return
+    for name, aggregation in aggregations.items():
+        value = result.get(name)
+        if not isinstance(value, dict) or not isinstance(aggregation, dict):
+            continue
+        operator = next((key for key in aggregation if key != "$aggs"), None)
+        options = aggregation.get(operator) if operator else None
+        keyed = isinstance(options, dict) and options.get("keyed") is True
+        buckets = value.get("buckets")
+        if keyed and buckets == []:
+            value["buckets"] = {}
+        sub_aggregations = aggregation.get("$aggs")
+        if isinstance(sub_aggregations, dict):
+            bucket_list = buckets.values() if isinstance(buckets, dict) else buckets
+            for bucket in bucket_list or []:
+                _restore_empty_keyed_buckets(bucket, sub_aggregations)

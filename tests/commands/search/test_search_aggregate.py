@@ -350,27 +350,15 @@ class TestAggregation:
         assert isinstance(buckets, dict)
         assert sum(bucket["docCount"] for bucket in buckets.values()) == 9
 
+    def test_empty_keyed_buckets(self, agg_index):
+        index = agg_index["index"]
+        result = index.aggregate(
+            filter={"name": "nothingmatches"},
+            aggregations={
+                "by_price": {
+                    "$histogram": {"field": "price", "interval": 1000, "keyed": True}
+                }
+            },
+        )
 
-def test_plain_numeric_fields_are_fast(redis_client: Redis) -> None:
-    name = f"test-fast-{random_id()}"
-    prefix = f"{name}:"
-    index = redis_client.search.create_index(
-        name=name,
-        schema={"name": "TEXT", "price": "F64"},
-        data_type="json",
-        prefixes=prefix,
-    )
-    keys = [f"{prefix}1", f"{prefix}2"]
-    try:
-        redis_client.json.set(keys[0], "$", {"name": "b", "price": 20})
-        redis_client.json.set(keys[1], "$", {"name": "a", "price": 10})
-        index.wait_indexing()
-
-        description = index.describe()
-        assert description is not None
-        assert description.schema["price"].fast
-        results = index.query(filter={}, order_by={"price": "ASC"})
-        assert [result.key for result in results] == [keys[1], keys[0]]
-    finally:
-        index.drop()
-        redis_client.delete(*keys)
+        assert result["by_price"]["buckets"] == {}

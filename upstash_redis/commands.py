@@ -40,9 +40,6 @@ from upstash_redis.utils import (
 
 ResponseT = Union[Awaitable, Any]
 
-# Search fields of these types are always created FAST
-_NUMERIC_FIELD_TYPES = ("U64", "I64", "F64")
-
 
 class Commands:
     def execute(self, command: List) -> ResponseT:
@@ -6238,9 +6235,6 @@ class SearchCommands:
         for path, value in schema.items():
             if isinstance(value, (str, FieldType)):
                 command.extend((path, value))
-                # Numeric fields are always FAST, so they can be sorted and aggregated
-                if value in _NUMERIC_FIELD_TYPES:
-                    command.append("FAST")
             else:
                 field_type = value["type"]
                 command.extend((path, field_type))
@@ -6248,9 +6242,7 @@ class SearchCommands:
                 if "alias" in value:
                     command.extend(("FROM", value["alias"]))
 
-                if field_type in _NUMERIC_FIELD_TYPES or (
-                    "fast" in value and value["fast"]
-                ):
+                if "fast" in value and value["fast"]:
                     command.append("FAST")
 
                 if "no_stem" in value and value["no_stem"]:
