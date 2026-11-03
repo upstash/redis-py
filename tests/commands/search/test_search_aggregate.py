@@ -315,3 +315,62 @@ class TestAggregation:
 
         assert "avg_price" in result
         assert "value" in result["avg_price"]
+
+    def test_composite_pagination(self, agg_index):
+        index = agg_index["index"]
+        aggregations = {
+            "by_category": {
+                "$composite": {
+                    "size": 2,
+                    "sources": [{"category": {"$terms": {"field": "category"}}}],
+                }
+            }
+        }
+        first = index.aggregate(aggregations=aggregations)
+
+        after_key = first["by_category"]["afterKey"]
+        assert set(after_key) == {"category"}
+        assert first["by_category"]["buckets"][0]["key"] == {"category": "accessories"}
+
+        aggregations["by_category"]["$composite"]["after"] = after_key
+        second = index.aggregate(aggregations=aggregations)
+        assert second["by_category"]["buckets"][0]["key"] == {"category": "electronics"}
+
+    def test_keyed_histogram(self, agg_index):
+        index = agg_index["index"]
+        result = index.aggregate(
+            aggregations={
+                "by_price": {
+                    "$histogram": {"field": "price", "interval": 1000, "keyed": True}
+                }
+            }
+        )
+
+        buckets = result["by_price"]["buckets"]
+        assert isinstance(buckets, dict)
+        assert sum(bucket["docCount"] for bucket in buckets.values()) == 9
+
+
+def test_plain_numeric_fields_are_fast(redis_client: Redis) -> None:
+    name = f"test-fast-{random_id()}"
+    prefix = f"{name}:"
+    index = redis_client.search.create_index(
+        name=name,
+        schema={"name": "TEXT", "price": "F64"},
+        data_type="json",
+        prefixes=prefix,
+    )
+    keys = [f"{prefix}1", f"{prefix}2"]
+    try:
+        redis_client.json.set(keys[0], "$", {"name": "b", "price": 20})
+        redis_client.json.set(keys[1], "$", {"name": "a", "price": 10})
+        index.wait_indexing()
+
+        description = index.describe()
+        assert description is not None
+        assert description.schema["price"].fast
+        results = index.query(filter={}, order_by={"price": "ASC"})
+        assert [result.key for result in results] == [keys[1], keys[0]]
+    finally:
+        index.drop()
+        redis_client.delete(*keys)

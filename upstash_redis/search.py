@@ -324,29 +324,52 @@ def _parse_stats_value(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
+def _parse_pairs(arr: List[Any]) -> Dict[str, Any]:
+    """Turn [name, value, name, value, ...] into a dict, keeping the values as they are."""
+    return {arr[i]: arr[i + 1] for i in range(0, len(arr), 2)}
+
+
+def _parse_bucket(bucket: List[Any]) -> Dict[str, Any]:
+    bucket_obj: Dict[str, Any] = {}
+    for i in range(0, len(bucket), 2):
+        key = bucket[i]
+        value = bucket[i + 1]
+        if key == "key" and isinstance(value, list):
+            # The key of a $composite bucket maps source names to values
+            bucket_obj[key] = _parse_pairs(value)
+        elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+            # A sub-aggregation
+            if value[0] == "buckets":
+                bucket_obj[key] = _parse_buckets_value(value)
+            else:
+                bucket_obj[key] = _parse_stats_value(value)
+        else:
+            bucket_obj[key] = value
+    return bucket_obj
+
+
 def _parse_buckets_value(arr: List[Any]) -> Dict[str, Any]:
     """Parse a bucket aggregation value starting with 'buckets'."""
     if arr[0] == "buckets" and isinstance(arr[1], list):
-        buckets = []
-        for bucket in arr[1]:
-            bucket_obj: Dict[str, Any] = {}
-            for i in range(0, len(bucket), 2):
-                key = bucket[i]
-                value = bucket[i + 1]
-                if (
-                    isinstance(value, list)
-                    and len(value) > 0
-                    and isinstance(value[0], str)
-                ):
-                    bucket_obj[key] = _parse_stats_value(value)
-                else:
-                    bucket_obj[key] = value
-            buckets.append(bucket_obj)
+        raw_buckets = arr[1]
+        buckets: Any
+        if len(raw_buckets) > 0 and not isinstance(raw_buckets[0], list):
+            # keyed: true returns [key, bucket, key, bucket, ...]
+            buckets = {
+                raw_buckets[i]: _parse_bucket(raw_buckets[i + 1])
+                for i in range(0, len(raw_buckets), 2)
+            }
+        else:
+            buckets = [_parse_bucket(bucket) for bucket in raw_buckets]
 
         result: Dict[str, Any] = {"buckets": buckets}
-        # Extra key-value pairs after the buckets array (sumOtherDocCount, etc.)
+        # Extra key-value pairs after the buckets array (sumOtherDocCount, afterKey, etc.)
         for i in range(2, len(arr), 2):
-            result[arr[i]] = _coerce_numeric_string(arr[i + 1])
+            if arr[i] == "afterKey" and isinstance(arr[i + 1], list):
+                # The afterKey of $composite maps source names to cursor values
+                result[arr[i]] = _parse_pairs(arr[i + 1])
+            else:
+                result[arr[i]] = _coerce_numeric_string(arr[i + 1])
         return result
 
     return {"raw": arr}
