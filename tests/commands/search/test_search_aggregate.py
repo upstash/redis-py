@@ -6,6 +6,7 @@ from typing import Generator
 import pytest
 
 from upstash_redis import Redis
+from upstash_redis.search import deserialize_aggregate_response
 
 
 def random_id() -> str:
@@ -315,3 +316,69 @@ class TestAggregation:
 
         assert "avg_price" in result
         assert "value" in result["avg_price"]
+
+    def test_composite_pagination(self, agg_index):
+        index = agg_index["index"]
+        aggregations = {
+            "by_category": {
+                "$composite": {
+                    "size": 2,
+                    "sources": [{"category": {"$terms": {"field": "category"}}}],
+                }
+            }
+        }
+        first = index.aggregate(aggregations=aggregations)
+
+        after_key = first["by_category"]["afterKey"]
+        assert set(after_key) == {"category"}
+        assert first["by_category"]["buckets"][0]["key"] == {"category": "accessories"}
+
+        aggregations["by_category"]["$composite"]["after"] = after_key
+        second = index.aggregate(aggregations=aggregations)
+        assert second["by_category"]["buckets"][0]["key"] == {"category": "electronics"}
+
+    def test_keyed_histogram(self, agg_index):
+        index = agg_index["index"]
+        result = index.aggregate(
+            aggregations={
+                "by_price": {
+                    "$histogram": {"field": "price", "interval": 1000, "keyed": True}
+                }
+            }
+        )
+
+        buckets = result["by_price"]["buckets"]
+        assert isinstance(buckets, dict)
+        assert sum(bucket["docCount"] for bucket in buckets.values()) == 9
+
+    def test_empty_keyed_buckets(self, agg_index):
+        index = agg_index["index"]
+        result = index.aggregate(
+            filter={"name": "nothingmatches"},
+            aggregations={
+                "by_price": {
+                    "$histogram": {"field": "price", "interval": 1000, "keyed": True}
+                }
+            },
+        )
+
+        assert result["by_price"]["buckets"] == {}
+
+
+def test_keyed_buckets_follow_the_request() -> None:
+    raw = [
+        "c",
+        ["buckets", [["key", "a", "docCount", 1, "h", ["buckets", []]]]],
+        "t",
+        ["buckets", []],
+    ]
+    histogram = {"$histogram": {"field": "price", "interval": 1, "keyed": True}}
+    aggregations = {
+        "c": {"$terms": {"field": "category"}, "$aggs": {"h": histogram}},
+        "t": {"$terms": {"field": "category"}},
+    }
+
+    assert deserialize_aggregate_response(raw, aggregations) == {
+        "c": {"buckets": [{"key": "a", "docCount": 1, "h": {"buckets": {}}}]},
+        "t": {"buckets": []},
+    }
