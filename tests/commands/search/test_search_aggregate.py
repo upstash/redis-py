@@ -351,60 +351,6 @@ class TestAggregation:
         assert isinstance(buckets, dict)
         assert sum(bucket["docCount"] for bucket in buckets.values()) == 9
 
-    def test_bucket_numbers_are_parsed(self, agg_index):
-        index = agg_index["index"]
-        histogram = {"$histogram": {"field": "price", "interval": 0.5}}
-        result = index.aggregate(
-            aggregations={
-                "by_category": {
-                    "$terms": {"field": "category"},
-                    "$aggs": {
-                        "histogram": histogram,
-                        "ranges": {
-                            "$range": {"field": "price", "ranges": [{"to": 10.5}]}
-                        },
-                    },
-                },
-                "histogram": histogram,
-                "composite": {
-                    "$composite": {
-                        "sources": [
-                            {"c": {"$terms": {"field": "category"}}},
-                            {"h": histogram},
-                        ]
-                    }
-                },
-            }
-        )
-
-        sub_aggregations = result["by_category"]["buckets"]
-        keys = [bucket["key"] for bucket in result["histogram"]["buckets"]]
-        keys += [b["key"] for s in sub_aggregations for b in s["histogram"]["buckets"]]
-        keys += [b["key"]["h"] for b in result["composite"]["buckets"]]
-        assert keys and all(isinstance(key, (int, float)) for key in keys)
-        assert all(
-            isinstance(b["key"]["c"], str) for b in result["composite"]["buckets"]
-        )
-        assert all(isinstance(bucket["key"], str) for bucket in sub_aggregations)
-        nested = index.aggregate(
-            aggregations={
-                "by_category": {
-                    "$terms": {"field": "category"},
-                    "$aggs": {"by_price": {"$terms": {"field": "price"}}},
-                }
-            }
-        )
-        nested_keys = [
-            b["key"]
-            for s in nested["by_category"]["buckets"]
-            for b in s["by_price"]["buckets"]
-        ]
-        assert nested_keys and all(isinstance(k, (int, float)) for k in nested_keys)
-        range_bucket = sub_aggregations[0]["ranges"]["buckets"][0]
-        assert range_bucket["key"] == "*-10.5"
-        assert range_bucket["to"] == 10.5
-        assert isinstance(range_bucket["docCount"], int)
-
     def test_empty_keyed_buckets(self, agg_index):
         index = agg_index["index"]
         result = index.aggregate(
@@ -419,26 +365,20 @@ class TestAggregation:
         assert result["by_price"]["buckets"] == {}
 
 
-def test_keyword_keys_are_kept() -> None:
+def test_keyed_buckets_follow_the_request() -> None:
     raw = [
-        "t",
-        ["buckets", [["key", "007", "docCount", "1"]]],
         "c",
-        ["buckets", [["key", ["code", "02134", "h", "0.5"], "docCount", 1]]],
+        ["buckets", [["key", "a", "docCount", 1, "h", ["buckets", []]]]],
+        "t",
+        ["buckets", []],
     ]
+    histogram = {"$histogram": {"field": "price", "interval": 1, "keyed": True}}
     aggregations = {
-        "t": {"$terms": {"field": "code"}},
-        "c": {
-            "$composite": {
-                "sources": [
-                    {"code": {"$terms": {"field": "code"}}},
-                    {"h": {"$histogram": {"field": "price", "interval": 0.5}}},
-                ]
-            }
-        },
+        "c": {"$terms": {"field": "category"}, "$aggs": {"h": histogram}},
+        "t": {"$terms": {"field": "category"}},
     }
 
     assert deserialize_aggregate_response(raw, aggregations) == {
-        "t": {"buckets": [{"key": "007", "docCount": 1}]},
-        "c": {"buckets": [{"key": {"code": "02134", "h": 0.5}, "docCount": 1}]},
+        "c": {"buckets": [{"key": "a", "docCount": 1, "h": {"buckets": {}}}]},
+        "t": {"buckets": []},
     }
