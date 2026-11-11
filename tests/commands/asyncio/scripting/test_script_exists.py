@@ -1,9 +1,10 @@
 import pytest
+import pytest_asyncio
 
 from upstash_redis.asyncio import Redis
 
 
-@pytest.fixture(autouse=True)
+@pytest_asyncio.fixture(autouse=True)
 async def flush_scripts(async_redis: Redis):
     await async_redis.script_flush()
     yield
