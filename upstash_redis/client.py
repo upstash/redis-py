@@ -223,6 +223,9 @@ class Pipeline(PipelineCommands):
         """
         Executes the commands in the pipeline by sending them as a batch
         """
+        if not self._command_stack:
+            return []
+
         self._set_sync_token_header_fn(self._headers)
 
         res: List[RESTResultT] = self._http.execute(  # type: ignore[assignment]
@@ -237,6 +240,10 @@ class Pipeline(PipelineCommands):
         ]
         self.reset()
         return response
+
+    def __len__(self) -> int:
+        """Return the number of queued commands."""
+        return len(self._command_stack)
 
     def reset(self):
         """
