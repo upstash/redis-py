@@ -14,7 +14,7 @@ upstash-redis is a connectionless, HTTP-based Redis client for Python, designed 
 Inspired by other Redis clients like [@upstash/redis](https://github.com/upstash/upstash-redis) and [redis-py](https://github.com/redis/redis-py),
 the goal of this SDK is to provide a simple way to use Redis over the [Upstash REST API](https://docs.upstash.com/redis/features/restapi).
 
-The SDK is currently compatible with Python 3.8 and above.
+The SDK is currently compatible with Python 3.10 and above.
 
 <!-- toc -->
 
