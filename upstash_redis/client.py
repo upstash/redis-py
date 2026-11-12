@@ -222,21 +222,24 @@ class Pipeline(PipelineCommands):
     def exec(self) -> List[RESTResultT]:
         """
         Executes the commands in the pipeline by sending them as a batch
-        """
-        self._set_sync_token_header_fn(self._headers)
 
-        res: List[RESTResultT] = self._http.execute(  # type: ignore[assignment]
-            url=self._url,
-            headers=self._headers,
-            command=self._command_stack,
-            from_pipeline=True,
-        )
-        response = [
-            cast_response(command, response, self._original_client)
-            for command, response in zip(self._command_stack, res)
-        ]
-        self.reset()
-        return response
+        Clears the queued commands even if execution fails.
+        """
+        try:
+            self._set_sync_token_header_fn(self._headers)
+
+            res: List[RESTResultT] = self._http.execute(  # type: ignore[assignment]
+                url=self._url,
+                headers=self._headers,
+                command=self._command_stack,
+                from_pipeline=True,
+            )
+            return [
+                cast_response(command, response, self._original_client)
+                for command, response in zip(self._command_stack, res)
+            ]
+        finally:
+            self.reset()
 
     def reset(self):
         """
