@@ -268,9 +268,11 @@ def format_search_create_response(res: Any, command: List[str], client: Any):
     return SearchIndexCommands(client, index_name)
 
 
-def format_search_aggregate_response(res: Any, _, __):
+def format_search_aggregate_response(res: Any, command: List[str], _):
     """Format SEARCH.AGGREGATE response into parsed aggregation results."""
-    return deserialize_aggregate_response(res)
+    # The command is [SEARCH.AGGREGATE, name, filter, aggregations]
+    aggregations = loads(command[3]) if len(command) > 3 else None
+    return deserialize_aggregate_response(res, aggregations)
 
 
 def format_search_alias_add_response(res: Any, _, __):
