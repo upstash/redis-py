@@ -1,4 +1,4 @@
-__version__ = "1.9.0"
+__version__ = "1.10.0"
 
 from upstash_redis.asyncio.client import Redis as AsyncRedis
 from upstash_redis.client import Redis
