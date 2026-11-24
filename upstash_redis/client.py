@@ -42,6 +42,7 @@ class Redis(Commands):
         rest_retry_interval: float = 3,  # Seconds.
         allow_telemetry: bool = True,
         read_your_writes: bool = True,
+        rest_timeout: Optional[float] = None,
     ):
         """
         Creates a new blocking Redis client.
@@ -51,6 +52,7 @@ class Redis(Commands):
         :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
+        :param rest_timeout: timeout in seconds for each HTTP connect, read, write, or pool operation; None disables timeouts
         :param allow_telemetry: whether anonymous telemetry can be collected
         :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
             the effects of all earlier writes submitted by the same client.
@@ -72,6 +74,7 @@ class Redis(Commands):
             retries=rest_retries,
             retry_interval=rest_retry_interval,
             sync_token_cb=self._update_sync_token,
+            timeout=rest_timeout,
         )
 
     @property
@@ -94,6 +97,7 @@ class Redis(Commands):
         rest_retry_interval: float = 3,
         allow_telemetry: bool = True,
         read_your_writes: bool = True,
+        rest_timeout: Optional[float] = None,
     ):
         """
         Load the credentials from environment.
@@ -101,6 +105,7 @@ class Redis(Commands):
         :param rest_encoding: the encoding that can be used by the REST API to parse the response before sending it
         :param rest_retries: how many times an HTTP request will be retried if it fails
         :param rest_retry_interval: how many seconds will be waited between each retry
+        :param rest_timeout: timeout in seconds for each HTTP connect, read, write, or pool operation; None disables timeouts
         :param allow_telemetry: whether anonymous telemetry can be collected
         :param read_your_writes: when enabled, any subsequent commands issued by this client are guaranteed to observe
             the effects of all earlier writes submitted by the same client.
@@ -114,6 +119,7 @@ class Redis(Commands):
             rest_retry_interval,
             allow_telemetry,
             read_your_writes,
+            rest_timeout,
         )
 
     def __enter__(self) -> "Redis":
