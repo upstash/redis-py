@@ -324,35 +324,86 @@ def _parse_stats_value(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
-def _parse_buckets_value(arr: List[Any]) -> Dict[str, Any]:
-    """Parse a bucket aggregation value starting with 'buckets'."""
+def _parse_pairs(arr: List[Any], coerce: bool) -> Dict[str, Any]:
+    """Turn [name, value, name, value, ...] into a dict."""
+    return {
+        arr[i]: _coerce_numeric_string(arr[i + 1]) if coerce else arr[i + 1]
+        for i in range(0, len(arr), 2)
+    }
+
+
+def _is_keyed(aggregation: Any, raw_buckets: List[Any]) -> bool:
+    """keyed: true from the request, or from the response shape when it is unknown."""
+    if isinstance(aggregation, dict):
+        operator = next((key for key in aggregation if key != "$aggs"), None)
+        params = aggregation.get(operator) if operator else None
+        return isinstance(params, dict) and params.get("keyed") is True
+    return len(raw_buckets) > 0 and not isinstance(raw_buckets[0], list)
+
+
+def _parse_bucket(bucket: List[Any], aggregation: Any, nested: bool) -> Dict[str, Any]:
+    sub_aggregations = (
+        aggregation.get("$aggs") if isinstance(aggregation, dict) else None
+    )
+    bucket_obj: Dict[str, Any] = {}
+    for i in range(0, len(bucket), 2):
+        key = bucket[i]
+        value = bucket[i + 1]
+        is_composite = not isinstance(aggregation, dict) or "$composite" in aggregation
+        if key == "key" and isinstance(value, list) and is_composite:
+            # The key of a $composite bucket maps source names to values
+            bucket_obj[key] = _parse_pairs(value, coerce=True)
+        elif isinstance(value, list) and len(value) > 0 and isinstance(value[0], str):
+            # A sub-aggregation
+            if value[0] == "buckets":
+                sub = sub_aggregations.get(key) if sub_aggregations else None
+                bucket_obj[key] = _parse_buckets_value(value, sub, nested=True)
+            else:
+                bucket_obj[key] = _parse_stats_value(value)
+        else:
+            bucket_obj[key] = _coerce_numeric_string(value) if nested else value
+    return bucket_obj
+
+
+def _parse_buckets_value(
+    arr: List[Any], aggregation: Any = None, nested: bool = False
+) -> Dict[str, Any]:
+    """
+    Parse a bucket aggregation value starting with 'buckets'.
+
+    Values of nested buckets that look like numbers become numbers, and values of
+    top-level buckets stay as they are, except for $composite keys.
+    """
     if arr[0] == "buckets" and isinstance(arr[1], list):
-        buckets = []
-        for bucket in arr[1]:
-            bucket_obj: Dict[str, Any] = {}
-            for i in range(0, len(bucket), 2):
-                key = bucket[i]
-                value = bucket[i + 1]
-                if (
-                    isinstance(value, list)
-                    and len(value) > 0
-                    and isinstance(value[0], str)
-                ):
-                    bucket_obj[key] = _parse_stats_value(value)
-                else:
-                    bucket_obj[key] = value
-            buckets.append(bucket_obj)
+        raw_buckets = arr[1]
+        buckets: Any
+        if _is_keyed(aggregation, raw_buckets):
+            # keyed: true returns [key, bucket, key, bucket, ...]
+            buckets = {
+                raw_buckets[i]: _parse_bucket(raw_buckets[i + 1], aggregation, nested)
+                for i in range(0, len(raw_buckets), 2)
+            }
+        else:
+            buckets = [
+                _parse_bucket(bucket, aggregation, nested) for bucket in raw_buckets
+            ]
 
         result: Dict[str, Any] = {"buckets": buckets}
-        # Extra key-value pairs after the buckets array (sumOtherDocCount, etc.)
+        # Extra key-value pairs after the buckets array (sumOtherDocCount, afterKey, etc.)
         for i in range(2, len(arr), 2):
-            result[arr[i]] = _coerce_numeric_string(arr[i + 1])
+            if arr[i] == "afterKey" and isinstance(arr[i + 1], list):
+                # The afterKey of $composite maps source names to cursor values
+                result[arr[i]] = _parse_pairs(arr[i + 1], coerce=False)
+            else:
+                result[arr[i]] = _coerce_numeric_string(arr[i + 1])
         return result
 
     return {"raw": arr}
 
 
-def _parse_aggregation_array(arr: List[Any]) -> Dict[str, Any]:
+def _parse_aggregation_array(
+    arr: List[Any], aggregations: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """Parse a top-level aggregation response array."""
     result: Dict[str, Any] = {}
     for i in range(0, len(arr), 2):
@@ -362,7 +413,8 @@ def _parse_aggregation_array(arr: List[Any]) -> Dict[str, Any]:
         if isinstance(value, list):
             if len(value) > 0 and isinstance(value[0], str):
                 if value[0] == "buckets":
-                    result[key] = _parse_buckets_value(value)
+                    aggregation = aggregations.get(key) if aggregations else None
+                    result[key] = _parse_buckets_value(value, aggregation)
                 else:
                     result[key] = _parse_stats_value(value)
             else:
@@ -373,12 +425,15 @@ def _parse_aggregation_array(arr: List[Any]) -> Dict[str, Any]:
     return result
 
 
-def deserialize_aggregate_response(raw_response: Any) -> Dict[str, Any]:
+def deserialize_aggregate_response(
+    raw_response: Any, aggregations: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     """
     Deserialize raw aggregate response into structured results.
 
     Args:
         raw_response: Raw response from SEARCH.AGGREGATE
+        aggregations: The aggregations of the request, which tell which buckets are keyed
 
     Returns:
         Parsed aggregation results
@@ -386,4 +441,4 @@ def deserialize_aggregate_response(raw_response: Any) -> Dict[str, Any]:
     if not isinstance(raw_response, list) or len(raw_response) == 0:
         return {}
 
-    return _parse_aggregation_array(raw_response)
+    return _parse_aggregation_array(raw_response, aggregations)
