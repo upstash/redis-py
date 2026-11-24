@@ -215,6 +215,10 @@ If you want to submit commands in batches to reduce the number of roundtrips, yo
 transactions. The difference between pipelines and transactions is that transactions are atomic: no other
 command is executed during that transaction. In pipelines there is no such guarantee.
 
+Empty pipelines and transactions return `[]` from `exec()` without sending a request.
+Use `len(pipeline)` to inspect the queued command count, or `if pipeline:` to check
+whether commands are queued. This also applies to asynchronous pipelines.
+
 To use a pipeline, simply call the `pipeline` method:
 
 ```python
